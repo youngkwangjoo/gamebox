@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .form-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 450px; /* 너비를 고정 크기로 설정 */
+            margin-left: auto; /* 왼쪽 여백 자동 조정 */
+            margin-right: auto; /* 오른쪽 여백 자동 조정 */
+        }
+
+        .form-container input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .form-container button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .form-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>라이어 게임에 오신걸 환영합니다. </h1>
+        <form method="POST">
+            {% csrf_token %}
+            <label for="nickname">사용할 닉네임을 입력해주세요</label><br>
+            <input type="text" id="nickname" name="nickname" placeholder="게임에서 사용할 별칭을 입력해주세요" required><br>
+            <button type="submit">Join</button>
+        </form>
+    </div>
+</body>
+</html>

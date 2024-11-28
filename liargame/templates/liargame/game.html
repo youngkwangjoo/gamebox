@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin: 20px;
+        }
+        .left-panel {
+            width: 30%;
+        }
+        .nickname {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-circle {
+            width: 50px;
+            height: 50px;
+            background-color: #ddd;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 10px;
+            font-size: 1.5rem;
+            color: #666;
+        }
+        .nickname-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .actions {
+            margin-top: 20px;
+        }
+        .actions button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .actions button:hover {
+            background-color: #45a049;
+        }
+        .right-panel {
+            width: 65%;
+        }
+        .room-list {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .room {
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .room:last-child {
+            border-bottom: none;
+        }
+        .room-name {
+            font-weight: bold;
+        }
+        .room-players {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 왼쪽 패널 -->
+        <div class="left-panel">
+            <div class="nickname">
+                <div class="profile-circle">👤</div>
+                <div class="nickname-text">{{ nickname }}</div>
+            </div>
+            <div class="actions">
+                <!-- 방 만들기 버튼 -->
+                <form action="{% url 'create_room' %}" method="GET">
+                    <button type="submit">방 만들기</button>
+                </form>
+                <!-- 방 참가하기 버튼 -->
+                <button onclick="alert('Join Room Clicked!')">방 참가하기</button>
+            </div>
+        </div>
+        <!-- 오른쪽 패널 -->
+        <div class="right-panel">
+            <div class="room-list">
+                <h2>방 목록</h2>
+                {% if rooms %}
+                    {% for room in rooms %}
+                    <div class="room">
+                        <span class="room-name">{{ room.name }}</span>
+                        <span class="room-players">{{ room.players }} players</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p>아직 개설된 방이 없습니다.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- 방 만들기 버튼 -->
+        <form method="POST">
+            {% csrf_token %}
+            <button type="submit">방 만들기</button>
+        </form>
+    </div>
+</body>
+</html>

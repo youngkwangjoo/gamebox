@@ -56,8 +56,8 @@ ROOT_URLCONF = 'gamebox.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
+        'DIRS': [],  # 프로젝트 전역 템플릿 디렉토리를 여기에 추가 가능
+        'APP_DIRS': True,  # 앱 내부의 templates 폴더를 자동 탐색
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.debug',
