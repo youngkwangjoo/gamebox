@@ -9,8 +9,10 @@ def join(request):
         if nickname:
             request.session['nickname'] = nickname
             return redirect('game')
-    return render(request, 'liargame/join.html')  # 수정된 경로
-from django.shortcuts import render, redirect
+        else:
+            return render(request, 'liargame/join.html', {'error': '닉네임을 입력해주세요'})  # 에러 메시지 추가
+    return render(request, 'liargame/join.html')
+
 
 def game(request):
     # 세션에서 방 목록 가져오기 (없으면 빈 리스트)
@@ -45,6 +47,19 @@ def create_room(request):
         return redirect('game')  # 방 목록 페이지로 이동
 
     return render(request, 'liargame/create_room.html')
+
+def room_detail(request, room_id):
+    rooms = request.session.get('rooms', [])
+
+    if not (0 <= room_id < len(rooms)):
+        return redirect('game')  # 유효하지 않은 room_id인 경우 게임 화면으로 리다이렉트
+    
+    room = rooms[room_id]
+    return render(request, 'liargame/room_detail.html', {
+        'room': room,
+        'room_id': room_id
+    })
+
 
 
 

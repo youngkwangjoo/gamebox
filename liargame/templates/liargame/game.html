@@ -112,7 +112,7 @@
                 {% if rooms %}
                     {% for room in rooms %}
                     <div class="room">
-                        <span class="room-name">{{ room.name }}</span>
+                        <a href="{% url 'room_detail' forloop.counter0 %}" class="room-name">{{ room.name }}</a>
                         <span class="room-players">{{ room.players }} players</span>
                     </div>
                     {% endfor %}
@@ -120,6 +120,7 @@
                     <p>아직 개설된 방이 없습니다.</p>
                 {% endif %}
             </div>
+            
         </div>
         
         <!-- 방 만들기 버튼 -->

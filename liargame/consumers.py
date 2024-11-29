@@ -1,18 +1,38 @@
+from channels.generic.websocket import AsyncWebsocketConsumer
 import json
-from channels.generic.websocket import WebsocketConsumer
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        self.room_id = self.scope['url_route']['kwargs']['room_id']
+        self.room_group_name = f'chat_{self.room_id}'
+        await self.channel_layer.group_add(
+            self.room_group_name,
+            self.channel_name
+        )
+        await self.accept()
 
-class ChatConsumer(WebsocketConsumer):
-    def connect(self):
-        self.accept()  # 연결 허용
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(
+            self.room_group_name,
+            self.channel_name
+        )
 
-    def disconnect(self, close_code):
-        pass  # 연결 해제 시 로직 (필요 시 추가)
-
-    def receive(self, text_data):
-        data = json.loads(text_data)  # 클라이언트에서 받은 메시지
+    async def receive(self, text_data):
+        data = json.loads(text_data)
         message = data['message']
+        print(f"Received message: {message}")
 
-        # 클라이언트로 메시지 전송
-        self.send(text_data=json.dumps({
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'chat_message',
+                'message': message
+            }
+        )
+
+    async def chat_message(self, event):
+        message = event['message']
+        print(f"Broadcasting message: {message}")
+
+        await self.send(text_data=json.dumps({
             'message': message
         }))

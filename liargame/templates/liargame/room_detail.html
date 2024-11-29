@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>게임 페이지</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f5f5f5;
+        }
+
+        .game-container {
+            display: flex;
+            flex-direction: row;
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        /* 채팅 스타일 */
+        .chat-container {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fff;
+            margin-right: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+        }
+
+        .chat-log {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 10px;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+
+        .chat-log .message {
+            margin: 5px 0;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .chat-log .message.self {
+            justify-content: flex-end;
+        }
+
+        .chat-log .message .nickname {
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .chat-log .message .text {
+            background-color: #e0e0e0;
+            padding: 8px;
+            border-radius: 10px;
+            max-width: 60%;
+            word-wrap: break-word;
+        }
+
+        .chat-log .message.self .text {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        #chat-message-input {
+            flex: 1;
+            padding: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        #chat-message-submit {
+            padding: 5px 10px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 5px;
+        }
+
+        #chat-message-submit:hover {
+            background-color: #45a049;
+        }
+
+        /* 참가자 스타일 */
+        .participants-container {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            background-color: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .participant {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .participant .nickname {
+            font-weight: bold;
+        }
+
+        .participant textarea {
+            width: 60%;
+            resize: none;
+        }
+
+        /* 투표 스타일 */
+        .vote-container {
+            margin-top: 20px;
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fff;
+        }
+
+        .vote-container .vote-participant {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .vote-result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 채팅 -->
+        <div class="chat-container">
+            <div class="chat-log" id="chat-log"></div>
+            <div>
+                <input id="chat-message-input" type="text" placeholder="메시지를 입력하세요...">
+                <button id="chat-message-submit">전송</button>
+            </div>
+        </div>
+
+        <!-- 참가자 목록 -->
+        <div class="participants-container" id="participants-container">
+            <h3>참가자 목록</h3>
+        </div>
+    </div>
+
+    <!-- 투표 -->
+    <div class="vote-container">
+        <h3>투표</h3>
+        <div id="vote-participants">
+            <!-- 참가자 목록이 추가됩니다 -->
+        </div>
+        <button id="show-results">결과 보기</button>
+        <div class="vote-result" id="vote-result">
+            <!-- 투표 결과가 표시됩니다 -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mock 참가자 데이터
+            const participants = ['joo', 'lee', 'kim', 'park', 'choi'];
+            const nickname = 'joo'; // 자신의 닉네임
+
+            // 채팅 WebSocket
+            const chatLog = document.getElementById('chat-log');
+            const messageInput = document.getElementById('chat-message-input');
+            const sendButton = document.getElementById('chat-message-submit');
+
+            function addMessageToLog(sender, message, self) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', self ? 'self' : '');
+
+                const nicknameElement = document.createElement('span');
+                nicknameElement.classList.add('nickname');
+                nicknameElement.textContent = `${sender}:`;
+
+                const textElement = document.createElement('span');
+                textElement.classList.add('text');
+                textElement.textContent = message;
+
+                messageElement.appendChild(nicknameElement);
+                messageElement.appendChild(textElement);
+                chatLog.appendChild(messageElement);
+
+                chatLog.scrollTop = chatLog.scrollHeight;
+            }
+
+            sendButton.onclick = () => {
+                const message = messageInput.value.trim();
+                if (message) {
+                    addMessageToLog(nickname, message, true);
+                    messageInput.value = '';
+                }
+            };
+
+            // 참가자 목록 렌더링
+            const participantsContainer = document.getElementById('participants-container');
+            participants.forEach((participant) => {
+                const participantElement = document.createElement('div');
+                participantElement.classList.add('participant');
+
+                const nameElement = document.createElement('span');
+                nameElement.classList.add('nickname');
+                nameElement.textContent = participant;
+
+                const descriptionInput = document.createElement('textarea');
+                descriptionInput.placeholder = `${participant}의 설명을 작성하세요...`;
+
+                participantElement.appendChild(nameElement);
+                participantElement.appendChild(descriptionInput);
+                participantsContainer.appendChild(participantElement);
+            });
+
+            // 투표 UI
+            const voteContainer = document.getElementById('vote-participants');
+            const voteResult = document.getElementById('vote-result');
+            const showResultsButton = document.getElementById('show-results');
+            const votes = {};
+
+            participants.forEach((participant) => {
+                votes[participant] = 0;
+
+                const voteElement = document.createElement('div');
+                voteElement.classList.add('vote-participant');
+
+                const nameElement = document.createElement('span');
+                nameElement.textContent = participant;
+
+                const voteButton = document.createElement('button');
+                voteButton.textContent = '투표';
+                voteButton.onclick = () => {
+                    votes[participant] += 1;
+                    alert(`${participant}에게 투표했습니다.`);
+                };
+
+                voteElement.appendChild(nameElement);
+                voteElement.appendChild(voteButton);
+                voteContainer.appendChild(voteElement);
+            });
+
+            showResultsButton.onclick = () => {
+                voteResult.innerHTML = '';
+                for (const participant in votes) {
+                    const resultElement = document.createElement('div');
+                    resultElement.textContent = `${participant}: ${votes[participant]}표`;
+                    voteResult.appendChild(resultElement);
+                }
+                voteResult.style.display = 'block';
+            };
+        });
+    </script>
+</body>
+</html>
