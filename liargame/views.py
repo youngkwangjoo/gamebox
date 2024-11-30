@@ -1,17 +1,19 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Room, Participant
 
 def home(request):
-    return render(request, 'liargame/home.html', {'range': range(5)})
+    # 홈 페이지
+    return render(request, 'liargame/home.html')
 
 def join(request):
+    # 닉네임 입력 페이지
     if request.method == 'POST':
         nickname = request.POST.get('nickname')
-        if nickname:
-            request.session['nickname'] = nickname
-            return redirect('game')
-        else:
-            return render(request, 'liargame/join.html', {'error': '닉네임을 입력해주세요'})  # 에러 메시지 추가
-    return render(request, 'liargame/join.html')
+        request.session['nickname'] = nickname  # 닉네임을 세션에 저장
+        return redirect('game')  # 방 목록 페이지로 이동
+    return render(request, 'liargame/join.html')  # 닉네임 입력 템플릿
+
+
 
 
 def game(request):

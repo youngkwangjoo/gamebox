@@ -20,17 +20,28 @@
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 450px; /* 너비를 고정 크기로 설정 */
-            margin-left: auto; /* 왼쪽 여백 자동 조정 */
-            margin-right: auto; /* 오른쪽 여백 자동 조정 */
+            width: 100%; /* 너비를 화면에 맞게 확장 */
+            max-width: 450px; /* 최대 너비 설정 */
         }
-
+        .form-container h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .form-container label {
+            font-size: 16px;
+            color: #555;
+            display: block;
+            margin-bottom: 10px;
+        }
         .form-container input[type="text"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
             border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
         }
         .form-container button {
             background-color: #4CAF50;
@@ -38,7 +49,9 @@
             border: none;
             padding: 10px 20px;
             border-radius: 4px;
+            font-size: 16px;
             cursor: pointer;
+            transition: background-color 0.3s ease;
         }
         .form-container button:hover {
             background-color: #45a049;
@@ -47,13 +60,15 @@
 </head>
 <body>
     <div class="form-container">
-        <h1>라이어 게임에 오신걸 환영합니다. </h1>
-        <form method="POST">
+        <h1>라이어 게임에 오신걸 환영합니다</h1>
+        <form id="join-form" method="POST">
             {% csrf_token %}
-            <label for="nickname">사용할 닉네임을 입력해주세요</label><br>
-            <input type="text" id="nickname" name="nickname" placeholder="게임에서 사용할 별칭을 입력해주세요" required><br>
+            <input type="hidden" id="room-id" value="{{ room.id }}">
+            <label for="nickname">사용할 닉네임:</label>
+            <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" required>
             <button type="submit">Join</button>
         </form>
-    </div>
+        <div id="participants-container"></div>
+        
 </body>
 </html>
