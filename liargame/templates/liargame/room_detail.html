@@ -10,30 +10,35 @@
 <body>
     <div class="game-container">
         <!-- 채팅 -->
-        <div class="chat-container">
-            <h2>실시간 채팅</h2>
-            <div id="chat-log" style="height: 200px; overflow-y: auto;"></div>
-            <div class="chat-input">
-                <input id="chat-message-input" type="text" placeholder="메시지를 입력하세요">
-                <button id="chat-message-submit">전송</button>
+        <div class="game-container">
+            <!-- 왼쪽: 참가자 목록 + 참가자 글 -->
+            <div class="participants-container">
+                <h2>참가자 목록</h2>
+                <div class="participants-list" id="participants-container"></div>
+                <div class="participant-logs">
+                    <h3>참가자 글</h3>
+                    <div id="participant-logs-container"></div>
+                </div>
             </div>
-            <div class="vote-container">
-                <h3>투표</h3>
-                <div id="vote-participants"></div>
-                <button id="show-results">결과 보기</button>
-                <div id="vote-result" style="display: none;"></div>
+        
+            <!-- 오른쪽: 실시간 채팅 + 투표 -->
+            <div class="chat-container">
+                <h2>실시간 채팅</h2>
+                <div class="chat-box" id="chat-log"></div>
+                <div class="chat-input">
+                    <input type="text" id="chat-message-input" placeholder="메시지 입력...">
+                    <button id="chat-message-submit">전송</button>
+                </div>
+        
+                <div class="vote-container" id="vote-participants">
+                    <h3>투표하기</h3>
+                    <div id="vote-result"></div>
+                    <button id="show-results">결과 보기</button>
+                </div>
             </div>
         </div>
-
-        <!-- 참가자 -->
-        <div class="participants-container">
-            <h2>참가자 목록</h2>
-            <div id="participants-container"></div>
-            <div class="participant-logs">
-                <h3>참가자 글</h3>
-                <div id="participant-logs-container"></div>
-            </div>
-        </div>
+        
+        
     </div>
 
     <script src="{% static 'liargame/scripts/liargame_script.js' %}"></script>

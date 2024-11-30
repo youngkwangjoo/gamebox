@@ -6,33 +6,41 @@ body {
     flex-direction: column;
     align-items: center;
     background-color: #f5f5f5;
+    min-height: 100vh;
 }
 
 .game-container {
     display: flex;
-    justify-content: space-between; /* 요소 간의 간격을 유지 */
-    width: 90%; /* 전체 너비 */
-    margin: 20px auto; /* 화면 가운데 정렬 */
-    gap: 20px; /* 요소 사이의 간격 */
+    justify-content: space-between;
+    width: 90%;
+    margin: 20px auto;
+    gap: 20px;
+    height: 80vh; /* 전체 높이의 80% */
 }
 
 /* 채팅 컨테이너 */
 .chat-container {
-    flex: 2; /* 왼쪽 영역의 비율 */
+    flex: 1; /* 실시간 채팅을 오른쪽 영역에 50% */
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
+/* 채팅 제목 */
 .chat-container h2 {
     text-align: center;
     margin-bottom: 10px;
 }
 
+/* 채팅 메시지 박스 */
 .chat-box {
-    height: 300px;
+    flex-grow: 1;
     border: 1px solid #ddd;
     border-radius: 10px;
     overflow-y: auto;
@@ -41,6 +49,7 @@ body {
     margin-bottom: 10px;
 }
 
+/* 채팅 로그 */
 #chat-log {
     display: flex;
     flex-direction: column;
@@ -62,6 +71,7 @@ body {
     align-self: flex-end;
 }
 
+/* 채팅 입력 */
 .chat-input {
     display: flex;
     gap: 5px;
@@ -88,42 +98,25 @@ body {
     background-color: #45a049;
 }
 
-.chat-log .message {
-    margin: 5px 0;
-    display: flex;
-    align-items: flex-start;
-}
-
-.chat-log .message.self {
-    justify-content: flex-end;
-}
-
-.chat-log .message .nickname {
-    font-weight: bold;
-    margin-right: 5px;
-}
-
-.chat-log .message .text {
-    background-color: #e0e0e0;
-    padding: 8px;
-    border-radius: 10px;
-    max-width: 60%;
-    word-wrap: break-word;
-}
-
-.chat-log .message.self .text {
-    background-color: #4CAF50;
-    color: white;
-}
-
 /* 참가자 스타일 */
 .participants-container {
-    flex: 1; /* 오른쪽 영역의 비율 */
+    flex: 1; /* 참가자 목록을 왼쪽 영역에 50% */
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 참가자 목록 */
+.participants-list {
+    flex-grow: 1;
+    overflow-y: auto;
+    margin-bottom: 10px;
 }
 
 .participant {
@@ -151,12 +144,15 @@ body {
 
 /* 참가자 글 기록 */
 .participant-logs {
+    flex-shrink: 0;
     margin-top: 10px;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 8px;
     background-color: #fff;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 200px;
+    overflow-y: auto;
 }
 
 .participant-logs .log-container {
@@ -173,8 +169,11 @@ body {
     width: 100%;
     padding: 10px;
     border: 1px solid #ddd;
-    border-radius: 10px;
+    border-radius: 8px;
     background-color: #fff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 200px;
+    overflow-y: auto;
 }
 
 .vote-container .vote-participant {

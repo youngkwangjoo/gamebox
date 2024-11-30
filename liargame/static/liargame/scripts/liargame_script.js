@@ -39,32 +39,73 @@ document.addEventListener('DOMContentLoaded', () => {
     // 참가자 목록 렌더링
     function renderParticipants(participants) {
         participantsContainer.innerHTML = ''; // 기존 참가자 목록 초기화
-        participantLogsContainer.innerHTML = ''; // 기존 참가자 글 초기화
 
         participants.forEach(participant => {
-            participantLogs[participant] = participantLogs[participant] || []; // 초기화 또는 유지
+            participantLogs[participant] = participantLogs[participant] || ''; // 초기화 또는 유지
 
             const participantElement = document.createElement('div');
             participantElement.classList.add('participant');
             participantElement.textContent = participant;
-            participantsContainer.appendChild(participantElement);
 
-            const logContainer = document.createElement('div');
-            logContainer.classList.add('log-container');
-            logContainer.textContent = `${participant}: ${participantLogs[participant].join(', ') || '아직 작성된 글이 없습니다.'}`;
-            participantLogsContainer.appendChild(logContainer);
+            // 참가자 이름 옆에 글을 표시할 공간 추가
+            const logElement = document.createElement('span');
+            logElement.id = `${participant}-log`; // 고유 id 설정
+            logElement.textContent = participantLogs[participant] || '아직 작성된 글이 없습니다.';
+            participantElement.appendChild(logElement);
+            participantsContainer.appendChild(participantElement);
+        });
+    }
+
+    // 참가자 글 작성 영역 렌더링
+    function renderParticipantInputFields(participants) {
+        participantLogsContainer.innerHTML = ''; // 기존 글 입력란 초기화
+
+        participants.forEach(participant => {
+            const inputContainer = document.createElement('div');
+            inputContainer.classList.add('input-container');
+
+            // 참가자 이름
+            const nameLabel = document.createElement('label');
+            nameLabel.textContent = participant;
+            nameLabel.setAttribute('for', `${participant}-textarea`);
+
+            // 참가자 이름과 텍스트박스를 세로로 배치
+            const textArea = document.createElement('textarea');
+            textArea.id = `${participant}-textarea`;
+            textArea.placeholder = `${participant}의 글을 작성하세요.`;
+            textArea.style.width = '100%'; // 텍스트박스 전체 너비 사용
+
+            // 글 작성 후 엔터키를 눌러서 글을 저장
+            textArea.addEventListener('keypress', (event) => {
+                if (event.key === 'Enter') {
+                    event.preventDefault(); // 엔터 기본 동작 방지 (줄바꿈 방지)
+                    const logMessage = textArea.value.trim(); // 작성된 글 가져오기
+
+                    if (logMessage) {
+                        updateParticipantLogs(participant, logMessage); // 글 업데이트
+                        textArea.value = ''; // 텍스트 입력 후 초기화
+                    }
+                }
+            });
+
+            inputContainer.appendChild(nameLabel);
+            inputContainer.appendChild(textArea);
+            participantLogsContainer.appendChild(inputContainer);
         });
     }
 
     // 글 추가 및 업데이트
     function updateParticipantLogs(participant, logMessage) {
         if (!participantLogs[participant]) {
-            participantLogs[participant] = [];
+            participantLogs[participant] = '';
         }
-        participantLogs[participant].push(logMessage);
+        participantLogs[participant] = logMessage;
 
-        // 참가자 글 업데이트
-        renderParticipants(participants);
+        // 참가자 목록에 있는 해당 참가자의 글 업데이트
+        const logElement = document.getElementById(`${participant}-log`);
+        if (logElement) {
+            logElement.textContent = participantLogs[participant];
+        }
     }
 
     // 투표 UI 렌더링
@@ -132,4 +173,5 @@ document.addEventListener('DOMContentLoaded', () => {
     participants = ['Alice', 'Bob', 'Charlie']; // 예시로 기본 데이터 설정
     renderParticipants(participants);
     renderVoteUI(participants);
+    renderParticipantInputFields(participants); // 참가자 글 작성 영역 렌더링
 });
