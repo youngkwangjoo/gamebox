@@ -7,19 +7,52 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
             background-color: #f4f4f4;
         }
+
+        /* 내비게이션 바 스타일 */
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+        }
+
+        nav ul li {
+            margin: 0 20px; /* 좌우 여백 */
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* 그리드 스타일 */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
             width: 80%;
+            margin-top: 80px; /* 내비게이션 바와의 간격을 위해 여백 추가 */
+            padding: 20px;
         }
+
         .box {
             background-color: white;
             border: 2px solid #ddd;
@@ -33,18 +66,22 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s, box-shadow 0.2s;
         }
+
         .box:hover {
             transform: scale(1.05);
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
         }
+
         .box .plus {
             font-size: 2rem;
             color: #aaa;
         }
+
         .box.liar-game {
             background-color: #ffefc0;
             font-weight: bold;
         }
+
         .box.liar-game .liargame {
             font-size: 1.2rem;
             color: #333;
@@ -52,6 +89,17 @@
     </style>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">게임 선택</a></li>
+            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'game' %}">대기방</a></li>
+            {% if rooms %}
+                <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
+            {% endif %}
+        </ul>
+    </nav>
+
     <div class="grid-container">
         <!-- 첫 번째 박스: 2페이지로 연결 -->
         <div class="box liar-game" onclick="location.href='{% url 'join' %}';">
@@ -64,6 +112,5 @@
         </div>
         {% endfor %}
     </div>
-    
 </body>
 </html>

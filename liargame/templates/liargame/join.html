@@ -5,35 +5,87 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join Page</title>
     <style>
+        /* 전체 페이지에 적용될 스타일 */
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
             margin: 0;
+            padding: 0;
             background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
+
+        /* 네비게이션 바 스타일 */
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            width: 100%; /* 네비게이션 바가 화면 너비를 모두 차지하도록 */
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+        }
+
+        nav ul li {
+            margin: 0 20px; /* 좌우 여백 */
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* 박스 중앙 정렬 및 크기 설정 */
+        .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center; /* 세로로 중앙 정렬 */
+            align-items: center; /* 가로로 중앙 정렬 */
+            flex-grow: 1; /* 나머지 공간을 차지하도록 */
+            padding-top: 80px; /* 네비게이션 바와의 간격 */
+        }
+
         .form-container {
             background-color: white;
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 100%; /* 너비를 화면에 맞게 확장 */
+            width: 100%;
             max-width: 450px; /* 최대 너비 설정 */
+            text-align: center;
         }
+
+        /* 제목 스타일 */
         .form-container h1 {
             font-size: 24px;
             margin-bottom: 20px;
             color: #333;
         }
+
+        /* 닉네임 입력 필드 스타일 */
         .form-container label {
             font-size: 16px;
             color: #555;
             display: block;
             margin-bottom: 10px;
         }
+
         .form-container input[type="text"] {
             width: 100%;
             padding: 10px;
@@ -43,6 +95,8 @@
             font-size: 16px;
             box-sizing: border-box;
         }
+
+        /* Join 버튼 스타일 */
         .form-container button {
             background-color: #4CAF50;
             color: white;
@@ -53,22 +107,39 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
+
         .form-container button:hover {
             background-color: #45a049;
         }
+
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h1>라이어 게임에 오신걸 환영합니다</h1>
-        <form id="join-form" method="POST">
-            {% csrf_token %}
-            <input type="hidden" id="room-id" value="{{ room.id }}">
-            <label for="nickname">사용할 닉네임:</label>
-            <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" required>
-            <button type="submit">Join</button>
-        </form>
-        <div id="participants-container"></div>
-        
+
+    <!-- 네비게이션 바 -->
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">게임 선택</a></li>
+            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'game' %}">대기방</a></li>
+            {% if rooms %}
+                <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- 콘텐츠 박스 -->
+    <div class="container">
+        <div class="form-container">
+            <h1>라이어 게임에 오신걸 환영합니다</h1>
+            <form id="join-form" method="POST">
+                {% csrf_token %}
+                <label for="nickname">사용할 닉네임:</label>
+                <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" required>
+                <button type="submit">Join</button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

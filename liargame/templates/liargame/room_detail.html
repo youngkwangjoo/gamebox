@@ -8,6 +8,17 @@
     <link rel="stylesheet" href="{% static 'liargame/styles/liargame_style.css' %}">
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">게임 선택</a></li>
+            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'game' %}">대기방</a></li>
+            {% if rooms %}
+                <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
+            {% endif %}
+        </ul>
+    </nav>
+
     <div class="game-container">
         <!-- 채팅 -->
         <div class="game-container">

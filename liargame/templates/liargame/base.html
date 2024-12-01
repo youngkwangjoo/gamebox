@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    {% load static %}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}게임 페이지{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'liargame/styles/liargame_style.css' %}">
+</head>
+<body>
+    <!-- 상단 내비게이션 바 -->
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">게임 선택</a></li>
+            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'game' %}">대기방</a></li>
+            {% if room_id %}
+                <li><a href="{% url 'room_detail' room_id=room_id %}">게임방</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+
+    <!-- 페이지별 콘텐츠 영역 -->
+    <div class="content">
+        {% block content %}{% endblock %}
+    </div>
+    
+    <script src="{% static 'liargame/scripts/liargame_script.js' %}"></script>
+</body>
+</html>

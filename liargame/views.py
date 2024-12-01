@@ -77,16 +77,35 @@ def create_room(request):
 
 def room_detail(request, room_id):
     rooms = request.session.get('rooms', [])
+    nickname = request.session.get('nickname', 'Guest')
 
     if not (0 <= room_id < len(rooms)):
         return redirect('game')  # 유효하지 않은 room_id인 경우 게임 화면으로 리다이렉트
     
     room = rooms[room_id]
+
+    # 방장이 나갔을 때 방을 삭제하고 대기실로 리다이렉트
+    if request.method == 'POST' and nickname == room['players_list'][0]:  # 방장이 나갈 때
+        # 방에 있는 모든 사람을 대기실로 리다이렉트
+        rooms.pop(room_id)  # 방 삭제
+        request.session['rooms'] = rooms  # 세션에 업데이트
+        
+        # 방장 퇴장 후 대기실로 리다이렉트
+        return redirect('game')  # 대기실 페이지로 리다이렉트
+
+    # 방장이 나가면 다른 참가자들에게 메시지 표시
+    if nickname != room['players_list'][0]:
+        message = "방장이 나갔습니다."
+    else:
+        message = ""
+
     return render(request, 'liargame/room_detail.html', {
         'room': room,
-        'room_id': room_id
+        'message': message,
     })
-    
+
+
+
 def enter_room(request, room_id):
     # 방 목록 불러오기
     rooms = request.session.get('rooms', [])

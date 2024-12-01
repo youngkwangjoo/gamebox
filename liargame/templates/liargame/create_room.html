@@ -14,6 +14,37 @@
             margin: 0;
             background-color: #f4f4f4;
         }
+                /* 내비게이션 바 스타일 */
+                nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+        }
+
+        nav ul li {
+            margin: 0 20px; /* 좌우 여백 */
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
         .form-container {
             background-color: white;
             padding: 40px;
@@ -46,6 +77,17 @@
     </style>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{% url 'home' %}">게임 선택</a></li>
+            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'game' %}">대기방</a></li>
+            {% if rooms %}
+                <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
+            {% endif %}
+        </ul>
+    </nav>
+
     <div class="form-container">
         <h1>방 만들기</h1>
         <form method="POST">
