@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Room</title>
+    <title>Enter Room</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,6 @@
             text-align: center;
             width: 300px;
         }
-        .form-container input[type="text"],
         .form-container input[type="password"] {
             width: 100%;
             padding: 10px;
@@ -43,16 +42,23 @@
         .form-container button:hover {
             background-color: #45a049;
         }
+        .error-message {
+            color: red;
+            font-size: 0.9rem;
+        }
     </style>
 </head>
 <body>
-    <div class="form-container">
-        <h1>방 만들기</h1>
-        <form method="POST">
-            {% csrf_token %}
-            <input type="text" name="room_name" placeholder="방 이름 입력" required>
-            <button type="submit">방 생성</button>
-        </form>
-    </div>
+    <h1>{{ room.name }}에 참가</h1>
+    
+    {% if error %}
+    <p style="color: red;">{{ error }}</p>
+    {% endif %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="password" name="password" placeholder="비밀번호 입력" required>
+        <button type="submit">방 참가</button>
+    </form>
 </body>
 </html>

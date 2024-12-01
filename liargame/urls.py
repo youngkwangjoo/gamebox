@@ -7,4 +7,5 @@ urlpatterns = [
     path('game/', views.game, name='game'),  # 방 목록 페이지
     path('game/create/', views.create_room, name='create_room'),  # 방 생성 페이지
     path('game/<int:room_id>/', views.room_detail, name='room_detail'),  # 방 상세 페이지
+    path('enter_room/<int:room_id>/', views.enter_room, name='enter_room'),
 ]

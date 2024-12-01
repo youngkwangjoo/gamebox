@@ -86,6 +86,22 @@
         .room-players {
             color: #666;
         }
+        .all-users {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .all-users ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .all-users li {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -101,10 +117,21 @@
                 <form action="{% url 'create_room' %}" method="GET">
                     <button type="submit">방 만들기</button>
                 </form>
-                <!-- 방 참가하기 버튼 -->
-                <button onclick="alert('Join Room Clicked!')">방 참가하기</button>
+            </div>
+
+            <!-- 전체 사용자 목록 -->
+            <div class="all-users">
+                <h3>전체 사용자 목록</h3>
+                <ul>
+                    {% for user in all_users %}
+                    <li>{{ user }}</li>
+                    {% empty %}
+                    <li>현재 접속 중인 사용자가 없습니다.</li>
+                    {% endfor %}
+                </ul>
             </div>
         </div>
+        
         <!-- 오른쪽 패널 -->
         <div class="right-panel">
             <div class="room-list">
@@ -112,7 +139,10 @@
                 {% if rooms %}
                     {% for room in rooms %}
                     <div class="room">
-                        <a href="{% url 'room_detail' forloop.counter0 %}" class="room-name">{{ room.name }}</a>
+                        <div class="room-info">
+                            <!-- 방 이름 클릭 시 바로 room_detail 페이지로 이동 -->
+                            <a href="{% url 'room_detail' room_id=forloop.counter0 %}" class="room-name">{{ room.name }}</a>
+                        </div>
                         <span class="room-players">{{ room.players }} players</span>
                     </div>
                     {% endfor %}
@@ -120,14 +150,7 @@
                     <p>아직 개설된 방이 없습니다.</p>
                 {% endif %}
             </div>
-            
         </div>
-        
-        <!-- 방 만들기 버튼 -->
-        <form method="POST">
-            {% csrf_token %}
-            <button type="submit">방 만들기</button>
-        </form>
     </div>
 </body>
 </html>
