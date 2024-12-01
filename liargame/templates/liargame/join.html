@@ -98,7 +98,7 @@
 
         /* Join 버튼 스타일 */
         .form-container button {
-            background-color: #4CAF50;
+            background-color: #0d0e0d;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -109,7 +109,7 @@
         }
 
         .form-container button:hover {
-            background-color: #45a049;
+            background-color: #494848;
         }
 
     </style>
@@ -131,10 +131,10 @@
     <!-- 콘텐츠 박스 -->
     <div class="container">
         <div class="form-container">
-            <h1>라이어 게임에 오신걸 환영합니다</h1>
+            <h1>Game Box에 오신걸 환영합니다</h1>
             <form id="join-form" method="POST">
                 {% csrf_token %}
-                <label for="nickname">사용할 닉네임:</label>
+                <label for="nickname">사용할 닉네임을 적어주세요</label>
                 <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" required>
                 <button type="submit">Join</button>
             </form>
