@@ -9,108 +9,105 @@
             font-family: Arial, sans-serif;
             margin: 0;
             background-color: #f4f4f4;
-        }
-
-        /* 내비게이션 바 스타일 */
-        nav {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center; /* 중앙 정렬 */
-        }
-
-        nav ul li {
-            margin: 0 20px; /* 좌우 여백 */
-        }
-
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        nav ul li a:hover {
-            text-decoration: underline;
-        }
-
-        /* 그리드 스타일 */
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            width: 80%;
-            margin-top: 80px; /* 내비게이션 바와의 간격을 위해 여백 추가 */
-            padding: 20px;
-        }
-
-        .box {
-            background-color: white;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            height: 150px;
             display: flex;
             justify-content: center;
             align-items: center;
-            position: relative;
-            cursor: pointer;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s, box-shadow 0.2s;
+            height: 100vh;
+            overflow: hidden;
+            flex-direction: column; /* 세로로 정렬 */
+            cursor: pointer; /* 클릭 커서로 설정 */
         }
 
-        .box:hover {
-            transform: scale(1.05);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
-        }
-
-        .box .plus {
-            font-size: 2rem;
-            color: #aaa;
-        }
-
-        .box.liar-game {
-            background-color: #ffefc0;
+        /* 게임 박스 중앙에서 떠오르는 애니메이션 */
+        .gamebox {
+            font-size: 3rem;
             font-weight: bold;
+            color: #333;
+            opacity: 0;
+            transform: translateY(50px); /* 초기 상태에서 살짝 아래로 */
+            animation: riseUp 3s ease-out forwards; /* 애니메이션 추가 */
         }
 
-        .box.liar-game .liargame {
-            font-size: 1.2rem;
-            color: #333;
+        /* 애니메이션 설정: 천천히 떠오르는 효과 */
+        @keyframes riseUp {
+            0% {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0); /* 제자리로 올라옴 */
+            }
         }
+
+        /* 닉네임 생성하기 텍스트 애니메이션 */
+        .nickname-text {
+            font-size: 1.5rem;
+            color: #fff;
+            opacity: 0;
+            transform: translateY(20px);
+            margin-top: 30px; /* 텍스트 간격을 띄움 */
+            background-color: #000000; /* 배경 색상 */
+            border: none;
+            padding: 12px 24px; /* 버튼처럼 보이도록 패딩 추가 */
+            border-radius: 5px; /* 둥근 모서리 */
+            text-align: center;
+            cursor: pointer; /* 버튼처럼 커서 변경 */
+            font-weight: bold;
+            transition: background-color 0.3s; /* 호버 효과 추가 */
+            animation: fadeInUp 2s 3s forwards; /* 애니메이션 추가 (3초 후 시작) */
+        }
+
+        /* "nickname 생성하기" 버튼이 호버될 때 효과 */
+        .nickname-text:hover {
+            background-color: #5e5c5c; /* 배경색 변경 */
+        }
+
+        /* "nickname 생성하기" 텍스트가 천천히 나타나는 애니메이션 */
+        @keyframes fadeInUp {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
     </style>
 </head>
-<body>
-    <nav>
-        <ul>
-            <li><a href="{% url 'home' %}">게임 선택</a></li>
-            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
-            <li><a href="{% url 'game' %}">대기방</a></li>
-            {% if rooms %}
-                <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
-            {% endif %}
-        </ul>
-    </nav>
-
-    <div class="grid-container">
-        <!-- 첫 번째 박스: 2페이지로 연결 -->
-        <div class="box liar-game" onclick="location.href='{% url 'join' %}';">
-            <span class="liargame">Liargame</span>
-        </div>
-        <!-- 나머지 박스 -->
-        {% for i in range %}
-        <div class="box">
-            <span class="plus">+</span>
-        </div>
-        {% endfor %}
+<body onclick="finishAnimation()">
+    <!-- 게임 박스: "gamebox"라는 문구가 중앙에서 떠오르는 효과 -->
+    <div class="gamebox">
+        Gamebox
     </div>
+
+    <!-- 닉네임 생성하기 텍스트 (애니메이션 후에 나타남) -->
+    <div class="nickname-text" onclick="redirectToJoin()">
+        닉네임 생성하기
+    </div>
+
+    <script>
+        function finishAnimation() {
+            const gamebox = document.querySelector('.gamebox');
+            const nicknameText = document.querySelector('.nickname-text');
+
+            // 애니메이션을 동시에 끝내기 위해 타이밍을 맞추기
+            gamebox.style.animation = 'none';
+            nicknameText.style.animation = 'none';
+
+            // 애니메이션을 끝낸 후 바로 최종 상태로 적용
+            gamebox.style.opacity = 1;
+            gamebox.style.transform = 'translateY(0)';
+            nicknameText.style.opacity = 1;
+            nicknameText.style.transform = 'translateY(0)';
+        }
+
+        // "nickname 생성하기"를 클릭하면 join.html로 이동
+        function redirectToJoin() {
+            window.location.href = '{% url "join" %}';  // 실제 URL을 넣으세요
+        }
+    </script>
 </body>
 </html>
