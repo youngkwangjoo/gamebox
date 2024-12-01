@@ -139,7 +139,7 @@
     <nav>
         <ul>
             <li><a href="{% url 'home' %}">게임 선택</a></li>
-            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'signin' %}">닉네임 설정</a></li>
             <li><a href="{% url 'game' %}">대기방</a></li>
         </ul>
     </nav>
@@ -149,7 +149,7 @@
         <div class="left-panel">
             <div class="nickname">
                 <div class="profile-circle">👤</div>
-                <div class="nickname-text">{{ nickname }}</div>
+                <div class="nickname-text">{{ username }}</div>
             </div>
             <div class="actions">
                 <!-- 방 만들기 버튼 -->
@@ -163,14 +163,19 @@
                 <h3>전체 사용자 목록</h3>
                 <ul>
                     {% for user in all_users %}
-                    <li>{{ user }}</li>
+                        <li>
+                            {% if user == username %}
+                                {{ user }} <!-- 로그인한 사용자는 '현재 접속 중' 표시 -->
+                            {% else %}
+                                {{ user }} <!-- 나머지 사용자는 그냥 이름만 표시 -->
+                            {% endif %}
+                        </li>
                     {% empty %}
-                    <li>현재 접속 중인 사용자가 없습니다.</li>
+                        <li>현재 접속 중인 사용자가 없습니다.</li>
                     {% endfor %}
                 </ul>
             </div>
-        </div>
-        
+            
         <!-- 오른쪽 패널 -->
         <div class="right-panel">
             <div class="room-list">

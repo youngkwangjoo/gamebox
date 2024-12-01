@@ -40,8 +40,8 @@
             }
         }
 
-        /* 닉네임 생성하기 텍스트 애니메이션 */
-        .nickname-text {
+        /* "sign in" 텍스트 애니메이션 */
+        .nickname-text, .signup-text {
             font-size: 1.5rem;
             color: #fff;
             opacity: 0;
@@ -58,8 +58,13 @@
             animation: fadeInUp 2s 3s forwards; /* 애니메이션 추가 (3초 후 시작) */
         }
 
-        /* "nickname 생성하기" 버튼이 호버될 때 효과 */
+        /* "sign in" 버튼이 호버될 때 효과 */
         .nickname-text:hover {
+            background-color: #5e5c5c; /* 배경색 변경 */
+        }
+
+        /* "sign up" 버튼이 호버될 때 효과 */
+        .signup-text:hover {
             background-color: #5e5c5c; /* 배경색 변경 */
         }
 
@@ -83,30 +88,44 @@
         Gamebox
     </div>
 
-    <!-- 닉네임 생성하기 텍스트 (애니메이션 후에 나타남) -->
+    <!-- "Sign In" 텍스트 (애니메이션 후에 나타남) -->
     <div class="nickname-text" onclick="redirectToJoin()">
-        닉네임 생성하기
+        Sign In
+    </div>
+
+    <!-- "Sign Up" 텍스트 (애니메이션 후에 나타남) -->
+    <div class="signup-text" onclick="redirectToSignUp()">
+        Sign Up
     </div>
 
     <script>
         function finishAnimation() {
             const gamebox = document.querySelector('.gamebox');
             const nicknameText = document.querySelector('.nickname-text');
+            const signupText = document.querySelector('.signup-text');
 
             // 애니메이션을 동시에 끝내기 위해 타이밍을 맞추기
             gamebox.style.animation = 'none';
             nicknameText.style.animation = 'none';
+            signupText.style.animation = 'none';
 
             // 애니메이션을 끝낸 후 바로 최종 상태로 적용
             gamebox.style.opacity = 1;
             gamebox.style.transform = 'translateY(0)';
             nicknameText.style.opacity = 1;
             nicknameText.style.transform = 'translateY(0)';
+            signupText.style.opacity = 1;
+            signupText.style.transform = 'translateY(0)';
         }
 
-        // "nickname 생성하기"를 클릭하면 join.html로 이동
+        // "Sign In" 클릭 시 join.html로 이동
         function redirectToJoin() {
-            window.location.href = '{% url "join" %}';  // 실제 URL을 넣으세요
+            window.location.href = 'signin'; // signin.html
+        }
+
+        // "Sign Up" 클릭 시 signup.html로 이동
+        function redirectToSignUp() {
+            window.location.href = 'signup'; // signup.html로 이동
         }
     </script>
 </body>

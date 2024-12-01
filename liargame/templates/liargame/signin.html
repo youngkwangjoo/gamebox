@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join Page</title>
+    <title>Sign In Page</title>
     <style>
         /* 전체 페이지에 적용될 스타일 */
         body {
@@ -78,7 +78,7 @@
             color: #333;
         }
 
-        /* 닉네임 입력 필드 스타일 */
+        /* 아이디, 비밀번호 입력 필드 스타일 */
         .form-container label {
             font-size: 16px;
             color: #555;
@@ -86,7 +86,8 @@
             margin-bottom: 10px;
         }
 
-        .form-container input[type="text"] {
+        .form-container input[type="text"],
+        .form-container input[type="password"] {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -96,7 +97,7 @@
             box-sizing: border-box;
         }
 
-        /* Join 버튼 스타일 */
+        /* 로그인 버튼 스타일 */
         .form-container button {
             background-color: #0d0e0d;
             color: white;
@@ -120,7 +121,7 @@
     <nav>
         <ul>
             <li><a href="{% url 'home' %}">게임 선택</a></li>
-            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
+            <li><a href="{% url 'signin' %}">로그인</a></li>
             <li><a href="{% url 'game' %}">대기방</a></li>
             {% if rooms %}
                 <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
@@ -132,11 +133,13 @@
     <div class="container">
         <div class="form-container">
             <h1>Game Box에 오신걸 환영합니다</h1>
-            <form id="join-form" method="POST">
+            <form id="signin-form" method="POST">
                 {% csrf_token %}
-                <label for="nickname">사용할 닉네임을 적어주세요</label>
-                <input type="text" id="nickname" name="nickname" placeholder="닉네임 입력" required>
-                <button type="submit">Join</button>
+                <label for="username">아이디</label>
+                <input type="text" id="username" name="username" placeholder="아이디 입력" required>
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="비밀번호 입력" required>
+                <button type="submit">로그인</button>
             </form>
         </div>
     </div>

@@ -51,6 +51,9 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 
+CSRF_TRUSTED_ORIGINS = ['https://schdule.co.kr', 'http://127.0.0.1:8000']
+
+
 ROOT_URLCONF = 'gamebox.urls'
 
 TEMPLATES = [
@@ -81,6 +84,10 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# settings.py
+AUTH_USER_MODEL = 'liargame.CustomUser'  # 'liargame'는 앱 이름입니다.
+
 
 
 # Password validation
