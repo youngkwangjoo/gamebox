@@ -15,6 +15,42 @@
             height: 100vh;
             margin: 0;
         }
+
+
+        /* 네비게이션 바 스타일 */
+        nav {
+            background-color: #333;
+            color: white;
+            padding: 10px 20px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            width: 100%; /* 네비게이션 바가 화면 너비를 모두 차지하도록 */
+        }
+
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center; /* 중앙 정렬 */
+        }
+
+        nav ul li {
+            margin: 0 20px; /* 좌우 여백 */
+        }
+
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
         
         .signup-container {
             background-color: white;
@@ -68,6 +104,15 @@
     </style>
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{% url 'signup' %}">회원가입</a></li>
+            <li><a href="{% url 'signin' %}">로그인</a></li>
+            <li><a href="{% url 'game' %}">대기실</a></li>
+            <li><a href="{% url 'create_room' %}">방만들기</a></li>
+        </ul>
+    </nav>
+
     <div class="signup-container">
         <h1>회원가입</h1>
         <form method="POST">
