@@ -2,13 +2,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 import uuid
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.contrib.auth.models import User 
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import logout
+
 
 def home(request):
     # 홈 페이지
@@ -35,6 +37,9 @@ def signin(request):
     
     return render(request, 'liargame/signin.html')
 
+def logout_view(request):
+    logout(request)  # Django의 로그아웃 처리
+    return redirect('signin')  # 로그아웃 후 signin 페이지로 리디렉션
 
 # 회원가입 뷰
 def signup(request):

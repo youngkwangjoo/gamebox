@@ -5,16 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Page</title>
     <style>
+        /* 기존 스타일을 그대로 유지 */
         body {
             font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
             margin: 0;
             padding: 0;
             background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
         }
-                /* 내비게이션 바 스타일 */
-                nav {
+
+        nav {
             background-color: #333;
             color: white;
             padding: 10px 20px;
@@ -28,11 +30,11 @@
             padding: 0;
             margin: 0;
             display: flex;
-            justify-content: center; /* 중앙 정렬 */
+            justify-content: center;
         }
 
         nav ul li {
-            margin: 0 20px; /* 좌우 여백 */
+            margin: 0 20px;
         }
 
         nav ul li a {
@@ -44,20 +46,32 @@
         nav ul li a:hover {
             text-decoration: underline;
         }
-        .container {
+
+        .main-box {
             display: flex;
-            flex-direction: row;
-            justify-content: space-between;
             margin: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 120px);
+            overflow: hidden;
         }
+
         .left-panel {
-            width: 30%;
+            width: 42%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
         }
+
         .nickname {
             display: flex;
             align-items: center;
             margin-bottom: 20px;
         }
+
         .profile-circle {
             width: 50px;
             height: 50px;
@@ -70,37 +84,70 @@
             font-size: 1.5rem;
             color: #666;
         }
+
         .nickname-text {
             font-size: 1.2rem;
             font-weight: bold;
         }
-        .actions {
-            margin-top: 20px;
-        }
-        .actions button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
+
+        /* 로그아웃 버튼 스타일 */
+        .logout-button {
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
             font-size: 1rem;
+            padding: 10px 20px;
+            border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-left: 10px;
         }
-        .actions button:hover {
-            background-color: #45a049;
+
+        .logout-button:hover {
+            background-color: #ffffff;
         }
+
+        .all-users {
+            margin-top: 20px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .all-users ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .all-users li {
+            margin-bottom: 10px;
+            font-size: 1rem;
+            color: #333;
+        }
+
         .right-panel {
-            width: 65%;
+            width: 58%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
         }
+
         .room-list {
             background-color: white;
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            flex-grow: 1;
+            height: 100%;
+            overflow-y: auto;
         }
+
         .room {
             border-bottom: 1px solid #ddd;
             padding: 10px 0;
@@ -108,31 +155,36 @@
             justify-content: space-between;
             align-items: center;
         }
+
         .room:last-child {
             border-bottom: none;
         }
+
         .room-name {
             font-weight: bold;
         }
+
         .room-players {
             color: #666;
         }
-        .all-users {
-            margin-top: 20px;
-            background-color: #f9f9f9;
+
+        .actions button {
+            display: block;
+            width: 100%;
             padding: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-        .all-users ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .all-users li {
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            border: none;
+            background-color: #000000;
+            color: white;
             font-size: 1rem;
-            color: #333;
+            border-radius: 5px;
+            cursor: pointer;
         }
+
+        .actions button:hover {
+            background-color: #515151;
+        }
+
     </style>
 </head>
 <body>
@@ -144,17 +196,16 @@
         </ul>
     </nav>
 
-    <div class="container">
+    <div class="main-box">
         <!-- 왼쪽 패널 -->
         <div class="left-panel">
             <div class="nickname">
                 <div class="profile-circle">👤</div>
                 <div class="nickname-text">{{ username }}</div>
-            </div>
-            <div class="actions">
-                <!-- 방 만들기 버튼 -->
-                <form action="{% url 'create_room' %}" method="GET">
-                    <button type="submit">방 만들기</button>
+                <!-- 로그아웃 버튼 추가 -->
+                <form action="{% url 'logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">로그아웃</button>
                 </form>
             </div>
 
@@ -165,9 +216,9 @@
                     {% for user in all_users %}
                         <li>
                             {% if user == username %}
-                                {{ user }} <!-- 로그인한 사용자는 '현재 접속 중' 표시 -->
+                                (현재 접속 중) {{ user }}
                             {% else %}
-                                {{ user }} <!-- 나머지 사용자는 그냥 이름만 표시 -->
+                                {{ user }}
                             {% endif %}
                         </li>
                     {% empty %}
@@ -175,16 +226,24 @@
                     {% endfor %}
                 </ul>
             </div>
-            
+        </div>
+
         <!-- 오른쪽 패널 -->
         <div class="right-panel">
+            <!-- 방 만들기 버튼 -->
+            <div class="actions">
+                <form action="{% url 'create_room' %}" method="GET">
+                    <button type="submit">방 만들기</button>
+                </form>
+            </div>
+
+            <!-- 방 목록 -->
             <div class="room-list">
                 <h2>방 목록</h2>
                 {% if rooms %}
                     {% for room in rooms %}
                     <div class="room">
                         <div class="room-info">
-                            <!-- 방 이름 클릭 시 바로 room_detail 페이지로 이동 -->
                             <a href="{% url 'room_detail' room_id=forloop.counter0 %}" class="room-name">{{ room.name }}</a>
                         </div>
                         <span class="room-players">{{ room.players }} players</span>
