@@ -78,17 +78,25 @@
             color: #333;
         }
 
-        /* 아이디, 비밀번호 입력 필드 스타일 */
+        /* 레이블 및 입력 필드 스타일 (가로로 배치) */
+        .form-container div {
+            display: flex;
+            align-items: center; /* 세로 중앙 정렬 */
+            margin-bottom: 15px; /* 각 입력 필드 간의 간격 */
+        }
+
         .form-container label {
             font-size: 16px;
             color: #555;
-            display: block;
-            margin-bottom: 10px;
+            display: inline-block; /* 한 줄로 배치 */
+            margin-right: 10px; /* 레이블과 입력 필드 사이 간격 */
+            width: 80px; /* 레이블 너비 고정 */
+            text-align: right; /* 레이블 텍스트 오른쪽 정렬 */
         }
 
         .form-container input[type="text"],
         .form-container input[type="password"] {
-            width: 100%;
+            width: calc(100% - 90px); /* 레이블 공간을 제외하고 나머지 공간 차지 */
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ddd;
@@ -135,10 +143,20 @@
             <h1>Game Box에 오신걸 환영합니다</h1>
             <form id="signin-form" method="POST">
                 {% csrf_token %}
-                <label for="username">아이디</label>
-                <input type="text" id="username" name="username" placeholder="아이디 입력" required>
-                <label for="password">비밀번호</label>
-                <input type="password" id="password" name="password" placeholder="비밀번호 입력" required>
+                
+                <!-- 아이디 입력 -->
+                <div>
+                    <label for="username">아이디</label>
+                    <input type="text" id="username" name="username" placeholder="아이디 입력" required>
+                </div>
+                
+                <!-- 비밀번호 입력 -->
+                <div>
+                    <label for="password">비밀번호</label>
+                    <input type="password" id="password" name="password" placeholder="비밀번호 입력" required>
+                </div>
+
+                <!-- 로그인 버튼 -->
                 <button type="submit">로그인</button>
             </form>
         </div>
