@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Room, Participant
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 def home(request):
     # 홈 페이지
@@ -30,7 +30,7 @@ def game(request):
         new_room = {
             'name': room_name,
             'players': 1,
-            'players_list': [nickname]
+            'players_list': [nickname]  # 초기 방 참가자 리스트 추가
         }
         rooms.append(new_room)  # 방 목록에 추가
         request.session['rooms'] = rooms  # 세션에 저장
@@ -51,34 +51,47 @@ def game(request):
 
 
 
+# create_room 뷰 수정
+
+
 def create_room(request):
     # POST 요청일 경우 (방 만들기)
     if request.method == 'POST':
         nickname = request.session.get('nickname', 'Guest')
         room_name = request.POST.get('room_name')  # 방 이름
+        game_type = request.POST.get('game_type')  # 게임 타입
 
         # 방 정보 생성
         new_room = {
             'name': room_name,
             'players': 1,
-            'players_list': [nickname],
+            'players_list': [nickname],  # 참가자 리스트 초기화
+            'game_type': game_type,  # 게임 타입 추가
         }
 
         rooms = request.session.get('rooms', [])
         rooms.append(new_room)  # 방 목록에 추가
         request.session['rooms'] = rooms  # 세션에 저장
 
-        return redirect('game')  # 게임 페이지로 리다이렉트
+        # JSON 응답으로 방 생성 성공을 알림
+        return JsonResponse({'success': True})
 
+    # 폼 제출이 아닌 경우, 방 생성 페이지를 그대로 렌더링
     return render(request, 'liargame/create_room.html')
+
 
 
 def room_detail(request, room_id):
     rooms = request.session.get('rooms', [])
     nickname = request.session.get('nickname', 'Guest')
 
+    # rooms가 비어있으면 대기실로 리다이렉트
+    if not rooms:
+        return redirect('game')  # 대기실로 리다이렉트
+
+    # room_id가 유효한 인덱스인지 확인
     if not (0 <= room_id < len(rooms)):
-        return redirect('game')  # 유효하지 않은 room_id인 경우 게임 화면으로 리다이렉트
+        return redirect('game')  # 유효하지 않은 room_id인 경우 대기실로 리다이렉트
     
     room = rooms[room_id]
 
@@ -102,8 +115,6 @@ def room_detail(request, room_id):
         'message': message,
     })
 
-
-
 def enter_room(request, room_id):
     # 방 목록 불러오기
     rooms = request.session.get('rooms', [])
@@ -117,6 +128,3 @@ def enter_room(request, room_id):
     else:
         return HttpResponse("방을 찾을 수 없습니다.")
 
-
-def chat(request):
-    return render(request, 'liargame/chat.html')  # 수정된 경로

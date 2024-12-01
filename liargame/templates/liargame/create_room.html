@@ -13,17 +13,20 @@
             display: flex;
             justify-content: center; /* 가로 중앙 정렬 */
             align-items: center; /* 세로 중앙 정렬 */
+            flex-direction: column;
         }
 
-        /* 내비게이션 바 스타일 */
+        /* 네비게이션 바 스타일 */
         nav {
             background-color: #333;
             color: white;
             padding: 10px 20px;
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1000;
-            width: 100%;  /* 전체 너비를 차지하도록 */
+            width: 100%; /* 네비게이션 바가 화면 너비를 모두 차지하도록 */
         }
 
         nav ul {
@@ -47,6 +50,7 @@
         nav ul li a:hover {
             text-decoration: underline;
         }
+
 
         /* 중앙 정렬된 박스 스타일 */
         .form-container {
@@ -81,6 +85,27 @@
         .form-container button:hover {
             background-color: #45a049;
         }
+
+        /* 게임 선택을 위한 드롭다운 스타일 */
+        .game-select-container {
+            margin: 20px 0 40px 0; /* 아래쪽에 추가 여백을 주어 텍스트와 버튼 간격 확대 */
+            text-align: left;
+            width: 100%;
+        }
+
+        .game-select-container label {
+            font-size: 1rem;
+            color: #333;
+        }
+
+        .game-select-container select {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -89,19 +114,68 @@
             <li><a href="{% url 'home' %}">게임 선택</a></li>
             <li><a href="{% url 'join' %}">닉네임 설정</a></li>
             <li><a href="{% url 'game' %}">대기방</a></li>
-            {% if rooms %}
-                <li><a href="{% url 'room_detail' room_id=0 %}">게임방</a></li> <!-- 예시로 room_id 0을 사용 -->
-            {% endif %}
         </ul>
     </nav>
 
     <div class="form-container">
         <h1>방 만들기</h1>
-        <form method="POST">
+        <form method="POST" id="create-room-form">
             {% csrf_token %}
             <input type="text" name="room_name" placeholder="방 이름 입력" required>
+
+            <!-- 게임 종류 선택 드롭다운 -->
+            <div class="game-select-container">
+                <label for="game-selection">게임 선택</label>
+                <select id="game-selection" name="game_type">
+                    <option value="normal">일반 게임</option>
+                    <option value="liargame">Liargame</option>
+                    <!-- 여기에 다른 게임들을 추가할 수 있습니다 -->
+                    <option value="poker">포커</option>
+                    <option value="chess">체스</option>
+                </select>
+            </div>
+
             <button type="submit">방 생성</button>
         </form>
     </div>
+
+    <script>
+        // 폼 제출 시 선택된 게임에 따라 리다이렉트 처리
+        document.getElementById("create-room-form").addEventListener("submit", function(event) {
+        event.preventDefault();  // 폼 제출 기본 동작을 막음
+
+        const roomName = document.querySelector('input[name="room_name"]').value;
+        const gameType = document.getElementById("game-selection").value;
+
+        // 폼 데이터 준비
+        const formData = new FormData();
+        formData.append('room_name', roomName);
+        formData.append('game_type', gameType);
+
+        // 폼을 서버로 POST 요청 보내기
+        fetch("{% url 'create_room' %}", {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'  // CSRF 토큰 추가
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 방 생성 성공 후, 리다이렉트
+                alert("방이 생성되었습니다: " + roomName + " (게임 타입: " + gameType + ")");
+                window.location.href = "{% url 'game' %}";  // 대기방으로 리다이렉트
+            } else {
+                alert("방 생성에 실패했습니다. 다시 시도해주세요.");
+            }
+        })
+        .catch(error => {
+            alert("에러 발생: " + error);
+        });
+    });
+
+    </script>
+    
 </body>
 </html>
