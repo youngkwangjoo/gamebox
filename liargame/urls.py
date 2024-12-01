@@ -11,4 +11,7 @@ urlpatterns = [
     path('game/<int:room_id>/', views.room_detail, name='room_detail'),  # 방 상세 페이지
     path('enter_room/<int:room_id>/', views.enter_room, name='enter_room'),
     path('delete_room/<str:room_id>/', views.delete_room, name='delete_room'),
+    path('create/', views.create_room, name='create_room'),  # 방 생성
+    path('<int:room_id>/', views.room_detail, name='room_detail'),  # 방 상세보기
 ]
+    

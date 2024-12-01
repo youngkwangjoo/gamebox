@@ -121,9 +121,10 @@
 <body>
     <nav>
         <ul>
-            <li><a href="{% url 'home' %}">게임 선택</a></li>
-            <li><a href="{% url 'join' %}">닉네임 설정</a></li>
-            <li><a href="{% url 'game' %}">대기방</a></li>
+            <li><a href="{% url 'signup' %}">회원가입</a></li>
+            <li><a href="{% url 'signin' %}">로그인</a></li>
+            <li><a href="{% url 'game' %}">대기실</a></li>
+            <li><a href="{% url 'create_room' %}">방만들기</a></li>
         </ul>
     </nav>
 
@@ -169,8 +170,9 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // 서버에서 받은 room_id로 방 상세 페이지로 이동
                     alert("방이 생성되었습니다: " + roomName + " (게임 타입: " + gameType + ")");
-                    window.location.href = "{% url 'game' %}";
+                    window.location.href = "/liargame/game/" + data.room_id + "/";  // 방 상세 페이지로 리다이렉트
                 } else {
                     alert("방 생성에 실패했습니다. 다시 시도해주세요.");
                 }
