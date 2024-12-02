@@ -90,7 +90,6 @@
             font-weight: bold;
         }
 
-        /* 로그아웃 버튼 스타일 */
         .logout-button {
             background-color: #e0dfdf;
             color: rgb(0, 0, 0);
@@ -198,57 +197,36 @@
     </nav>
 
     <div class="main-box">
-        <!-- 왼쪽 패널 -->
         <div class="left-panel">
             <div class="nickname">
                 <div class="profile-circle">👤</div>
                 <div class="nickname-text">{{ username }}</div>
-                <!-- 로그아웃 버튼 추가 -->
                 <form action="{% url 'logout' %}" method="POST">
                     {% csrf_token %}
                     <button type="submit" class="logout-button">로그아웃</button>
                 </form>
             </div>
-
-            <!-- 전체 사용자 목록 -->
             <div class="all-users">
-                <h3>전체 사용자 목록</h3>
-                <ul>
-                    {% for user in all_users %}
-                        <li>
-                            {% if user == username %}
-                                (현재 접속 중) {{ user }}
-                            {% else %}
-                                {{ user }}
-                            {% endif %}
-                        </li>
-                    {% empty %}
-                        <li>현재 접속 중인 사용자가 없습니다.</li>
-                    {% endfor %}
-                </ul>
+                <h3>접속중인 사람</h3>
+                <ul id="participants-list"></ul>
             </div>
         </div>
-
-        <!-- 오른쪽 패널 -->
         <div class="right-panel">
-            <!-- 방 만들기 버튼 -->
             <div class="actions">
                 <form action="{% url 'create_room' %}" method="GET">
                     <button type="submit">방 만들기</button>
                 </form>
             </div>
-
-            <!-- 방 목록 -->
             <div class="room-list">
                 <h2>방 목록</h2>
                 {% if rooms %}
                     {% for room in rooms %}
-                    <div class="room">
-                        <div class="room-info">
-                            <a href="{% url 'room_detail' room_id=forloop.counter0 %}" class="room-name">{{ room.name }}</a>
+                        <div class="room">
+                            <div class="room-info">
+                                <a href="{% url 'room_detail' room_id=forloop.counter0 %}" class="room-name">{{ room.name }}</a>
+                            </div>
+                            <span class="room-players">{{ room.players }} players</span>
                         </div>
-                        <span class="room-players">{{ room.players }} players</span>
-                    </div>
                     {% endfor %}
                 {% else %}
                     <p>아직 개설된 방이 없습니다.</p>
@@ -256,5 +234,53 @@
             </div>
         </div>
     </div>
+    <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const roomId = 'lobby'; // 대기실 ID
+                const nickname = "{{ username }}" || "익명"; // 닉네임 설정
+                const participantsList = document.getElementById('participants-list');
+                const socket = new WebSocket(`ws://${window.location.host}/ws/room/${roomId}/`);
+
+                socket.onopen = () => {
+                    console.log('WebSocket 연결 성공.');
+                    if (nickname) {
+                        socket.send(JSON.stringify({ action: 'join', nickname }));
+                    }
+                };
+
+                socket.onmessage = (event) => {
+                    const data = JSON.parse(event.data);
+                    if (data.type === 'participants') {
+                        console.log('Participants received:', data.participants);
+                        renderParticipants(data.participants);
+                    }
+                };
+
+                socket.onclose = () => {
+                    console.log('WebSocket 연결 종료.');
+                };
+
+                socket.onerror = (error) => {
+                    console.error('WebSocket 오류:', error);
+                };
+
+                function renderParticipants(participants) {
+                    participantsList.innerHTML = '';
+                    participants.forEach((participant) => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = participant;
+                        participantsList.appendChild(listItem);
+                    });
+                }
+
+                window.addEventListener('beforeunload', () => {
+                    if (nickname) {
+                        socket.send(JSON.stringify({ action: 'leave', nickname }));
+                    }
+                    socket.close();
+                });
+            });
+
+    </script>
 </body>
 </html>

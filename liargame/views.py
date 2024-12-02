@@ -1,16 +1,12 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 import uuid
-from django.shortcuts import render, redirect
-from django.contrib.auth.models import User 
+from django.shortcuts import render, redirect 
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
 from .models import Room, CustomUser
-
-
 
 
 def home(request):
@@ -46,26 +42,18 @@ def logout_view(request):
 def signup(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
-        
         if form.is_valid():
-            # 유효한 폼이면 회원가입 처리
             user = form.save(commit=False)
-            user.set_password(form.cleaned_data['password1'])  # 비밀번호를 해시화해서 저장
+            user.set_password(form.cleaned_data['password1'])
             user.save()
-            
-            # 회원가입 성공 후 로그인
             login(request, user)
             messages.success(request, "회원가입이 완료되었습니다!")
-            return redirect('signin')  # 성공 후 홈으로 리디렉션
-            
+            return redirect('signin')
         else:
             messages.error(request, "입력한 정보를 확인해 주세요.")
-    
     else:
         form = SignUpForm()
-
     return render(request, 'liargame/signup.html', {'form': form})
-
 
 @login_required
 def game(request):
@@ -132,27 +120,30 @@ def create_room(request):
 
 @login_required
 def room_detail(request, room_id):
-    try:
-        room = Room.objects.get(room_number=room_id)
-    except Room.DoesNotExist:
-        return redirect('game')  # 방이 없으면 대기실로 리다이렉트
+    # 방 정보 가져오기
+    room = get_object_or_404(Room, room_number=room_id)
+    
+    # 참가자 목록
+    participants = room.players.all()
 
-    nickname = request.session.get('nickname', 'Guest')  # 세션에서 닉네임 확인
+    # POST 요청: 방에 참여
+    if request.method == 'POST' and 'join_room' in request.POST:
+        if request.user not in participants:
+            room.players.add(request.user)  # 참가자로 추가
+        return JsonResponse({'success': True, 'message': '방에 참여했습니다.'})
 
-    if request.method == 'POST':
-        # 방에 참여
-        user = request.user
-        room.players.add(user)  # 방에 사용자 추가
-        return JsonResponse({'success': True})
+    # DELETE 요청: 방 삭제
+    if request.method == 'DELETE':
+        if request.user == room.owner:
+            room.delete()
+            return JsonResponse({'success': True, 'message': '방이 삭제되었습니다.'})
+        else:
+            return JsonResponse({'success': False, 'message': '방을 삭제할 권한이 없습니다.'})
 
-    # 방장이 나가면 방 삭제
-    if request.method == 'DELETE' and request.user == room.owner:
-        room.delete()  # 방장 퇴장 시 방 삭제
-        return JsonResponse({'success': True})
-
+    # GET 요청: 방 상세 페이지 렌더링
     return render(request, 'liargame/room_detail.html', {
-        'room': room,
-        'message': ""
+        'room': room,  # 방 정보
+        'participants': participants,  # 참가자 목록
     })
 
 # 방 삭제 (방장이 나가면 방 삭제)
@@ -187,3 +178,19 @@ def enter_room(request, room_id):
     else:
         return HttpResponse("방을 찾을 수 없습니다.")
 
+@login_required
+def game_room(request, room_id):
+    # 방을 가져옵니다.
+    try:
+        room = Room.objects.get(room_number=room_id)
+    except Room.DoesNotExist:
+        messages.error(request, '방을 찾을 수 없습니다.')
+        return redirect('game')  # 방이 없으면 대기실로 이동
+
+    # 참가자 목록
+    participants = room.players.all()
+
+    return render(request, 'liargame/game_room.html', {
+        'room': room,  # 방 정보
+        'participants': participants,  # 참가자 목록
+    })
