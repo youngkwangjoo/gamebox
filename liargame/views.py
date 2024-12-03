@@ -7,7 +7,7 @@ from django.contrib import messages
 from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
 from .models import Room, CustomUser
-
+from django.apps import apps
 
 def home(request):
     # 홈 페이지
@@ -45,12 +45,13 @@ def signup(request):
         if form.is_valid():
             user = form.save(commit=False)
             user.set_password(form.cleaned_data['password1'])
+
+            # username 값을 nickname에 복사
+            user.nickname = form.cleaned_data['username']
             user.save()
-            login(request, user)
+
             messages.success(request, "회원가입이 완료되었습니다!")
             return redirect('signin')
-        else:
-            messages.error(request, "입력한 정보를 확인해 주세요.")
     else:
         form = SignUpForm()
     return render(request, 'liargame/signup.html', {'form': form})
@@ -147,22 +148,23 @@ def room_detail(request, room_id):
     })
 
 # 방 삭제 (방장이 나가면 방 삭제)
-@login_required
-def delete_room(request, room_id):
-    if request.method == 'DELETE':
-        try:
-            room = Room.objects.get(room_number=room_id)
-        except Room.DoesNotExist:
-            return JsonResponse({'success': False, 'message': '방을 찾을 수 없습니다.'})
+def delete_room(self, room_id, nickname):
+    Room = apps.get_model('liargame', 'Room')
 
-        # 방장이 방을 삭제할 수 있도록
-        if request.user == room.owner:
-            room.delete()
-            return JsonResponse({'success': True})
-        else:
-            return JsonResponse({'success': False, 'message': '방을 삭제할 권한이 없습니다.'})
+    try:
+        room = Room.objects.get(room_number=room_id)
+    except Room.DoesNotExist:
+        print(f"[DEBUG] Room {room_id} does not exist.")
+        return False, "방을 찾을 수 없습니다."
 
-    return JsonResponse({'success': False, 'message': '잘못된 요청입니다.'})
+    # 방장이 맞는지 확인
+    if room.owner and room.owner.nickname == nickname:
+        room.delete()
+        print(f"[DEBUG] Room {room_id} has been deleted.")
+        return True, "방이 성공적으로 삭제되었습니다."
+    else:
+        print(f"[DEBUG] User {nickname} is not authorized to delete room {room_id}.")
+        return False, "방을 삭제할 권한이 없습니다."
     
 
 def enter_room(request, room_id):

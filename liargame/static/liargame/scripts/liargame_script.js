@@ -150,19 +150,25 @@ document.addEventListener('DOMContentLoaded', () => {
     // WebSocket 메시지 처리
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
-
-        if (data.type === 'participants') {
-            participants = data.participants;
-            renderParticipants(participants);
-            renderParticipantInputFields(participants);
-            renderVoteUI(participants);
-        } else if (data.type === 'message') {
+    
+        if (data.type === "participants") {
+            participants = data.participants; // 서버에서 수신한 참가자 목록
+            renderParticipants(participants); // UI 업데이트
+            renderParticipantInputFields(participants); // 참가자 입력 필드 업데이트
+            renderVoteUI(participants); // 투표 UI 업데이트
+        } else if (data.type === "message") {
             addMessageToLog(data.sender, data.message);
         }
     };
-
+    
     // WebSocket 연결 성공 시 참가 요청
     socket.onopen = function () {
+        const nickname = document.getElementById('user-nickname').textContent.trim();
+        if (!nickname || nickname === "") {
+            console.error("[DEBUG] Nickname is empty or invalid. WebSocket connection aborted.");
+            socket.close();
+            return;
+        }
         socket.send(JSON.stringify({ action: 'join', nickname }));
     };
 

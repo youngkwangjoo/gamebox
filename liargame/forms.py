@@ -10,3 +10,10 @@ class SignUpForm(UserCreationForm):
     class Meta:
         model = get_user_model()  # 커스텀 User 모델을 가져옵니다.
         fields = ['username', 'password1', 'password2']
+
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if get_user_model().objects.filter(username=username).exists():
+            raise forms.ValidationError("이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.")
+        return username
