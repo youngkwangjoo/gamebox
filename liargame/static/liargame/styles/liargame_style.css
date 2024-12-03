@@ -1,112 +1,146 @@
+/* 기본 스타일 */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #f5f5f5;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    background-color: #f5f5f5;
     min-height: 100vh;
 }
 
-        /* 네비게이션 바 스타일 */
-        nav {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            width: 100%; /* 네비게이션 바가 화면 너비를 모두 차지하도록 */
-        }
+/* 네비게이션 바 */
+nav {
+    background-color: #333;
+    color: white;
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    width: 100%;
+}
 
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center; /* 중앙 정렬 */
-        }
+nav ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+}
 
-        nav ul li {
-            margin: 0 20px; /* 좌우 여백 */
-        }
+nav ul li {
+    margin: 0 15px;
+}
 
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
 
-        nav ul li a:hover {
-            text-decoration: underline;
-        }
+nav ul li a:hover {
+    text-decoration: underline;
+}
 
+/* Timer Bar */
+.bar-container {
+    margin-top: 50px;
+    width: 100%;
+    background-color: #ddd;
+    padding: 10px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 게임 컨테이너 */
 .game-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* 좌우 패널 나눔 */
     width: 90%;
     margin: 20px auto;
     gap: 20px;
     height: 80vh; /* 전체 높이의 80% */
 }
 
-/* 채팅 컨테이너 */
-.chat-container {
-    flex: 1; /* 실시간 채팅을 오른쪽 영역에 50% */
+.participants-panel, .interaction-panel {
+    flex: 1; /* 두 패널의 기본 너비 동일 */
+    display: flex;
+    flex-direction: column; /* 패널 내부 요소는 위아래로 정렬 */
+    gap: 20px; /* 내부 요소 간격 */
+}
+
+/* 참가자 목록 */
+.participants-container, .participant-logs {
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 100%;
+    flex: 1; /* 동일한 높이를 차지하도록 설정 */
+    overflow-y: auto; /* 스크롤 가능 */
+}
+
+.chat-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    flex-direction: column; /* 세로로 정렬 */
+    height: 100%; /* 부모 컨테이너 높이에 맞추기 */
 }
 
-/* 채팅 제목 */
-.chat-container h2 {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-/* 채팅 메시지 박스 */
 .chat-box {
-    flex-grow: 1;
+    flex-grow: 1; /* 채팅 로그가 남은 공간을 차지하도록 */
     border: 1px solid #ddd;
     border-radius: 10px;
-    overflow-y: auto;
+    overflow-y: auto; /* 스크롤 가능 */
     padding: 10px;
     background-color: #fff;
     margin-bottom: 10px;
-}
-
-/* 채팅 로그 */
-#chat-log {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px; /* 메시지 간 간격 */
+    height: 300px; /* 고정된 높이 설정 */
+}
+
+.message-container {
+    display: flex;
+    align-items: flex-end;
+}
+
+.message-container.self {
+    justify-content: flex-end; /* 내 메시지는 오른쪽 정렬 */
+}
+
+.message-container.other {
+    justify-content: flex-start; /* 상대방 메시지는 왼쪽 정렬 */
 }
 
 .message {
-    padding: 5px 10px;
-    border-radius: 5px;
+    max-width: 70%; /* 말풍선 최대 너비 */
+    padding: 10px;
+    border-radius: 10px;
     background-color: #f1f1f1;
-    display: flex;
-    align-items: center;
     word-wrap: break-word;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.message.self {
-    background-color: #4CAF50;
-    color: white;
-    align-self: flex-end;
+.message-container.self .message {
+    background-color: #fffb12; /* 내 메시지 색상 */
+    color: rgb(12, 11, 11);
 }
 
-/* 채팅 입력 */
+.message-container.other .message {
+    background-color: #494e53; /* 상대방 메시지 색상 */
+    color: #fffbfb; /* 텍스트 색상 */
+}
+
 .chat-input {
     display: flex;
     gap: 5px;
@@ -114,7 +148,7 @@ body {
 }
 
 .chat-input input {
-    flex: 1;
+    flex-grow: 1;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -133,114 +167,22 @@ body {
     background-color: #45a049;
 }
 
-/* 참가자 스타일 */
-.participants-container {
-    flex: 1; /* 참가자 목록을 왼쪽 영역에 50% */
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
-/* 참가자 목록 */
-.participants-list {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-bottom: 10px;
-}
-
-.participant {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
-}
-
-.participant .nickname {
-    font-weight: bold;
-}
-
-.participant textarea {
-    width: 70%;
-    resize: none;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 0.9rem;
-    box-sizing: border-box;
-}
-
-/* 참가자 글 기록 */
-.participant-logs {
-    flex-shrink: 0;
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 200px;
-    overflow-y: auto;
-}
-
-.participant-logs .log-container {
-    margin-bottom: 10px;
-    padding: 5px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-
-/* 투표 스타일 */
+/* 투표 */
 .vote-container {
-    margin-top: 20px;
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 200px;
-    overflow-y: auto;
-}
-
-.vote-container .vote-participant {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+    margin-top: 10px;
 }
 
 .vote-container button {
-    padding: 5px 10px;
-    border: none;
+    margin-top: 10px;
+    padding: 10px;
     background-color: #4CAF50;
     color: white;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
-.vote-container button:hover:not(:disabled) {
+.vote-container button:hover {
     background-color: #45a049;
-}
-
-.vote-container button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.vote-result {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f1f1f1;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    display: none;
 }

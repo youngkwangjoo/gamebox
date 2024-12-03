@@ -8,50 +8,69 @@
     <link rel="stylesheet" href="{% static 'liargame/styles/liargame_style.css' %}">
 </head>
 <body>
+    <!-- 네비게이션 -->
     <nav>
         <ul>
             <li><a href="{% url 'signup' %}">회원가입</a></li>
-            <li><a href="{% url 'signin' %}">로그인</a></li>
+            {% if user.is_authenticated %}
+                <li>
+                    <form id="logout-form" action="{% url 'logout' %}" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <button type="submit" style="background: none; border: none; color: white; cursor: pointer;">로그아웃</button>
+                    </form>
+                </li>
+            {% else %}
+                <li><a href="{% url 'signin' %}">로그인</a></li>
+            {% endif %}
             <li><a href="{% url 'game' %}">대기실</a></li>
             <li><a href="{% url 'create_room' %}">방만들기</a></li>
         </ul>
     </nav>
 
-    <div id="user-nickname" style="display: none;">{{ user.nickname }}</div> <!-- 사용자 닉네임 -->
-    <div id="room-id" style="display: none;">{{ room.room_number|default:"" }}</div> <!-- 방 ID -->
+    <!-- Timer Bar -->
+    <div class="bar-container" id="timer-bar">
+        <span id="timer">00:00</span>
+        <span id="alert-message">게임 준비 중...</span>
+    </div>
 
     <div class="game-container">
-        <!-- 참가자 목록 -->
-        <div class="participants-container">
-            <h2>참가자 목록</h2>
-            <div class="participants-list" id="participants-container"></div>
-                <h3>참가자 글</h3>
+        <!-- 왼쪽 패널 -->
+        <div class="participants-panel">
+            <div class="participants-container">
+                <h2>참가자 목록</h2>
+                <div id="participants-container"></div>
+            </div>
+            <div class="participant-logs">
+                <h2>참가자 글</h2>
                 <div id="participant-logs-container"></div>
             </div>
         </div>
-
-        <!-- 채팅 및 투표 -->
-        <div class="chat-container">
-            <h2>실시간 채팅</h2>
-            <div class="chat-box" id="chat-log"></div>
-            <div class="chat-input">
-                <input type="text" id="chat-message-input" placeholder="메시지 입력...">
-                <button id="chat-message-submit">전송</button>
+    
+        <!-- 오른쪽 패널 -->
+        <div class="interaction-panel">
+            <div class="chat-container">
+                <h2>실시간 채팅</h2>
+                <div class="chat-box" id="chat-log">
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
+                    <button id="chat-message-submit">전송</button>
+                </div>
             </div>
-
-            <div class="vote-container" id="vote-participants">
-                <h3>투표하기</h3>
+            <div class="vote-container">
+                <h2>투표</h2>
+                <div id="vote-participants">
+                    <p>참가자 목록에서 투표하세요:</p>
+                </div>
                 <div id="vote-result"></div>
                 <button id="show-results">결과 보기</button>
             </div>
         </div>
     </div>
+    <!-- 숨겨진 데이터 -->
+    <div id="user-nickname" style="display: none;">{{ user.nickname }}</div>
+    <div id="room-id" style="display: none;">{{ room.room_number|default:"" }}</div>
 
-    <script>
-        // JavaScript에서 Django 템플릿 변수 가져오기
-        const roomId = document.getElementById('room-id').textContent.trim();
-        const userNickname = document.getElementById('user-nickname').textContent.trim();
-    </script>
     <script src="{% static 'liargame/scripts/liargame_script.js' %}"></script>
 </body>
 </html>
