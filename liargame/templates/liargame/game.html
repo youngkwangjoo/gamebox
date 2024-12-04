@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Page</title>
     <style>
-        /* 기존 스타일을 그대로 유지 */
+        /* 스타일은 기존 내용 유지 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -90,19 +90,6 @@
             font-weight: bold;
         }
 
-        .logout-button {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-
-        .logout-button:hover {
-            text-decoration: underline;
-        }
-
         .all-users {
             margin-top: 20px;
             background-color: #f9f9f9;
@@ -157,30 +144,34 @@
             border-bottom: none;
         }
 
-        .room-name {
+        .room-info {
             font-weight: bold;
+            font-size: 1.2rem;
+            color: #333;
         }
 
         .room-players {
+            font-size: 1rem;
             color: #666;
         }
-
-        .actions button {
-            display: block;
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 20px;
-            border: none;
-            background-color: #000000;
-            color: white;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
+        .room-players {
+            color: green;
         }
 
-        .actions button:hover {
-            background-color: #515151;
+        .room-players.warning {
+            color: red;
         }
+        .room-link {
+            text-decoration: none; /* 링크 밑줄 제거 */
+            color: inherit; /* 텍스트 색상 유지 */
+            display: block; /* 전체 영역 클릭 가능 */
+        }
+
+        .room-link:hover .room-info {
+            color: #007BFF; /* 마우스를 올렸을 때 방 이름 색상 변경 */
+        }
+
+
 
     </style>
 </head>
@@ -214,75 +205,67 @@
             </div>
         </div>
         <div class="right-panel">
-            <div class="actions">
-                <form action="{% url 'create_room' %}" method="GET">
-                    <button type="submit">방 만들기</button>
-                </form>
-            </div>
             <div class="room-list">
                 <h2>방 목록</h2>
                 {% if rooms %}
                     {% for room in rooms %}
-                        <div class="room">
-                            <div class="room-info">
-                                <a href="{% url 'room_detail' room_id=forloop.counter0 %}" class="room-name">{{ room.name }}</a>
+                        <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
+                            <div class="room">
+                                <div class="room-info">
+                                    <strong>{{ room.owner.nickname }}의 방</strong> 
+                                    <span>"{{ room.game_type }}"</span>
+                                </div>
+                                <div class="room-players">
+                                    ({{ room.players.count }} player{{ room.players.count|pluralize }})
+                                </div>
                             </div>
-                            <span class="room-players">{{ room.players }} players</span>
-                        </div>
+                        </a>
                     {% endfor %}
                 {% else %}
                     <p>아직 개설된 방이 없습니다.</p>
                 {% endif %}
             </div>
+            
         </div>
     </div>
     <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const roomId = 'lobby'; // 대기실 ID
-                const nickname = "{{ username }}" || "익명"; // 닉네임 설정
-                const participantsList = document.getElementById('participants-list');
-                const socket = new WebSocket(`ws://${window.location.host}/ws/room/${roomId}/`);
+        document.addEventListener('DOMContentLoaded', () => {
+            const roomId = 'lobby';
+            const nickname = "{{ user.nickname|default:'익명' }}";
+            const participantsList = document.getElementById('participants-list');
+            const socket = new WebSocket(`ws://${window.location.host}/ws/room/${roomId}/`);
 
-                socket.onopen = () => {
-                    console.log('WebSocket 연결 성공.');
-                    if (nickname) {
-                        socket.send(JSON.stringify({ action: 'join', nickname }));
-                    }
-                };
-
-                socket.onmessage = (event) => {
-                    const data = JSON.parse(event.data);
-                    if (data.type === 'participants') {
-                        console.log('Participants received:', data.participants);
-                        renderParticipants(data.participants);
-                    }
-                };
-
-                socket.onclose = () => {
-                    console.log('WebSocket 연결 종료.');
-                };
-
-                socket.onerror = (error) => {
-                    console.error('WebSocket 오류:', error);
-                };
-
-                function renderParticipants(participants) {
-                    participantsList.innerHTML = '';
-                    participants.forEach((participant) => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = participant;
-                        participantsList.appendChild(listItem);
-                    });
+            socket.onopen = () => {
+                console.log('WebSocket 연결 성공.');
+                if (nickname) {
+                    socket.send(JSON.stringify({ action: 'join', nickname }));
                 }
+            };
 
-                window.addEventListener('beforeunload', () => {
-                    if (nickname) {
-                        socket.send(JSON.stringify({ action: 'leave', nickname }));
-                    }
-                    socket.close();
+            socket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                if (data.type === 'participants') {
+                    renderParticipants(data.participants);
+                }
+            };
+
+            socket.onclose = () => {
+                console.log('WebSocket 연결 종료.');
+            };
+
+            socket.onerror = (error) => {
+                console.error('WebSocket 오류:', error);
+            };
+
+            function renderParticipants(participants) {
+                participantsList.innerHTML = '';
+                participants.forEach((participant) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = participant;
+                    participantsList.appendChild(listItem);
                 });
-            });
-
+            }
+        });
     </script>
 </body>
 </html>
