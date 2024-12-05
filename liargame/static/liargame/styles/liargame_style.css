@@ -83,6 +83,26 @@ nav ul li a:hover {
     overflow-y: auto; /* 스크롤 가능 */
 }
 
+.input-container {
+    display: flex; /* 플렉스박스로 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    gap: 10px; /* label과 textarea 간의 간격 */
+}
+
+.input-container textarea {
+    flex-grow: 1; /* textarea가 가능한 공간을 차지하도록 설정 */
+    height: 30px; /* textarea의 높이 */
+    padding: 5px; /* 내부 여백 */
+    resize: none; /* 크기 조정 비활성화 */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.input-container label {
+    white-space: nowrap; /* label 텍스트가 줄바꿈되지 않도록 설정 */
+    font-weight: bold; /* label 스타일 강조 */
+}
+
 .chat-container {
     border: 1px solid #ccc;
     border-radius: 8px;
