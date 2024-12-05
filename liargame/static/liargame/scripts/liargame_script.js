@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('[DEBUG] WebSocket initialized for Room:', roomId, 'Nickname:', nickname);
 
     // 상태 데이터 초기화
+    const votes = {}; // 투표 상태
     let participants = [];
     const participantLogs = {}; // 참가자 글 상태를 유지하는 객체
     let hasVoted = false; // 투표 여부
@@ -38,6 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 participants = data.participants;
                 renderParticipants(participants, participantLogs); // 참가자 목록 갱신
                 renderParticipantInputFields(participants); // 글 입력 UI 갱신
+                renderVoteUI(participants); // 투표 UI 갱신
+                break;
+            case 'message':
+                addMessageToLog(data.sender, data.message); // 다른 사용자의 메시지를 채팅 로그에 추가
                 break;
             case 'log_update':
                 participantLogs[data.participant] = data.log; // 참가자 글 업데이트
@@ -55,6 +60,37 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.onerror = (error) => {
         console.error('[ERROR] WebSocket error:', error);
     };
+
+    // 메시지 전송 함수
+    function sendMessage() {
+        const message = messageInput.value.trim(); // 메시지 입력값 가져오기
+        if (message) {
+            socket.send(JSON.stringify({
+                action: 'message',
+                sender: nickname,
+                message: message
+            })); // WebSocket으로 메시지 전송
+
+            addMessageToLog(nickname, message, true); // 자신의 메시지를 채팅 로그에 추가
+            messageInput.value = ''; // 입력 필드 초기화
+        }
+    }
+
+    // 채팅 메시지 로그에 추가하는 함수
+    function addMessageToLog(sender, message, isSelf = false) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
+
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.textContent = `${sender}: ${message}`;
+
+        messageContainer.appendChild(messageElement);
+        chatLog.appendChild(messageContainer);
+
+        // 최신 메시지로 스크롤 이동
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
 
     // 참가자 목록 렌더링
     function renderParticipants(participants, logs) {
@@ -127,33 +163,58 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 투표 UI 렌더링
     function renderVoteUI(participants) {
-        voteContainer.innerHTML = '';
-        participants.forEach(participant => {
-            votes[participant] = votes[participant] || 0;
+        voteContainer.innerHTML = ''; // 기존 UI 초기화
 
+        participants.forEach(participant => {
+            // 투표 항목 생성
             const voteElement = document.createElement('div');
             voteElement.classList.add('vote-participant');
 
+            // 참가자 이름
             const nameElement = document.createElement('span');
-            nameElement.textContent = `${participant}: ${votes[participant]}표`;
+            nameElement.textContent = participant;
 
+            // 투표 수
+            const voteCount = document.createElement('span');
+            voteCount.textContent = `${votes[participant] || 0}표`; // 현재 투표 수 표시
+            voteCount.style.marginLeft = '10px'; // 이름 옆 간격
+
+            // 투표 버튼
             const voteButton = document.createElement('button');
             voteButton.textContent = '투표';
-            voteButton.disabled = hasVoted;
+            voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
             voteButton.addEventListener('click', () => {
                 if (!hasVoted) {
-                    votes[participant] += 1;
-                    nameElement.textContent = `${participant}: ${votes[participant]}표`;
-                    hasVoted = true;
+                    socket.send(JSON.stringify({
+                        action: 'vote',
+                        participant: participant
+                    })); // 서버로 투표 이벤트 전송
+
+                    // 로컬 상태 업데이트
+                    votes[participant] = (votes[participant] || 0) + 1;
+                    voteCount.textContent = `${votes[participant]}표`; // 투표 수 갱신
+
                     alert(`${participant}에게 투표했습니다.`);
-                    voteButton.disabled = true;
+                    hasVoted = true; // 투표 완료 상태로 변경
+                    voteButton.disabled = true; // 버튼 비활성화
                 }
             });
 
+            // 항목 구성
             voteElement.appendChild(nameElement);
+            voteElement.appendChild(voteCount);
             voteElement.appendChild(voteButton);
+
+            // 컨테이너에 추가
             voteContainer.appendChild(voteElement);
         });
+
+        // "결과 보기" 버튼 추가
+        const resultsButton = document.createElement('button');
+        resultsButton.id = 'show-results';
+        resultsButton.textContent = '결과 보기';
+        resultsButton.addEventListener('click', renderVoteResults);
+        voteContainer.appendChild(resultsButton);
     }
 
     // 투표 결과 렌더링
