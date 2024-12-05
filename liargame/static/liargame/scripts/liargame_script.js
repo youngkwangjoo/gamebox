@@ -18,8 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 상태 데이터 초기화
     let participants = [];
-    const votes = {}; // 투표 상태
-    const participantLogs = {}; // 참가자 글 상태
+    const participantLogs = {}; // 참가자 글 상태를 유지하는 객체
     let hasVoted = false; // 투표 여부
 
     // WebSocket 이벤트 핸들러
@@ -37,12 +36,12 @@ document.addEventListener('DOMContentLoaded', () => {
         switch (data.type) {
             case 'participants':
                 participants = data.participants;
-                renderParticipants(participants);
-                renderParticipantInputFields(participants);
-                renderVoteUI(participants);
+                renderParticipants(participants, participantLogs); // 참가자 목록 갱신
+                renderParticipantInputFields(participants); // 글 입력 UI 갱신
                 break;
-            case 'message':
-                addMessageToLog(data.sender, data.message);
+            case 'log_update':
+                participantLogs[data.participant] = data.log; // 참가자 글 업데이트
+                renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
                 break;
             default:
                 console.error('[ERROR] Unknown message type:', data.type);
@@ -57,46 +56,31 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[ERROR] WebSocket error:', error);
     };
 
-    // 메시지 추가 함수
-    function addMessageToLog(sender, message, isSelf = false) {
-        const messageContainer = document.createElement('div');
-        messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
-
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        messageElement.textContent = `${message}`;
-
-        messageContainer.appendChild(messageElement);
-        chatLog.appendChild(messageContainer);
-
-        // 최신 메시지로 스크롤 이동
-        chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-    // 메시지 전송
-    function sendMessage() {
-        const message = messageInput.value.trim();
-        if (message) {
-            socket.send(JSON.stringify({ action: 'message', sender: nickname, message }));
-            addMessageToLog(nickname, message, true);
-            messageInput.value = '';
-        }
-    }
-
     // 참가자 목록 렌더링
-    function renderParticipants(participants) {
-        participantsContainer.innerHTML = '';
+    function renderParticipants(participants, logs) {
+        participantsContainer.innerHTML = ''; // 기존 목록 초기화
         participants.forEach(participant => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-            participantElement.textContent = participant;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = participant;
+
+            const logSpan = document.createElement('span');
+            logSpan.textContent = logs[participant] || ''; // 참가자의 로그 출력
+            logSpan.style.marginLeft = '10px';
+            logSpan.style.color = 'gray';
+            logSpan.style.fontStyle = 'italic';
+
+            participantElement.appendChild(nameSpan);
+            participantElement.appendChild(logSpan);
             participantsContainer.appendChild(participantElement);
         });
     }
 
     // 참가자 글 입력 영역 렌더링
     function renderParticipantInputFields(participants) {
-        participantLogsContainer.innerHTML = '';
+        participantLogsContainer.innerHTML = ''; // 기존 입력 필드 초기화
         participants.forEach(participant => {
             const inputContainer = document.createElement('div');
             inputContainer.classList.add('input-container');
@@ -111,7 +95,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     event.preventDefault();
                     const logMessage = textArea.value.trim();
                     if (logMessage) {
-                        updateParticipantLogs(participant, logMessage);
+                        // WebSocket으로 참가자 글 업데이트 요청 전송
+                        socket.send(JSON.stringify({
+                            action: 'update_log',
+                            participant: participant,
+                            log: logMessage
+                        }));
+
+                        // 로컬 데이터 갱신
+                        participantLogs[participant] = logMessage;
+
+                        // UI 갱신
+                        renderParticipants(participants, participantLogs);
+
+                        // 입력 필드 초기화
                         textArea.value = '';
                     }
                 }
