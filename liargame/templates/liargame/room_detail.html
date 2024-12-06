@@ -27,11 +27,19 @@
         </ul>
     </nav>
 
-    <!-- Timer Bar -->
+        <!-- Timer Bar -->
     <div class="bar-container" id="timer-bar">
         <span id="timer">00:00</span>
         <span id="alert-message">게임 준비 중...</span>
     </div>
+
+    <!-- Timer Controls -->
+    <div id="timer-controls">
+        <button id="start-timer-button">타이머 시작</button>
+        <button id="stop-timer-button" disabled>게임 중단</button>
+        <button id="restart-timer-button" disabled>재시작</button>
+    </div>
+
 
     <div class="game-container">
         <!-- 왼쪽 패널 -->
@@ -63,6 +71,7 @@
                 <div id="vote-participants"></div>
                 <!-- 투표 결과 표시 -->
                 <div id="vote-result"></div>
+                <!-- 결과 보기 버튼 추가 -->
             </div>
         </div>
     </div>
