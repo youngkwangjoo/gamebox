@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertMessage = document.getElementById('alert-message');
     const startTimerButton = document.getElementById('start-timer-button'); // 버튼 요소 참조
     const stopTimerButton = document.getElementById('stop-timer-button');
-    const restartTimerButton = document.getElementById('restart-timer-button');
     const resetTimerButton = document.getElementById('reset-timer-button');
     // WebSocket 설정
     const roomId = document.getElementById('room-id')?.textContent.trim() || '';
@@ -523,24 +522,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // 타이머 초기화 함수
     function resetTimer() {
         clearInterval(timerInterval); // 기존 타이머 중단
-        timerDuration = 5 * 60; // 초기값으로 설정
-        timerElement.textContent = formatTime(timerDuration);
-        alertMessage.textContent = "타이머가 초기화되었습니다.";
-        isPaused = false;
-        toggleButtons(false);
+        timerDuration = 5 * 60; // 초기값 설정
+        timerElement.textContent = formatTime(timerDuration); // 타이머 초기화
+        alertMessage.textContent = "타이머가 초기화 및 재시작되었습니다.";
+        timerInterval = setInterval(updateTimer, 1000); // 새 타이머 시작
+        isPaused = false; // 실행 상태로 변경
+        toggleButtons(true); // 버튼 상태 갱신
     }
 
     // 버튼 상태 토글
     function toggleButtons(isRunning) {
-        startTimerButton.disabled = isRunning; // 타이머 실행 중에는 시작 버튼 비활성화
-        stopTimerButton.disabled = !isRunning; // 타이머 중단 버튼 활성화
-        restartTimerButton.disabled = !isPaused; // 일시 중단된 경우 재시작 버튼 활성화
+        startTimerButton.disabled = isRunning;
+        stopTimerButton.disabled = !isRunning;
+        resetTimerButton.disabled = !isRunning; // Reset 버튼 활성화 상태 유지
     }
 
     // 버튼 클릭 이벤트
     startTimerButton.addEventListener('click', startTimer);
     stopTimerButton.addEventListener('click', stopTimer);
-    restartTimerButton.addEventListener('click', restartTimer);
     resetTimerButton.addEventListener('click', resetTimer);
 
     // 초기 버튼 상태 설정
