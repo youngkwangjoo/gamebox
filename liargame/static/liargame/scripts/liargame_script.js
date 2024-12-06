@@ -19,6 +19,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const nickname = document.getElementById('user-nickname')?.textContent.trim() || '익명';
     const socket = new WebSocket(`ws://${window.location.host}/ws/room/${roomId}/`);
 
+    // topic 설정
+    const distributeButton = document.getElementById('distribute-topic-button');
+    const topicModal = document.getElementById('topic-modal');
+    const topicSelect = document.getElementById('topic-select');
+    const confirmTopicButton = document.getElementById('confirm-topic-button');
+    // 참가자와 방장 정보 (예시 데이터)
+    const isHost = true; // 방장 여부 (서버에서 받아오는 데이터로 설정)
+    // Subtopic 데이터
+    const topics = {
+        sports: ['축구', '농구'],
+        movies: ['액션', '코미디'],
+        foods: ['햄버거', '피자'],
+    };
+    // "제시어 배포" 버튼 클릭 이벤트
+    distributeButton.addEventListener('click', () => {
+        if (!isHost) {
+            alert('방장만 제시어를 배포할 수 있습니다.');
+            return;
+        }
+        topicModal.style.display = 'flex'; // 모달 창 열기
+    });
+
+    // Topic 확인 버튼 클릭 이벤트
+    confirmTopicButton.addEventListener('click', () => {
+        const selectedTopic = topicSelect.value; // 선택된 Topic
+        const subtopics = topics[selectedTopic]; // 해당 Topic의 Subtopic 2개
+
+        // 랜덤으로 참가자 1명 선택
+        const liar = participants[Math.floor(Math.random() * participants.length)];
+
+        // 모든 참가자에게 Subtopic 1 전달
+        participants.forEach(participant => {
+            if (participant === liar) {
+                alert(`${participant}에게 주어진 제시어: ${subtopics[1]}`); // 다른 제시어
+            } else {
+                alert(`${participant}에게 주어진 제시어: ${subtopics[0]}`);
+            }
+        });
+
+        // 모달 닫기
+        topicModal.style.display = 'none';
+    });
+
+    // 모달 닫기 기능 (ESC 키 또는 배경 클릭)
+    window.addEventListener('click', (event) => {
+        if (event.target === topicModal) {
+            topicModal.style.display = 'none';
+        }
+    });
     console.log('[DEBUG] WebSocket initialized for Room:', roomId, 'Nickname:', nickname);
 
     // 상태 데이터 초기화
@@ -354,4 +403,5 @@ document.addEventListener('DOMContentLoaded', () => {
         timerDuration = 5 * 60; // 타이머를 초기화 (5분)
         startTimer(); // 타이머 시작
     });
+
 });
