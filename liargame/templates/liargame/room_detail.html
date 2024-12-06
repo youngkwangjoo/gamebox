@@ -38,20 +38,29 @@
         <button id="start-timer-button">타이머 시작</button>
         <button id="stop-timer-button" disabled>게임 중단</button>
         <button id="restart-timer-button" disabled>재시작</button>
+        <button id="reset-timer-button">Reset Timer</button>    
         <button id="distribute-topic-button">제시어 배포</button>
+        <script src="/static/liargame/scripts/liargame_script.js"></script>
     </div>
 
-    <!-- Modal for Topic Selection -->
+    <!-- 방장의 Topic 선택 모달 -->
     <div id="topic-modal" class="modal">
         <div class="modal-content">
             <h2>제시어 선택</h2>
             <label for="topic-select">Topic을 선택하세요:</label>
             <select id="topic-select">
-                <option value="sports">스포츠</option>
-                <option value="movies">영화</option>
-                <option value="foods">음식</option>
+
             </select>
             <button id="confirm-topic-button">확인</button>
+            <button id="close-topic-modal">닫기</button>
+        </div>
+    </div>
+
+    <!-- 참가자 제시어 모달 -->
+    <div id="participant-modal" class="modal">
+        <div class="modal-content">
+            <p id="participant-modal-message"></p>
+            <button id="close-modal-button">닫기</button>
         </div>
     </div>
 

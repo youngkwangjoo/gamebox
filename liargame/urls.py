@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from .views import get_topics
+from .views import get_random_subtopics
 
 urlpatterns = [
     path('', views.home, name='home'),  # 게임 선택 페이지
@@ -14,5 +16,7 @@ urlpatterns = [
     path('create/', views.create_room, name='create_room'),  # 방 생성
     path('<int:room_id>/', views.room_detail, name='room_detail'),  # 방 상세보기
     path('game/<int:room_id>/', views.game_room, name='game_room'),    
+    path('topics/', get_topics, name='get_topics'),    
+    path('random-subtopics/', get_random_subtopics, name='get_random_subtopics'),    
 ]
     

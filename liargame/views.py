@@ -1,6 +1,7 @@
+import random
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
-import uuid
+from .models import Topic, SubTopic
 from django.shortcuts import render, redirect 
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -187,3 +188,36 @@ def game_room(request, room_id):
         'room': room,  # 방 정보
         'participants': participants,  # 참가자 목록
     })
+    
+def get_topics(request):
+    topics = Topic.objects.all()
+    data = [{"id": topic.id, "name": topic.name} for topic in topics]
+    return JsonResponse(data, safe=False, json_dumps_params={'ensure_ascii': False})
+
+def get_random_subtopics(request):
+    # topic_id 또는 topic 이름 중 하나를 받아 처리
+    topic_id = request.GET.get('topic_id')
+    topic_name = request.GET.get('topic')
+
+    try:
+        if topic_id:  # topic_id로 처리
+            topic = Topic.objects.get(id=topic_id)
+        elif topic_name:  # topic 이름으로 처리
+            topic = Topic.objects.get(name=topic_name)
+        else:
+            return JsonResponse({"error": "topic_id 또는 topic을 제공해주세요."}, status=400)
+
+        # 해당 주제의 소주제를 랜덤으로 가져오기
+        subtopics = list(SubTopic.objects.filter(topic=topic))
+        if len(subtopics) < 2:
+            return JsonResponse({"error": "소주제가 충분하지 않습니다."}, status=400)
+
+        selected_subtopics = random.sample(subtopics, 2)
+        return JsonResponse({
+            "subtopics": [subtopic.name for subtopic in selected_subtopics]
+        })
+    except Topic.DoesNotExist:
+        return JsonResponse({"error": "해당 주제를 찾을 수 없습니다."}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+

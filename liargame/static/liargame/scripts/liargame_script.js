@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    
     // DOM 요소 참조
     const chatLog = document.getElementById('chat-log');
     const messageInput = document.getElementById('chat-message-input');
@@ -20,61 +21,52 @@ document.addEventListener('DOMContentLoaded', () => {
     const socket = new WebSocket(`ws://${window.location.host}/ws/room/${roomId}/`);
 
     // topic 설정
-    const distributeButton = document.getElementById('distribute-topic-button');
-    const topicModal = document.getElementById('topic-modal');
     const topicSelect = document.getElementById('topic-select');
     const confirmTopicButton = document.getElementById('confirm-topic-button');
+    const participantModal = document.getElementById('participant-modal');
+    const participantModalMessage = document.getElementById('participant-modal-message');
+    const distributeButton = document.getElementById('distribute-topic-button');
+    const topicModal = document.getElementById('topic-modal');
+    const closeTopicModalButton = document.getElementById('close-topic-modal'); // 제시어 선택 모달 닫기 버튼
+    const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
+    
+
     // 참가자와 방장 정보 (예시 데이터)
     const isHost = true; // 방장 여부 (서버에서 받아오는 데이터로 설정)
-    // Subtopic 데이터
-    const topics = {
-        sports: ['축구', '농구'],
-        movies: ['액션', '코미디'],
-        foods: ['햄버거', '피자'],
-    };
-    // "제시어 배포" 버튼 클릭 이벤트
-    distributeButton.addEventListener('click', () => {
-        if (!isHost) {
-            alert('방장만 제시어를 배포할 수 있습니다.');
-            return;
-        }
-        topicModal.style.display = 'flex'; // 모달 창 열기
-    });
-
-    // Topic 확인 버튼 클릭 이벤트
-    confirmTopicButton.addEventListener('click', () => {
-        const selectedTopic = topicSelect.value; // 선택된 Topic
-        const subtopics = topics[selectedTopic]; // 해당 Topic의 Subtopic 2개
-
-        // 랜덤으로 참가자 1명 선택
-        const liar = participants[Math.floor(Math.random() * participants.length)];
-
-        // 모든 참가자에게 Subtopic 1 전달
-        participants.forEach(participant => {
-            if (participant === liar) {
-                alert(`${participant}에게 주어진 제시어: ${subtopics[1]}`); // 다른 제시어
-            } else {
-                alert(`${participant}에게 주어진 제시어: ${subtopics[0]}`);
-            }
-        });
-
-        // 모달 닫기
-        topicModal.style.display = 'none';
-    });
-
-    // 모달 닫기 기능 (ESC 키 또는 배경 클릭)
-    window.addEventListener('click', (event) => {
-        if (event.target === topicModal) {
-            topicModal.style.display = 'none';
-        }
-    });
-    console.log('[DEBUG] WebSocket initialized for Room:', roomId, 'Nickname:', nickname);
 
     // 상태 데이터 초기화
     const votes = {}; // 투표 상태
     let participants = [];
     const participantLogs = {}; // 참가자 글 상태를 유지하는 객체
     let hasVoted = false; // 투표 여부
+
+
+    
+    // WebSocket 메시지 수신
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        switch (data.type) {
+            case 'participants':
+                participants = data.participants; // 참가자 목록 업데이트
+                console.log('[DEBUG] Updated participants:', participants);
+                break;
+
+            case 'distribute_topic':
+                // 참가자에게 SubTopic 표시
+                const { subtopic1, subtopic2, liar } = data;
+                if (nickname === liar) {
+                    participantModalMessage.textContent = `당신은 Liar입니다. 주제어는: ${data.subtopics[1]}`;
+                } else {
+                    participantModalMessage.textContent = `당신의 제시어는: ${data.subtopics[0]}`;
+                }
+                participantModal.style.display = 'flex';
+                break;
+
+            default:
+                console.warn('Unknown action received:', data.action);
+        }
+    };
 
     // 타이머 초기화
     let timerDuration = 5 * 60; // 5분 (300초)
@@ -88,6 +80,192 @@ document.addEventListener('DOMContentLoaded', () => {
             socket.send(JSON.stringify({ action: 'join', nickname }));
         }
     };
+
+    //제시어 배포 
+    distributeButton.addEventListener('click', () => {
+        if (!isHost) {
+            alert('방장만 제시어를 배포할 수 있습니다.');
+            return;
+        }
+    
+        if (participants.length === 0) {
+            alert('참가자가 없습니다. 참가자를 먼저 확인하세요.');
+            return;
+        }
+    
+        const topicModal = document.getElementById('topic-modal');
+        if (topicModal) {
+            topicModal.style.display = 'block'; // 모달 열기
+        } else {
+            console.error("topicModal 요소를 찾을 수 없습니다.");
+        }
+    });
+    
+    // "확인" 버튼과 SubTopic 배포
+    confirmTopicButton.addEventListener('click', async () => {
+        const selectedTopicId = topicSelect.value; // 이제 topic.id가 들어옴
+    
+        if (!selectedTopicId) {
+            alert("주제를 선택해주세요.");
+            return;
+        }
+    
+        try {
+            const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+                return;
+            }
+    
+            const data = await response.json();
+    
+            if (!participants || participants.length < 1) {
+                alert("참가자가 없습니다. 제시어를 배포할 수 없습니다.");
+                return;
+            }
+    
+            const liar = participants[Math.floor(Math.random() * participants.length)];
+            socket.send(
+                JSON.stringify({
+                    action: 'distribute_topic',
+                    subtopic1: data.subtopics[0],
+                    subtopic2: data.subtopics[1],
+                    liar: liar,
+                })
+            );
+
+        } catch (error) {
+            console.error('Failed to fetch subtopics:', error);
+            alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+        }
+    });
+    
+
+    // modal
+    // 모달 닫기 버튼 이벤트 리스너
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', () => {
+            participantModal.style.display = 'none';
+        });
+    }
+    
+    // ESC 키로 모달 닫기
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && participantModal.style.display === 'flex') {
+            participantModal.style.display = 'none';
+        }
+    });
+    // 제시어 선택 모달 닫기 버튼 클릭 이벤트
+    if (closeTopicModalButton) {
+        closeTopicModalButton.addEventListener('click', () => {
+            topicModal.style.display = 'none'; // 모달 닫기
+        });
+    }
+
+
+    // 타이머 업데이트 함수
+    function updateTimer() {
+        if (timerDuration <= 0) {
+            clearInterval(timerInterval);
+            alertMessage.textContent = "타이머 종료!";
+            timerElement.textContent = "00:00";
+            return;
+        }
+
+        timerElement.textContent = formatTime(timerDuration);
+        timerDuration--;
+    }
+
+    // 타이머 포맷팅 함수
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // 타이머 시작 함수
+    function startTimer() {
+        if (!isPaused) {
+            timerDuration = 5 * 60;
+        }
+        alertMessage.textContent = "게임 준비 중...";
+        timerElement.textContent = formatTime(timerDuration);
+        timerInterval = setInterval(updateTimer, 1000);
+        isPaused = false;
+        toggleButtons(true);
+    }
+
+    // 타이머 중단 함수
+    function stopTimer() {
+        clearInterval(timerInterval);
+        isPaused = true;
+        alertMessage.textContent = "타이머가 중단되었습니다.";
+        toggleButtons(false);
+    }
+
+    // 타이머 초기화 함수
+    function resetTimer() {
+        clearInterval(timerInterval);
+        timerDuration = 5 * 60;
+        timerElement.textContent = formatTime(timerDuration);
+        alertMessage.textContent = "타이머가 초기화되었습니다.";
+        isPaused = false;
+        toggleButtons(false);
+    }
+
+    // 버튼 상태 토글 함수
+    function toggleButtons(isRunning) {
+        startTimerButton.disabled = isRunning;
+        stopTimerButton.disabled = !isRunning;
+        restartTimerButton.disabled = !isPaused;
+    }
+
+    // 타이머 버튼 이벤트
+    startTimerButton.addEventListener('click', startTimer);
+    stopTimerButton.addEventListener('click', stopTimer);
+    resetTimerButton.addEventListener('click', resetTimer);
+
+    // 초기 버튼 상태
+    toggleButtons(false);
+
+    // 메시지 전송 함수
+    function sendMessage() {
+        const message = messageInput.value.trim();
+        if (message) {
+            socket.send(JSON.stringify({
+                action: 'message',
+                sender: nickname,
+                message: message
+            }));
+            addMessageToLog(nickname, message, true);
+            messageInput.value = '';
+        }
+    }
+
+    // 채팅 메시지 로그에 추가하는 함수
+    function addMessageToLog(sender, message, isSelf = false) {
+        const messageContainer = document.createElement('div');
+        messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
+
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('message');
+        messageElement.textContent = `${sender}: ${message}`;
+
+        messageContainer.appendChild(messageElement);
+        chatLog.appendChild(messageContainer);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // 메시지 전송 버튼 이벤트
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
 
     socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
@@ -120,36 +298,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[ERROR] WebSocket error:', error);
     };
 
-    // 메시지 전송 함수
-    function sendMessage() {
-        const message = messageInput.value.trim(); // 메시지 입력값 가져오기
-        if (message) {
-            socket.send(JSON.stringify({
-                action: 'message',
-                sender: nickname,
-                message: message
-            })); // WebSocket으로 메시지 전송
-
-            addMessageToLog(nickname, message, true); // 자신의 메시지를 채팅 로그에 추가
-            messageInput.value = ''; // 입력 필드 초기화
-        }
-    }
-
-    // 채팅 메시지 로그에 추가하는 함수
-    function addMessageToLog(sender, message, isSelf = false) {
-        const messageContainer = document.createElement('div');
-        messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
-
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        messageElement.textContent = `${sender}: ${message}`;
-
-        messageContainer.appendChild(messageElement);
-        chatLog.appendChild(messageContainer);
-
-        // 최신 메시지로 스크롤 이동
-        chatLog.scrollTop = chatLog.scrollHeight;
-    }
 
     // 참가자 목록 렌더링
     function renderParticipants(participants, logs) {
@@ -404,4 +552,110 @@ document.addEventListener('DOMContentLoaded', () => {
         startTimer(); // 타이머 시작
     });
 
+    // Topic 목록 가져오기
+    async function loadTopics() {
+        console.log('Loading topics...'); // 함수 호출 확인
+    
+        try {
+            const response = await fetch('/liargame/topics');
+            const topics = await response.json();
+    
+            console.log('Topics loaded:', topics); // API로 반환된 데이터 확인
+    
+            // select 요소 초기화 (중복 방지)
+            topicSelect.innerHTML = '';
+    
+            topics.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic.id; // Topic의 고유 ID
+                option.textContent = topic.name; // Topic의 이름
+                topicSelect.appendChild(option);
+            });
+    
+            console.log('Topics added to select:', topicSelect.innerHTML); // 추가된 옵션 확인
+        } catch (error) {
+            console.error('Failed to load topics:', error);
+        }
+    }
+    
+
+    // SubTopic 가져오기 및 배포
+    async function fetchSubtopicsAndDistribute() {
+        const selectedTopicId = topicSelect.value;
+    
+        if (!selectedTopicId) {
+            console.error('No topic selected');
+            return;
+        }
+    
+        try {
+            const encodedTopicId = encodeURIComponent(selectedTopicId);
+            const response = await fetch(`/liargame/random-subtopics/?topic_id=${encodedTopicId}`);
+            if (!response.ok) throw new Error('Failed to fetch subtopics');
+    
+            const data = await response.json();
+    
+            if (participants.length === 0) {
+                console.error('No participants found');
+                alert('참가자가 없습니다. 먼저 참가자를 추가하세요.');
+                return;
+            }
+    
+            // Liar 배포 로직
+            const liar = participants[Math.floor(Math.random() * participants.length)];
+            const liarSubtopic = data.subtopics[1];
+            const participantSubtopic = data.subtopics[0];
+    
+            // SubTopic 전달
+            socket.send(
+                JSON.stringify({
+                    action: 'distribute_topic',
+                    subtopic1: participantSubtopic,
+                    subtopic2: liarSubtopic,
+                    liar: liar,
+                })
+            );
+    
+            // 모달창에 표시
+            if (nickname === liar) {
+                participantModalMessage.textContent = `당신은 Liar입니다. 주제어는: ${liarSubtopic}`;
+            } else {
+                participantModalMessage.textContent = `당신의 제시어는: ${participantSubtopic}`;
+            }
+            participantModal.style.display = 'flex';
+    
+            // 모달에 Liar 정보 및 제시어 정보 포함
+            const modalHeader = `Liar는 ${liar}입니다.`;
+            const modalContent = nickname === liar 
+                ? `당신의 주제어: ${liarSubtopic}` 
+                : `당신의 제시어: ${participantSubtopic}`;
+    
+            participantModalMessage.innerHTML = `<strong>${modalHeader}</strong><br>${modalContent}`;
+        } catch (error) {
+            console.error('Failed to fetch subtopics:', error);
+        }
+    }
+    
+    
+
+// 클릭 이벤트 중복 방지
+confirmTopicButton.removeEventListener('click', fetchSubtopicsAndDistribute);
+confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
+
+    // 초기화
+    loadTopics();
+
+    // 이벤트 리스너
+    confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
+
+    // WebSocket 메시지 수신
+    socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+
+        if (data.type === 'participants') {
+            participants = data.participants; // 참가자 업데이트
+            console.log('[DEBUG] Participants updated:', participants);
+        }
+    };
 });
+    
