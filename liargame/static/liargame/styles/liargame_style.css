@@ -32,17 +32,17 @@ nav ul {
 }
 
 nav ul li {
-    margin: 0 15px; /* 리스트 항목 간 간격 */
+    margin: 0 20px;
 }
 
 nav ul li a {
-    color: white; /* 링크 색상 */
-    text-decoration: none; /* 밑줄 제거 */
-    font-weight: bold; /* 글씨 두껍게 */
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
 }
 
 nav ul li a:hover {
-    text-decoration: underline; /* 호버 시 밑줄 추가 */
+    text-decoration: underline;
 }
 
 /* Timer Bar */
