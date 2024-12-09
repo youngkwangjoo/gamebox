@@ -19,7 +19,7 @@
                     {% csrf_token %}
                 </form>
             </li>
-            {% else %}
+            {% else %}a
                 <li><a href="{% url 'signin' %}">로그인</a></li>
             {% endif %}
             <li><a href="{% url 'game' %}">대기실</a></li>
@@ -68,11 +68,11 @@
         <!-- 왼쪽 패널 -->
         <div class="participants-panel">
             <div class="participants-container">
-                <h2>참가자 목록</h2>
+                <h3>참가자 목록</h3>
                 <div id="participants-container"></div>
             </div>
             <div class="participant-logs">
-                <h2>참가자 글</h2>
+                <h3>참가자 글</h3>
                 <div id="participant-logs-container"></div>
             </div>
         </div>
@@ -89,7 +89,7 @@
                 </div>
             </div>
             <div class="vote-container">
-                <h2>투표</h2>
+                <h3>투표</h3>
                 <!-- 참가자 목록 -->
                 <div id="vote-participants"></div>
                 <!-- 투표 결과 표시 -->

@@ -1,0 +1,54 @@
+# name: CI/CD Pipeline
+
+# # 워크플로우가 실행될 이벤트를 정의합니다.
+# # 'main' 브랜치에 push되거나 pull request가 생성될 때 실행됩니다.
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+#     branches:
+#       - main
+
+# jobs:
+#   deploy:
+#     # Job 이름
+#     name: Deploy Application
+#     # 실행 환경 지정 (여기서는 Ubuntu 최신 버전 사용)
+#     runs-on: ubuntu-latest
+
+#     # Job 단계 정의
+#     steps:
+#       # 1. 코드 체크아웃
+#       # GitHub 리포지토리의 코드를 다운로드합니다.
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       # 2. Python 환경 설정
+#       # 워크플로우에서 사용할 Python 버전을 설정합니다.
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.10"  # 사용할 Python 버전
+
+#       # 3. Poetry 설치
+#       # Poetry는 Python 프로젝트의 의존성 관리 도구입니다.
+#       - name: Install Poetry
+#         run: |
+#           # Poetry를 설치합니다.
+#           curl -sSL https://install.python-poetry.org | python3 -
+#           # Poetry가 워크플로우에서 사용 가능하도록 PATH에 추가합니다.å
+#           echo "::add-path::$(python3 -m site --user-base)/bin"
+
+#       # 4. 의존성 설치
+#       # 프로젝트에 필요한 Python 패키지를 설치합니다.
+#       - name: Install dependencies
+#         run: poetry install --no-dev  # 개발용 의존성 제외
+
+#       # 5. 배포 단계
+#       # 배포 스크립트를 실행합니다. 실제 배포 로직은 사용자가 채워야 합니다.
+#       - name: Deploy Application
+#         run: |
+#           # 아래에 배포 스크립트를 작성하세요.
+#           echo "Deploy logic placeholder"
+#           # 예: 서버에 파일 업로드, 서비스 재시작 등

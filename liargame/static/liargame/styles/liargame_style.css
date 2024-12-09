@@ -45,6 +45,7 @@ nav ul li a:hover {
     text-decoration: underline;
 }
 
+
 /* Timer Bar */
 .bar-container {
     display: flex; /* 플렉스 박스 */
@@ -334,3 +335,72 @@ nav ul li a:hover {
     text-align: center;
 }
 
+/* 미디어 쿼리: 화면 너비가 768px 이하인 경우 */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column; /* 네비게이션 메뉴를 수직 정렬 */
+        align-items: center; /* 메뉴 아이템 중앙 정렬 */
+    }
+
+    .bar-container {
+        flex-direction: column; /* 타이머와 메시지를 세로 배치 */
+        text-align: center; /* 텍스트 중앙 정렬 */
+    }
+
+    #timer-controls {
+        flex-direction: column; /* 버튼을 세로 배치 */
+        gap: 10px; /* 버튼 간 간격 조정 */
+    }
+
+    .game-container {
+        flex-direction: column; /* 게임 영역을 세로 정렬 */
+        height: auto; /* 높이를 자동으로 설정 */
+        gap: 10px; /* 패널 간 간격 조정 */
+        width: 95%; /* 작은 화면에서는 패딩 추가 */
+    }
+
+    .participants-panel, .interaction-panel {
+        flex: none; /* 두 패널의 너비 비율 제거 */
+        width: 100%; /* 전체 너비 사용 */
+    }
+
+    .chat-box {
+        height: 200px; /* 채팅 상자 높이를 줄임 */
+    }
+
+    .vote-container {
+        padding: 10px; /* 내부 여백 줄임 */
+    }
+
+    .modal-content {
+        width: 90%; /* 모달 너비를 화면에 맞춤 */
+    }
+
+    #start-timer-button, #stop-timer-button, #reset-timer-button {
+        font-size: 14px; /* 버튼 크기 조정 */
+        padding: 8px 12px; /* 내부 여백 축소 */
+    }
+}
+
+/* 미디어 쿼리: 화면 너비가 480px 이하인 경우 */
+@media (max-width: 480px) {
+    body {
+        font-size: 0.9rem; /* 기본 글꼴 크기 줄임 */
+    }
+
+    nav ul li {
+        margin: 5px 0; /* 메뉴 간격 축소 */
+    }
+
+    .chat-box {
+        height: 150px; /* 채팅 상자 높이를 더 줄임 */
+    }
+
+    #timer {
+        font-size: 18px; /* 타이머 글자 크기 줄임 */
+    }
+
+    .modal-content {
+        padding: 10px; /* 모달 내부 여백 줄임 */
+    }
+}
