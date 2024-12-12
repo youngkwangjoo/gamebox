@@ -19,7 +19,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.10  # Python 버전 지정
+        python-version: 3.10
 
     # 1.3 Poetry 설치
     - name: Install Poetry
