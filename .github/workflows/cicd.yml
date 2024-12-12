@@ -47,10 +47,10 @@ jobs:
         SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
       run: |
         # SSH 접속 및 작업 실행
-        sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no -p 22 gamebox@172.30.1.37 <<EOF
+        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22 gamebox@172.30.1.37 <<EOF
           cd gamebox/
           git pull origin main
           poetry install
-          sudo systemctl restart gamebox
-        EOF
+          sudo systemctl restart gamebox.service
+        EOF 
   
