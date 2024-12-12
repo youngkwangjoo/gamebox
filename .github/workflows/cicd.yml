@@ -44,17 +44,16 @@ jobs:
     # 2.2 SSH 배포
     - name: Deploy to Internal Server
       env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
       run: |
-        # SSH 키 설정
-        mkdir -p ~/.ssh
-        echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-
-        # 서버에 접속하여 배포 스크립트 실행
-        ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22 gamebox@172.30.1.37 <<EOF
+        # sshpass 설치 (필요한 경우)
+        sudo apt-get update && sudo apt-get install -y sshpass
+    
+        # SSH 접속 및 작업 실행
+        sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no -p 22 gamebox@172.30.1.37 <<EOF
           cd /gamebox
           git pull origin main
           poetry install
           systemctl restart gamebox
         EOF
+  
