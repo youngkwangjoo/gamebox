@@ -8,7 +8,7 @@ on:
 jobs:
   # 1. Build and Test Job
   build-and-test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted  # 변경: 내부 네트워크에 배치된 러너 사용
 
     steps:
     # 1.1 리포지토리 클론
@@ -18,8 +18,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.10'  # 따옴표로 명시
-
+        python-version: '3.10'
 
     # 1.3 Poetry 설치
     - name: Install Poetry
@@ -34,8 +33,8 @@ jobs:
 
   # 2. Deploy Job
   deploy:
-    needs: build-and-test  # Build & Test 통과 후 실행
-    runs-on: ubuntu-latest
+    needs: build-and-test
+    runs-on: self-hosted  # 변경: 내부 네트워크에 배치된 러너 사용
 
     steps:
     # 2.1 리포지토리 클론
