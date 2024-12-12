@@ -46,11 +46,11 @@ jobs:
       env:
         SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
       run: |
-        # SSH 접속 및 작업 실행
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22 gamebox@172.30.1.37 <<EOF
-          cd gamebox/
+          # 여기에 실행할 명령어 작성
+          cd /gamebox
           git pull origin main
           poetry install
-          sudo systemctl restart gamebox.service
-        EOF 
-  
+        EOF
+#sudo nano /etc/systemd/system/gamebox.service 나중에 추가하기
+
