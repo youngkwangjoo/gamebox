@@ -51,6 +51,6 @@ jobs:
           cd gamebox/
           git pull origin main
           poetry install
-          systemctl restart gamebox
+          sudo systemctl restart gamebox
         EOF
   
