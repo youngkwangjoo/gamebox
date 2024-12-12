@@ -46,9 +46,6 @@ jobs:
       env:
         SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
       run: |
-        # sshpass 설치 (필요한 경우)
-        sudo apt-get update && sudo apt-get install -y sshpass
-    
         # SSH 접속 및 작업 실행
         sshpass -p "$SSH_PASSWORD" ssh -o StrictHostKeyChecking=no -p 22 gamebox@172.30.1.37 <<EOF
           cd /gamebox
