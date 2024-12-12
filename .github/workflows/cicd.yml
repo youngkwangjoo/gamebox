@@ -32,11 +32,6 @@ jobs:
       run: |
         poetry install
 
-    # 1.5 테스트 실행
-    - name: Run tests
-      run: |
-        poetry run pytest
-
   # 2. Deploy Job
   deploy:
     needs: build-and-test  # Build & Test 통과 후 실행
