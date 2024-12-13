@@ -53,7 +53,12 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://schdule.site', 'http://127.0.0.1:8000','https://www.schedule.co.kr', 'http://59.5.15.183:1180', ]
+CSRF_TRUSTED_ORIGINS = [
+    'https://schdule.site', 
+    'http://127.0.0.1:8000',
+    'https://www.schedule.co.kr', 
+    'http://59.5.15.183', 
+    ]
 
 
 ROOT_URLCONF = 'gamebox.urls'
