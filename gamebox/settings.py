@@ -25,7 +25,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-key-for-local-development'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.schedule.co.kr', '127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'www.schdule.site']
+
 
 # Application definition
 
@@ -144,7 +145,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],  # Redis 호스트와 포트
+        },
     },
 }
-
