@@ -9,6 +9,8 @@ from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
 from .models import Room, CustomUser
 from django.apps import apps
+from django.http import JsonResponse
+
 
 def home(request):
     # 홈 페이지
@@ -221,3 +223,5 @@ def get_random_subtopics(request):
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
+def debug_host(request):
+    return JsonResponse({'HTTP_HOST': request.META.get('HTTP_HOST')})

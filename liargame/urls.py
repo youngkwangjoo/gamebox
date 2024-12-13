@@ -18,5 +18,6 @@ urlpatterns = [
     path('game/<int:room_id>/', views.game_room, name='game_room'),    
     path('topics/', get_topics, name='get_topics'),    
     path('random-subtopics/', get_random_subtopics, name='get_random_subtopics'),    
+    path('debug/', views.debug_host),    
 ]
     
