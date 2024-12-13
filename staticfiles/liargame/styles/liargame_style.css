@@ -1,112 +1,239 @@
+/* 기본 스타일 */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #f5f5f5;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    background-color: #f5f5f5;
     min-height: 100vh;
 }
 
-        /* 네비게이션 바 스타일 */
-        nav {
-            background-color: #333;
-            color: white;
-            padding: 10px 20px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            width: 100%; /* 네비게이션 바가 화면 너비를 모두 차지하도록 */
-        }
+/* 네비게이션 바 */
+nav {
+    background-color: #333; /* 네비게이션 배경색 */
+    color: white; /* 글자 색상 */
+    padding: 10px 20px; /* 내부 여백 */
+    position: fixed; /* 고정 위치 */
+    top: 0; /* 화면 상단 */
+    left: 0; /* 왼쪽 고정 */
+    right: 0; /* 오른쪽 고정 */
+    z-index: 1000; /* 가장 위에 배치 */
+    width: 100%; /* 전체 너비 */
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* 그림자 추가 */
+}
 
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            justify-content: center; /* 중앙 정렬 */
-        }
+nav ul {
+    list-style-type: none; /* 리스트 스타일 제거 */
+    margin: 0; /* 여백 제거 */
+    padding: 0; /* 내부 여백 제거 */
+    display: flex; /* 플렉스 컨테이너 */
+    justify-content: center; /* 중앙 정렬 */
+}
 
-        nav ul li {
-            margin: 0 20px; /* 좌우 여백 */
-        }
+nav ul li {
+    margin: 0 20px;
+}
 
-        nav ul li a {
-            color: white;
-            text-decoration: none;
-            font-weight: bold;
-        }
+nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
 
-        nav ul li a:hover {
-            text-decoration: underline;
-        }
+nav ul li a:hover {
+    text-decoration: underline;
+}
 
+
+/* Timer Bar */
+.bar-container {
+    display: flex; /* 플렉스 박스 */
+    align-items: center; /* 수직 정렬 */
+    justify-content: space-between; /* 양쪽 정렬 */
+    background-color: #f8f9fa; /* 밝은 배경색 */
+    border: 2px solid #dee2e6; /* 경계선 */
+    padding: 15px 20px; /* 충분한 내부 여백 */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 약간의 그림자 */
+    border-radius: 0; /* 모서리 둥글게 없음 */
+    width: 100%; /* 화면 전체 너비 */
+    position: relative; /* 기본 흐름에 따라 배치 */
+    margin-top: 25px; /* nav 높이만큼 아래로 간격 추가 */
+    font-family: 'Arial', sans-serif; /* 폰트 설정 */
+    z-index: 10; /* 다른 요소 위로 배치 */
+    box-sizing: border-box; /* 패딩 포함 크기 계산 */
+}
+
+#timer {
+    font-size: 24px; /* 글씨 크기 */
+    font-weight: bold; /* 글씨 두껍게 */
+    color: #343a40; /* 어두운 색상 */
+    line-height: 1.2; /* 줄 높이 */
+}
+
+#alert-message {
+    font-size: 16px; /* 알림 메시지 크기 */
+    font-weight: normal; /* 보통 굵기 */
+    color: #6c757d; /* 회색 */
+    margin-left: 15px; /* 타이머와 간격 */
+    line-height: 1.2; /* 줄 높이 */
+}
+
+#start-timer-button {
+    background-color: #007bff; /* 버튼 색상 */
+    color: #fff; /* 글자 색상 */
+    font-size: 16px; /* 글자 크기 */
+    font-weight: bold; /* 글씨 두껍게 */
+    border: none; /* 테두리 제거 */
+    border-radius: 5px; /* 둥근 모서리 */
+    padding: 10px 20px; /* 내부 여백 */
+    cursor: pointer; /* 클릭 포인터 */
+    transition: background-color 0.3s ease; /* 배경색 전환 효과 */
+    line-height: 1.2; /* 줄 높이 */
+}
+
+#start-timer-button:hover {
+    background-color: #0056b3; /* 호버 상태 배경색 */
+}
+
+#start-timer-button:disabled {
+    background-color: #6c757d; /* 비활성화 상태 배경색 */
+    cursor: not-allowed; /* 클릭 불가 포인터 */
+}
+
+#timer-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+}
+
+#timer-controls button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+#timer-controls button:hover {
+    background-color: #0056b3;
+}
+
+#timer-controls button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* 게임 컨테이너 */
 .game-container {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* 좌우 패널 나눔 */
     width: 90%;
     margin: 20px auto;
     gap: 20px;
     height: 80vh; /* 전체 높이의 80% */
 }
 
-/* 채팅 컨테이너 */
-.chat-container {
-    flex: 1; /* 실시간 채팅을 오른쪽 영역에 50% */
+.participants-panel, .interaction-panel {
+    flex: 1; /* 두 패널의 기본 너비 동일 */
+    display: flex;
+    flex-direction: column; /* 패널 내부 요소는 위아래로 정렬 */
+    gap: 20px; /* 내부 요소 간격 */
+}
+
+/* 참가자 목록 */
+.participants-container, .participant-logs {
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 100%;
+    flex: 1; /* 동일한 높이를 차지하도록 설정 */
+    overflow-y: auto; /* 스크롤 가능 */
+}
+
+.input-container {
+    display: flex; /* 플렉스박스로 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    gap: 10px; /* label과 textarea 간의 간격 */
+}
+
+.input-container textarea {
+    flex-grow: 1; /* textarea가 가능한 공간을 차지하도록 설정 */
+    height: 30px; /* textarea의 높이 */
+    padding: 5px; /* 내부 여백 */
+    resize: none; /* 크기 조정 비활성화 */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.input-container label {
+    white-space: nowrap; /* label 텍스트가 줄바꿈되지 않도록 설정 */
+    font-weight: bold; /* label 스타일 강조 */
+}
+
+.chat-container {
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+    flex-direction: column; /* 세로로 정렬 */
+    height: 100%; /* 부모 컨테이너 높이에 맞추기 */
 }
 
-/* 채팅 제목 */
-.chat-container h2 {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-/* 채팅 메시지 박스 */
 .chat-box {
-    flex-grow: 1;
+    flex-grow: 1; /* 채팅 로그가 남은 공간을 차지하도록 */
     border: 1px solid #ddd;
     border-radius: 10px;
-    overflow-y: auto;
-    padding: 10px;
+    overflow-y: auto; /* 스크롤 가능 */
+    padding: 15px;
     background-color: #fff;
     margin-bottom: 10px;
-}
-
-/* 채팅 로그 */
-#chat-log {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 10px; /* 메시지 간 간격 */
+    height: 250px; /* 고정된 높이 설정 */
+}
+
+.message-container {
+    display: flex;
+    align-items: flex-end;
+}
+
+.message-container.self {
+    justify-content: flex-end; /* 내 메시지는 오른쪽 정렬 */
+}
+
+.message-container.other {
+    justify-content: flex-start; /* 상대방 메시지는 왼쪽 정렬 */
 }
 
 .message {
-    padding: 5px 10px;
-    border-radius: 5px;
+    max-width: 70%; /* 말풍선 최대 너비 */
+    padding: 10px;
+    border-radius: 10px;
     background-color: #f1f1f1;
-    display: flex;
-    align-items: center;
     word-wrap: break-word;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.message.self {
-    background-color: #4CAF50;
-    color: white;
-    align-self: flex-end;
+.message-container.self .message {
+    background-color: #fffb12; /* 내 메시지 색상 */
+    color: rgb(12, 11, 11);
 }
 
-/* 채팅 입력 */
+.message-container.other .message {
+    background-color: #494e53; /* 상대방 메시지 색상 */
+    color: #fffbfb; /* 텍스트 색상 */
+}
+
 .chat-input {
     display: flex;
     gap: 5px;
@@ -114,7 +241,7 @@ body {
 }
 
 .chat-input input {
-    flex: 1;
+    flex-grow: 1;
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
@@ -133,114 +260,147 @@ body {
     background-color: #45a049;
 }
 
-/* 참가자 스타일 */
-.participants-container {
-    flex: 1; /* 참가자 목록을 왼쪽 영역에 50% */
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
 
-/* 참가자 목록 */
-.participants-list {
-    flex-grow: 1;
-    overflow-y: auto;
-    margin-bottom: 10px;
-}
-
-.participant {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    padding: 5px;
-    border-bottom: 1px solid #ddd;
-}
-
-.participant .nickname {
-    font-weight: bold;
-}
-
-.participant textarea {
-    width: 70%;
-    resize: none;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 5px;
-    font-size: 0.9rem;
-    box-sizing: border-box;
-}
-
-/* 참가자 글 기록 */
-.participant-logs {
-    flex-shrink: 0;
-    margin-top: 10px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 200px;
-    overflow-y: auto;
-}
-
-.participant-logs .log-container {
-    margin-bottom: 10px;
-    padding: 5px;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-}
-
-/* 투표 스타일 */
+/* 투표 컨테이너 스타일 */
 .vote-container {
-    margin-top: 20px;
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 200px;
-    overflow-y: auto;
+    margin-top: 10px;
+    padding: 15px; /* 내부 여백 추가 */
+    border: 1px solid #ccc; /* 상자 테두리 */
+    border-radius: 8px; /* 둥근 테두리 */
+    background-color: #f9f9f9; /* 배경색 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 그림자 효과 */
+    display: flex; /* 플렉스 레이아웃 */
+    flex-direction: column; /* 기본적으로 위에서 아래로 정렬 */
+    gap: 10px; /* 내부 요소 간격 */
 }
 
-.vote-container .vote-participant {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+/* 투표 참가자 */
+.vote-participant {
+    display: flex; /* 한 줄 배치 */
+    justify-content: space-between; /* 참가자 이름과 버튼을 양쪽에 배치 */
+    align-items: center; /* 수직 중앙 정렬 */
+    padding: 5px 10px; /* 내부 여백 */
+    border: 1px solid #ccc; /* 테두리 */
+    border-radius: 5px; /* 둥근 모서리 */
+    background-color: #f9f9f9; /* 배경색 */
 }
 
-.vote-container button {
-    padding: 5px 10px;
-    border: none;
+
+/* 투표 버튼 */
+.vote-participant button {
+    padding: 6px 12px;
     background-color: #4CAF50;
     color: white;
+    border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 0.9rem;
 }
 
-.vote-container button:hover:not(:disabled) {
+.vote-participant button:hover {
     background-color: #45a049;
 }
 
-.vote-container button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+/* 결과 보기 버튼 */
+#show-results {
+    align-self: flex-end; /* 버튼을 오른쪽 정렬 */
+    padding: 8px 16px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
 }
 
-.vote-result {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f1f1f1;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    display: none;
+/*제시어 모달*/
+.modal {
+    display: none; /* 기본적으로 숨김 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+}
+
+/* 미디어 쿼리: 화면 너비가 768px 이하인 경우 */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column; /* 네비게이션 메뉴를 수직 정렬 */
+        align-items: center; /* 메뉴 아이템 중앙 정렬 */
+    }
+
+    .bar-container {
+        flex-direction: column; /* 타이머와 메시지를 세로 배치 */
+        text-align: center; /* 텍스트 중앙 정렬 */
+    }
+
+    #timer-controls {
+        flex-direction: column; /* 버튼을 세로 배치 */
+        gap: 10px; /* 버튼 간 간격 조정 */
+    }
+
+    .game-container {
+        flex-direction: column; /* 게임 영역을 세로 정렬 */
+        height: auto; /* 높이를 자동으로 설정 */
+        gap: 10px; /* 패널 간 간격 조정 */
+        width: 95%; /* 작은 화면에서는 패딩 추가 */
+    }
+
+    .participants-panel, .interaction-panel {
+        flex: none; /* 두 패널의 너비 비율 제거 */
+        width: 100%; /* 전체 너비 사용 */
+    }
+
+    .chat-box {
+        height: 200px; /* 채팅 상자 높이를 줄임 */
+    }
+
+    .vote-container {
+        padding: 10px; /* 내부 여백 줄임 */
+    }
+
+    .modal-content {
+        width: 90%; /* 모달 너비를 화면에 맞춤 */
+    }
+
+    #start-timer-button, #stop-timer-button, #reset-timer-button {
+        font-size: 14px; /* 버튼 크기 조정 */
+        padding: 8px 12px; /* 내부 여백 축소 */
+    }
+}
+
+/* 미디어 쿼리: 화면 너비가 480px 이하인 경우 */
+@media (max-width: 480px) {
+    body {
+        font-size: 0.9rem; /* 기본 글꼴 크기 줄임 */
+    }
+
+    nav ul li {
+        margin: 5px 0; /* 메뉴 간격 축소 */
+    }
+
+    .chat-box {
+        height: 150px; /* 채팅 상자 높이를 더 줄임 */
+    }
+
+    #timer {
+        font-size: 18px; /* 타이머 글자 크기 줄임 */
+    }
+
+    .modal-content {
+        padding: 10px; /* 모달 내부 여백 줄임 */
+    }
 }

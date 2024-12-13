@@ -51,6 +51,7 @@ jobs:
           cd gamebox/
           git pull origin main
           poetry install
+          sudo systemctl restart nginx
         EOF
 #sudo nano /etc/systemd/system/gamebox.service 나중에 추가하기
 
