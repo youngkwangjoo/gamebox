@@ -25,8 +25,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-key-for-local-development'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-#ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'www.schdule.site']
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'www.schdule.site']
+#ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -53,7 +53,7 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://schdule.site', 'http://127.0.0.1:8000','https://www.schedule.co.kr']
+CSRF_TRUSTED_ORIGINS = ['https://schdule.site', 'http://127.0.0.1:8000','https://www.schedule.co.kr', 'http://59.5.15.183:1180', ]
 
 
 ROOT_URLCONF = 'gamebox.urls'
