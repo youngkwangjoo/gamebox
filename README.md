@@ -27,3 +27,4 @@ python, django. poetry, websocket, html, javascript, css, dbsqlite3, home NAS
 daphne -b 127.0.0.1 -p 8001 gamebox.asgi:application
 /etc/nginx/sites-available/schedule
 sudo ln -s /etc/nginx/sites-available/schedule /etc/nginx/sites-enabled/
+ssh -i ~/.ssh/id_rsa -p 22 gamebox@172.30.1.37
