@@ -56,9 +56,10 @@ MIDDLEWARE = [
 CSRF_TRUSTED_ORIGINS = [
     'https://schdule.site', 
     'http://127.0.0.1:8000',
-    'https://www.schedule.co.kr', 
+    'https://www.schdule.site', 
     'http://59.5.15.183:1180',  # 포트 포함
     'http://59.5.15.183',       # 포트 없는 경우도 추가
+    'http://www.schdule.site', 
 ]
 
 

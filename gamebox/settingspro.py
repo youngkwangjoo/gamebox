@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-fi!1t2&l#8@=1-t-pxtma$^batde4pp^bpp@@0bk5^pt-n)%cu'
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-key-for-local-development')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'www.schdule.site']
 
