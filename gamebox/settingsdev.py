@@ -25,7 +25,8 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-key-for-local-development'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'www.schdule.site']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'schdule.site', 'www.schdule.site']
+#ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -45,14 +46,22 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    #'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware', 
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://schdule.site', 'http://127.0.0.1:8000','https://www.schedule.co.kr']
+CSRF_TRUSTED_ORIGINS = [
+    'https://schdule.site', 
+    'http://127.0.0.1:8000',
+    'https://www.schdule.site', 
+    'http://59.5.15.183:1180',  # 포트 포함
+    'http://59.5.15.183',       # 포트 없는 경우도 추가
+    'http://www.schdule.site', 
+]
+
 
 
 ROOT_URLCONF = 'gamebox.urls'
