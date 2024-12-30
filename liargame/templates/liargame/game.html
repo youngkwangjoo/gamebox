@@ -233,7 +233,8 @@
             const roomId = 'lobby';
             const nickname = "{{ user.nickname|default:'익명' }}";
             const participantsList = document.getElementById('participants-list');
-            const socket = new WebSocket(`wws://${window.location.host}/ws/room/${roomId}/`);
+            const socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
+
 
             socket.onopen = () => {
                 console.log('WebSocket 연결 성공.');

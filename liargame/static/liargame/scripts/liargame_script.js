@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // WebSocket 설정
     const roomId = document.getElementById('room-id')?.textContent.trim() || '';
     const nickname = document.getElementById('user-nickname')?.textContent.trim() || '익명';
-    const socket = new WebSocket(`wws://${window.location.host}/ws/room/${roomId}/`);
+    const socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
 
     // topic 설정
     const topicSelect = document.getElementById('topic-select');
