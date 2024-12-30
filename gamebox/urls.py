@@ -16,8 +16,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.shortcuts import redirect
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('liargame/', include('liargame.urls')),  # liargame 앱의 URL 추가
+    path('', lambda request: redirect('/liargame/', permanent=True)),     
 ]
