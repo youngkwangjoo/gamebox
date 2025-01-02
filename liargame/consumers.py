@@ -4,6 +4,7 @@ from asgiref.sync import sync_to_async
 import json
 
 
+
 class LobbyConsumer(AsyncWebsocketConsumer):
     lobby_participants = []  # 클래스 수준의 로비 참가자 관리
 
@@ -46,9 +47,11 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         }))
 
 
+
 class GameRoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_id = self.scope["url_route"]["kwargs"].get("room_id", None)
+        print(f"[DEBUG] Attempting to connect. Room ID: {self.room_id}")
 
         if not self.room_id:
             await self.close(code=4001)
@@ -56,6 +59,8 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             return
 
         nickname = getattr(self.scope['user'], 'nickname', None)
+        print(f"[DEBUG] User nickname: {nickname}")
+
         if not nickname:
             await self.close(code=4002)
             print("[ERROR] Nickname is required to join a room.")
@@ -63,10 +68,12 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         participants = []
         if self.room_id == "new":
+            print(f"[DEBUG] Creating a new room for user: {nickname}")
             self.room_id, participants = await sync_to_async(self.add_to_room)(nickname=nickname)
             self.room_group_name = f"room_{self.room_id}"
         else:
             try:
+                print(f"[DEBUG] Adding user {nickname} to existing room: {self.room_id}")
                 participants = await sync_to_async(self.add_to_room)(room_id=int(self.room_id), nickname=nickname)
                 self.room_group_name = f"room_{self.room_id}"
             except ValueError as e:
@@ -76,6 +83,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
+        print(f"[DEBUG] User {nickname} connected to group {self.room_group_name}")
 
         await self.send(text_data=json.dumps({
             "type": "participants",
@@ -84,8 +92,11 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, close_code):
         nickname = self.scope['user'].nickname
+        print(f"[DEBUG] User {nickname} is disconnecting from room {self.room_id}")
+
         try:
             participants = await sync_to_async(self.remove_from_room)(self.room_id, nickname)
+            print(f"[DEBUG] Remaining participants in room {self.room_id}: {participants}")
         except Exception as e:
             print(f"[ERROR] Exception during disconnect: {e}")
             return
@@ -100,11 +111,13 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print(f"[DEBUG] Room {self.room_id} not found for deletion.")
 
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
+        print(f"[DEBUG] User {nickname} removed from group {self.room_group_name}")
 
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
         nickname = self.scope['user'].nickname
+        print(f"[DEBUG] Received action: {action} from user {nickname} with data: {data}")
 
         if action == "join":
             participants = await sync_to_async(self.add_to_room)(self.room_id, nickname)
@@ -116,7 +129,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         elif action == "message":
             message = data.get("message", "")
-            # 메시지 브로드캐스트
+            print(f"[DEBUG] Broadcasting message from {nickname}: {message}")
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -126,12 +139,11 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
 
-        # 채팅 메시지 브로드캐스트 처리
     async def chat_message(self, event):
         message = event["message"]
         sender = event["sender"]
+        print(f"[DEBUG] Sending message to WebSocket: {message} from {sender}")
 
-        # WebSocket으로 메시지 전송
         await self.send(text_data=json.dumps({
             "type": "message",
             "message": message,
@@ -140,12 +152,12 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
     async def update_participants(self, event):
         participants = event["participants"]
-        print(f"[DEBUG] Sending participants: {participants}")
+        print(f"[DEBUG] Sending participants list to WebSocket: {participants}")
+
         await self.send(text_data=json.dumps({
             "type": "participants",
             "participants": participants,
         }))
-
 
     def add_to_room(self, room_id=None, nickname=None):
         Room = apps.get_model('liargame', 'Room')
@@ -185,5 +197,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         existing_ids = set(Room.objects.values_list('room_number', flat=True))
         for room_id in range(1, 1000):
             if room_id not in existing_ids:
+                print(f"[DEBUG] Generated new room ID: {room_id}")
                 return room_id
         raise ValueError("No available room IDs.")
+
