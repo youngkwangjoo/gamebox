@@ -126,10 +126,12 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         elif action == "leave":
             participants = await sync_to_async(self.remove_from_room)(self.room_id, nickname)
             await self.broadcast_participants(participants)
-
         elif action == "message":
             message = data.get("message", "")
-            print(f"[DEBUG] Broadcasting message from {nickname}: {message}")
+            print(f"[DEBUG] Received message action from {nickname}: {message}")
+            
+            # WebSocket 그룹에 메시지 브로드캐스트
+            print(f"[DEBUG] Preparing to broadcast message to group: {self.room_group_name}")
             await self.channel_layer.group_send(
                 self.room_group_name,
                 {
@@ -138,7 +140,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     "sender": nickname,
                 }
             )
-            print(f"[DEBUG] Broadcasting message to group {self.room_group_name}")
+            print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
     async def chat_message(self, event):
         message = event["message"]
         sender = event["sender"]

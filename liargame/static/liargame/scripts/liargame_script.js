@@ -43,27 +43,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // WebSocket 메시지 수신
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        try {
+            const data = JSON.parse(event.data);
+            console.log('[DEBUG] 메시지 수신:', data);
 
-        switch (data.type) {
-            case 'participants':
-                participants = data.participants; // 참가자 목록 업데이트
-                console.log('[DEBUG] Updated participants:', participants);
-                break;
+            switch (data.type) {
+                case 'participants':
+                    console.log('[DEBUG] 참가자 목록 갱신:', data.participants);
+                    participants = data.participants;
+                    renderParticipants(participants); // 참가자 목록 갱신
+                    break;
 
-            case 'distribute_topic':
-                // 참가자에게 SubTopic 표시
-                const { subtopic1, subtopic2, liar } = data;
-                if (nickname === liar) {
-                    participantModalMessage.textContent = `당신은 Liar입니다. 주제어는: ${data.subtopics[1]}`;
-                } else {
-                    participantModalMessage.textContent = `당신의 제시어는: ${data.subtopics[0]}`;
-                }
-                participantModal.style.display = 'flex';
-                break;
+                case 'message':
+                    console.log(`[DEBUG] 채팅 메시지 수신 - 보낸 사람: ${data.sender}, 메시지: ${data.message}`);
+                    addMessageToLog(data.sender, data.message);
+                    break;
 
-            default:
-                console.warn('Unknown action received:', data.action);
+                default:
+                    console.warn('[WARN] 알 수 없는 메시지 타입:', data.type);
+            }
+        } catch (error) {
+            console.error('[ERROR] 메시지 파싱 오류:', event.data, error);
         }
     };
 
@@ -72,13 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
     let timerInterval; // 타이머 Interval ID
     let isPaused = false; // 타이머 일시 중단 상태
 
-    // WebSocket 이벤트 핸들러
+    // WebSocket 이벤트
     socket.onopen = () => {
-        console.log('[DEBUG] WebSocket connected.');
+        console.log('[DEBUG] WebSocket 연결 성공');
         if (nickname) {
+            console.log(`[DEBUG] 사용자 참가: ${nickname}`);
             socket.send(JSON.stringify({ action: 'join', nickname }));
         }
     };
+
 
     //제시어 배포 
     distributeButton.addEventListener('click', () => {
@@ -229,21 +231,24 @@ document.addEventListener('DOMContentLoaded', () => {
     // 초기 버튼 상태
     toggleButtons(false);
 
-    // 메시지 전송 함수
+    // 메시지 전송
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
+            console.log('[DEBUG] 메시지 전송:', { sender: nickname, message });
             socket.send(JSON.stringify({
                 action: 'message',
                 sender: nickname,
-                message: message
+                message: message,
             }));
             addMessageToLog(nickname, message, true);
             messageInput.value = '';
+        } else {
+            console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
         }
     }
 
-    // 채팅 메시지 로그에 추가하는 함수
+    // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
@@ -255,6 +260,8 @@ document.addEventListener('DOMContentLoaded', () => {
         messageContainer.appendChild(messageElement);
         chatLog.appendChild(messageContainer);
         chatLog.scrollTop = chatLog.scrollHeight;
+
+        console.log('[DEBUG] 메시지 로그에 추가:', { sender, message });
     }
 
     // 메시지 전송 버튼 이벤트
@@ -289,12 +296,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    socket.onclose = () => {
-        console.log('[DEBUG] WebSocket connection closed.');
+    socket.onclose = (event) => {
+        console.log('[DEBUG] WebSocket 연결 종료:', event);
     };
 
     socket.onerror = (error) => {
-        console.error('[ERROR] WebSocket error:', error);
+        console.error('[ERROR] WebSocket 오류:', error);
     };
 
 
