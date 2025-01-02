@@ -138,7 +138,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     "sender": nickname,
                 }
             )
-
+            print(f"[DEBUG] Broadcasting message to group {self.room_group_name}")
     async def chat_message(self, event):
         message = event["message"]
         sender = event["sender"]
