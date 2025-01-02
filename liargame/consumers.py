@@ -104,44 +104,63 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
-        nickname = data.get("nickname", "익명")
+        nickname = self.scope['user'].nickname
 
         if action == "join":
             participants = await sync_to_async(self.add_to_room)(self.room_id, nickname)
             await self.broadcast_participants(participants)
+
         elif action == "leave":
             participants = await sync_to_async(self.remove_from_room)(self.room_id, nickname)
             await self.broadcast_participants(participants)
 
-    async def broadcast_participants(self, participants):
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                "type": "update_participants",
-                "participants": participants,
-            }
-        )
+        elif action == "message":
+            message = data.get("message", "")
+            # 메시지 브로드캐스트
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_message",
+                    "message": message,
+                    "sender": nickname,
+                }
+            )
+
+        # 채팅 메시지 브로드캐스트 처리
+    async def chat_message(self, event):
+        message = event["message"]
+        sender = event["sender"]
+
+        # WebSocket으로 메시지 전송
+        await self.send(text_data=json.dumps({
+            "type": "message",
+            "message": message,
+            "sender": sender,
+        }))
 
     async def update_participants(self, event):
         participants = event["participants"]
+        print(f"[DEBUG] Sending participants: {participants}")
         await self.send(text_data=json.dumps({
             "type": "participants",
             "participants": participants,
         }))
 
+
     def add_to_room(self, room_id=None, nickname=None):
         Room = apps.get_model('liargame', 'Room')
+        CustomUser = apps.get_model('liargame', 'CustomUser')
 
         if room_id is None:
             room_id = self.generate_room_id()
 
         room, _ = Room.objects.get_or_create(room_number=room_id)
-
-        CustomUser = apps.get_model('liargame', 'CustomUser')
         user = CustomUser.objects.get(nickname=nickname)
-        room.players.add(user)
 
-        participants = [player.nickname for player in room.players.all()]
+        if not room.players.filter(pk=user.pk).exists():
+            room.players.add(user)
+
+        participants = list(room.players.values_list('nickname', flat=True))
         print(f"[DEBUG] add_to_room: Room ID {room_id}, Participants: {participants}")
         return participants
 
