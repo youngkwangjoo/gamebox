@@ -6,45 +6,38 @@ import json
 
 
 class LobbyConsumer(AsyncWebsocketConsumer):
-    lobby_participants = []  # 클래스 수준의 로비 참가자 관리
-
     async def connect(self):
         await self.channel_layer.group_add("lobby", self.channel_name)
         await self.accept()
 
         nickname = self.scope['user'].nickname
-        if nickname not in LobbyConsumer.lobby_participants:
-            LobbyConsumer.lobby_participants.append(nickname)
-
+        await self.add_participant(nickname)
         await self.broadcast_participants()
 
     async def disconnect(self, close_code):
         nickname = self.scope['user'].nickname
-        if nickname in LobbyConsumer.lobby_participants:
-            LobbyConsumer.lobby_participants.remove(nickname)
+        await self.remove_participant(nickname)
         await self.channel_layer.group_discard("lobby", self.channel_name)
-
         await self.broadcast_participants()
 
-    async def receive(self, text_data):
-        data = json.loads(text_data)
-        if data.get("action") == "refresh":
-            await self.broadcast_participants()
+    async def add_participant(self, nickname):
+        participants = await self.get_participants()
+        if nickname not in participants:
+            participants.append(nickname)
+            await self.save_participants(participants)
 
-    async def broadcast_participants(self):
-        await self.channel_layer.group_send(
-            "lobby",
-            {
-                "type": "update_participants",
-                "participants": LobbyConsumer.lobby_participants,
-            }
-        )
+    async def remove_participant(self, nickname):
+        participants = await self.get_participants()
+        if nickname in participants:
+            participants.remove(nickname)
+            await self.save_participants(participants)
 
-    async def update_participants(self, event):
-        await self.send(text_data=json.dumps({
-            "type": "participants",
-            "participants": event["participants"],
-        }))
+    async def get_participants(self):
+        return await self.channel_layer.get("lobby_participants", [])
+
+    async def save_participants(self, participants):
+        await self.channel_layer.set("lobby_participants", participants)
+
 
 
 
@@ -144,13 +137,15 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event["message"]
         sender = event["sender"]
-        print(f"[DEBUG] Sending message to WebSocket: {message} from {sender}")
+        print(f"[DEBUG] chat_message triggered. Message: {message}, Sender: {sender}")
 
+        # WebSocket으로 메시지 전송
         await self.send(text_data=json.dumps({
             "type": "message",
             "message": message,
             "sender": sender,
         }))
+        print(f"[DEBUG] Message sent to WebSocket. Message: {message}, Sender: {sender}")
 
     async def update_participants(self, event):
         participants = event["participants"]

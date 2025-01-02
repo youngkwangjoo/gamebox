@@ -39,33 +39,70 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantLogs = {}; // 참가자 글 상태를 유지하는 객체
     let hasVoted = false; // 투표 여부
 
-
+    function connectWebSocket() {
+        console.log('[DEBUG] Connecting to WebSocket...');
+        socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
     
-    // WebSocket 메시지 수신
+        socket.onopen = () => {
+            console.log('[DEBUG] WebSocket connected.');
+            if (nickname) {
+                socket.send(JSON.stringify({ action: 'join', nickname }));
+            }
+        };
+    
+        socket.onmessage = (event) => {
+            // 기존 onmessage 내용 유지
+        };
+    
+        socket.onclose = (event) => {
+            console.log('[DEBUG] WebSocket connection closed. Reconnecting...', event);
+            setTimeout(connectWebSocket, 5000); // 5초 후 재연결 시도
+        };
+    
+        socket.onerror = (error) => {
+            console.error('[DEBUG] WebSocket error:', error);
+        };
+    }
+    
+    // 초기 WebSocket 연결
+    connectWebSocket();
+    
+    
+        // WebSocket 메시지 수신
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+        try {
+            const data = JSON.parse(event.data);
+            console.log('[DEBUG] WebSocket message received:', data);
 
-        switch (data.type) {
-            case 'participants':
-                participants = data.participants; // 참가자 목록 업데이트
-                console.log('[DEBUG] Updated participants:', participants);
-                break;
+            // 메시지 타입에 따른 처리
+            switch (data.type) {
+                case 'participants':
+                    console.log('[DEBUG] Updating participants:', data.participants);
+                    participants = data.participants;
+                    renderParticipants(participants, participantLogs); // UI 갱신
+                    renderParticipantInputFields(participants);
+                    renderVoteUI(participants);
+                    break;
 
-            case 'distribute_topic':
-                // 참가자에게 SubTopic 표시
-                const { subtopic1, subtopic2, liar } = data;
-                if (nickname === liar) {
-                    participantModalMessage.textContent = `당신은 Liar입니다. 주제어는: ${data.subtopics[1]}`;
-                } else {
-                    participantModalMessage.textContent = `당신의 제시어는: ${data.subtopics[0]}`;
-                }
-                participantModal.style.display = 'flex';
-                break;
+                case 'message':
+                    console.log('[DEBUG] Chat message received:', data);
+                    addMessageToLog(data.sender, data.message); // 채팅 메시지 추가
+                    break;
 
-            default:
-                console.warn('Unknown action received:', data.action);
+                case 'log_update':
+                    console.log('[DEBUG] Log update received:', data);
+                    participantLogs[data.participant] = data.log;
+                    renderParticipants(participants, participantLogs); // UI 갱신
+                    break;
+
+                default:
+                    console.warn('[DEBUG] Unknown message type:', data.type);
+            }
+        } catch (error) {
+            console.error('[DEBUG] Error parsing WebSocket message:', event.data, error);
         }
     };
+
 
     // 타이머 초기화
     let timerDuration = 5 * 60; // 5분 (300초)
@@ -265,29 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage();
         }
     });
-
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log('[DEBUG] Message received:', data);
-
-        switch (data.type) {
-            case 'participants':
-                participants = data.participants;
-                renderParticipants(participants, participantLogs); // 참가자 목록 갱신
-                renderParticipantInputFields(participants); // 글 입력 UI 갱신
-                renderVoteUI(participants); // 투표 UI 갱신
-                break;
-            case 'message':
-                addMessageToLog(data.sender, data.message); // 다른 사용자의 메시지를 채팅 로그에 추가
-                break;
-            case 'log_update':
-                participantLogs[data.participant] = data.log; // 참가자 글 업데이트
-                renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
-                break;
-            default:
-                console.error('[ERROR] Unknown message type:', data.type);
-        }
-    };
+    
 
     socket.onclose = () => {
         console.log('[DEBUG] WebSocket connection closed.');
