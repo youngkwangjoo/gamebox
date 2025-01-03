@@ -119,6 +119,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         elif action == "leave":
             participants = await sync_to_async(self.remove_from_room)(self.room_id, nickname)
             await self.broadcast_participants(participants)
+
         elif action == "message":
             message = data.get("message", "")
             print(f"[DEBUG] Received message action from {nickname}: {message}")
@@ -134,6 +135,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
+
     async def chat_message(self, event):
         message = event["message"]
         sender = event["sender"]
@@ -155,6 +157,16 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             "type": "participants",
             "participants": participants,
         }))
+
+    async def broadcast_participants(self, participants):
+        """참가자 목록을 WebSocket 그룹에 브로드캐스트하는 메서드"""
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                "type": "update_participants",
+                "participants": participants,
+            }
+        )
 
     def add_to_room(self, room_id=None, nickname=None):
         Room = apps.get_model('liargame', 'Room')
@@ -197,4 +209,3 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print(f"[DEBUG] Generated new room ID: {room_id}")
                 return room_id
         raise ValueError("No available room IDs.")
-
