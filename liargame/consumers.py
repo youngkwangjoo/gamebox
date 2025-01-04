@@ -2,7 +2,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.apps import apps  # 동적 모델 접근을 위한 apps import
 from asgiref.sync import sync_to_async
 import json
-
+from django.core.cache import cache
 
 
 class LobbyConsumer(AsyncWebsocketConsumer):
@@ -11,32 +11,49 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
         nickname = self.scope['user'].nickname
-        await self.add_participant(nickname)
-        await self.broadcast_participants()
-
-    async def disconnect(self, close_code):
-        nickname = self.scope['user'].nickname
-        await self.remove_participant(nickname)
-        await self.channel_layer.group_discard("lobby", self.channel_name)
-        await self.broadcast_participants()
-
-    async def add_participant(self, nickname):
         participants = await self.get_participants()
         if nickname not in participants:
             participants.append(nickname)
             await self.save_participants(participants)
+        
+        # 브로드캐스트로 참가자 목록 전송
+        await self.channel_layer.group_send(
+            "lobby",
+            {
+                "type": "update_participants",
+                "participants": participants,
+            }
+        )
 
-    async def remove_participant(self, nickname):
+    async def disconnect(self, close_code):
+        nickname = self.scope['user'].nickname
         participants = await self.get_participants()
         if nickname in participants:
             participants.remove(nickname)
             await self.save_participants(participants)
 
+        await self.channel_layer.group_discard("lobby", self.channel_name)
+        await self.channel_layer.group_send(
+            "lobby",
+            {
+                "type": "update_participants",
+                "participants": participants,
+            }
+        )
+
     async def get_participants(self):
-        return await self.channel_layer.get("lobby_participants", [])
+        return cache.get("lobby_participants", [])
 
     async def save_participants(self, participants):
-        await self.channel_layer.set("lobby_participants", participants)
+        cache.set("lobby_participants", participants)
+
+    async def update_participants(self, event):
+        participants = event["participants"]
+        await self.send(text_data=json.dumps({
+            "type": "participants",
+            "participants": participants,
+        }))
+
 
 
 
