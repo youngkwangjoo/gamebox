@@ -37,11 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // WebSocket 연결 함수
     function connectWebSocket() {
-        console.log('[DEBUG] Connecting to WebSocket...');
+        console.log('[DEBUG] 웹소캣과 연결을 하고있습니다...');
         socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
 
         socket.onopen = () => {
-            console.log('[DEBUG] WebSocket connected.');
+            console.log('[DEBUG] 웹소켓이 성공적으로 연결됨');
             socket.send(JSON.stringify({ action: 'join', nickname }));
         };
 
