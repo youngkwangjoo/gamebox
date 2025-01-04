@@ -41,29 +41,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    // WebSocket 메시지 수신
+    // WebSocket 메시지 수신 핸들러 (한 번만 정의)
     socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            console.log('[DEBUG] 메시지 수신:', data);
+            console.log('[DEBUG] Message received:', data);
 
             switch (data.type) {
                 case 'participants':
-                    console.log('[DEBUG] 참가자 목록 갱신:', data.participants);
+                    console.log('[DEBUG] Participants updated:', data.participants);
                     participants = data.participants;
-                    renderParticipants(participants); // 참가자 목록 갱신
+                    renderParticipants(participants, participantLogs); // 참가자 목록 갱신
+                    renderParticipantInputFields(participants); // 글 입력 UI 갱신
+                    renderVoteUI(participants); // 투표 UI 갱신
                     break;
 
                 case 'message':
-                    console.log(`[DEBUG] 채팅 메시지 수신 - 보낸 사람: ${data.sender}, 메시지: ${data.message}`);
-                    addMessageToLog(data.sender, data.message);
+                    console.log(`[DEBUG] Chat message received - Sender: ${data.sender}, Message: ${data.message}`);
+                    addMessageToLog(data.sender, data.message); // 채팅 로그에 메시지 추가
+                    break;
+
+                case 'log_update':
+                    console.log(`[DEBUG] Log update received for participant ${data.participant}`);
+                    participantLogs[data.participant] = data.log; // 참가자 글 업데이트
+                    renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
+                    break;
+
+                case 'distribute_topic':
+                    console.log('[DEBUG] Topic distribution received');
+                    handleTopicDistribution(data);
                     break;
 
                 default:
-                    console.warn('[WARN] 알 수 없는 메시지 타입:', data.type);
+                    console.warn('[WARN] Unknown message type:', data.type);
             }
         } catch (error) {
-            console.error('[ERROR] 메시지 파싱 오류:', event.data, error);
+            console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
 
@@ -273,28 +286,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        console.log('[DEBUG] Message received:', data);
+    // socket.onmessage = (event) => {
+    //     const data = JSON.parse(event.data);
+    //     console.log('[DEBUG] Message received:', data);
 
-        switch (data.type) {
-            case 'participants':
-                participants = data.participants;
-                renderParticipants(participants, participantLogs); // 참가자 목록 갱신
-                renderParticipantInputFields(participants); // 글 입력 UI 갱신
-                renderVoteUI(participants); // 투표 UI 갱신
-                break;
-            case 'message':
-                addMessageToLog(data.sender, data.message); // 다른 사용자의 메시지를 채팅 로그에 추가
-                break;
-            case 'log_update':
-                participantLogs[data.participant] = data.log; // 참가자 글 업데이트
-                renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
-                break;
-            default:
-                console.error('[ERROR] Unknown message type:', data.type);
-        }
-    };
+    //     switch (data.type) {
+    //         case 'participants':
+    //             participants = data.participants;
+    //             renderParticipants(participants, participantLogs); // 참가자 목록 갱신
+    //             renderParticipantInputFields(participants); // 글 입력 UI 갱신
+    //             renderVoteUI(participants); // 투표 UI 갱신
+    //             break;
+    //         case 'message':
+    //             addMessageToLog(data.sender, data.message); // 다른 사용자의 메시지를 채팅 로그에 추가
+    //             break;
+    //         case 'log_update':
+    //             participantLogs[data.participant] = data.log; // 참가자 글 업데이트
+    //             renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
+    //             break;
+    //         default:
+    //             console.error('[ERROR] Unknown message type:', data.type);
+    //     }
+    // };
 
     socket.onclose = (event) => {
         console.log('[DEBUG] WebSocket 연결 종료:', event);
@@ -654,14 +667,14 @@ confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
     // 이벤트 리스너
     confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
 
-    // WebSocket 메시지 수신
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+    // // WebSocket 메시지 수신
+    // socket.onmessage = (event) => {
+    //     const data = JSON.parse(event.data);
 
-        if (data.type === 'participants') {
-            participants = data.participants; // 참가자 업데이트
-            console.log('[DEBUG] Participants updated:', participants);
-        }
-    };
+    //     if (data.type === 'participants') {
+    //         participants = data.participants; // 참가자 업데이트
+    //         console.log('[DEBUG] Participants updated:', participants);
+    //     }
+    // };
 });
     
