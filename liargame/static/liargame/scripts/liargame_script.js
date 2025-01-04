@@ -263,6 +263,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
+        console.log('[DEBUG] addMessageToLog 호출됨:', { sender, message });
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
 
