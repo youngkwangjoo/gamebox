@@ -642,13 +642,13 @@ confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
     confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
 
     // WebSocket 메시지 수신
-    socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
+    // socket.onmessage = (event) => {
+    //     const data = JSON.parse(event.data);
 
-        if (data.type === 'participants') {
-            participants = data.participants; // 참가자 업데이트
-            console.log('[DEBUG] Participants updated:', participants);
-        }
-    };
+    //     if (data.type === 'participants') {
+    //         participants = data.participants; // 참가자 업데이트
+    //         console.log('[DEBUG] Participants updated:', participants);
+    //     }
+    // };
 });
     
