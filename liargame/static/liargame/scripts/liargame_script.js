@@ -41,37 +41,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     
-    // WebSocket 메시지 수신 핸들러 (한 번만 정의)
     socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
             console.log('[DEBUG] Message received:', data);
-
+    
             switch (data.type) {
-                case 'participants':
-                    console.log('[DEBUG] Participants updated:', data.participants);
-                    participants = data.participants;
-                    renderParticipants(participants, participantLogs); // 참가자 목록 갱신
-                    renderParticipantInputFields(participants); // 글 입력 UI 갱신
-                    renderVoteUI(participants); // 투표 UI 갱신
-                    break;
-
                 case 'message':
-                    console.log(`[DEBUG] Chat message received - Sender: ${data.sender}, Message: ${data.message}`);
-                    addMessageToLog(data.sender, data.message); // 채팅 로그에 메시지 추가
+                    // 내가 보낸 메시지는 로그에 추가하지 않음
+                    if (data.sender !== nickname) {
+                        addMessageToLog(data.sender, data.message);
+                    }
                     break;
-
+    
+                // 나머지 case 문은 그대로 유지
+                case 'participants':
+                    console.log('[DEBUG] 참가자를 최산화합니다.:', data.participants);
+                    participants = data.participants;
+                    renderParticipants(participants, participantLogs);
+                    renderParticipantInputFields(participants);
+                    renderVoteUI(participants);
+                    break;
+    
                 case 'log_update':
                     console.log(`[DEBUG] Log update received for participant ${data.participant}`);
-                    participantLogs[data.participant] = data.log; // 참가자 글 업데이트
-                    renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
+                    participantLogs[data.participant] = data.log;
+                    renderParticipants(participants, participantLogs);
                     break;
-
+    
                 case 'distribute_topic':
                     console.log('[DEBUG] Topic distribution received');
                     handleTopicDistribution(data);
                     break;
-
+    
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
@@ -79,6 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
 
     // 타이머 초기화
     let timerDuration = 5 * 60; // 5분 (300초)
@@ -244,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 초기 버튼 상태
     toggleButtons(false);
 
-    // 메시지 전송
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
@@ -254,12 +256,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 sender: nickname,
                 message: message,
             }));
-            addMessageToLog(nickname, message, true);
+            
+            // 로컬에서 내 채팅을 바로 로그에 추가
+            addMessageToLog(nickname, message, true);  // isSelf를 true로 설정
             messageInput.value = '';
         } else {
             console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
         }
     }
+    
 
     // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
