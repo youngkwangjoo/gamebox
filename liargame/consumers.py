@@ -152,6 +152,22 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
+            
+        elif action == "update_log":
+            log_message = data.get("log", "")
+            participant = data.get("participant", "")
+            print(f"[DEBUG] Received log update from {participant}: {log_message}")
+
+            # WebSocket 그룹에 참가자 글 업데이트 브로드캐스트
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "log_update",
+                    "participant": participant,
+                    "log": log_message,
+                }
+            )
+            print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
 
     async def chat_message(self, event):
         message = event["message"]
@@ -165,6 +181,20 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             "sender": sender,
         }))
         print(f"[DEBUG] Message sent to WebSocket. Message: {message}, Sender: {sender}")
+
+    async def log_update(self, event):
+        participant = event["participant"]
+        log_message = event["log"]
+        
+        # WebSocket으로 참가자 글 업데이트 전송
+        await self.send(text_data=json.dumps({
+            "type": "log_update",
+            "participant": participant,
+            "log": log_message,
+        }))
+        print(f"[DEBUG] Sent log update to WebSocket: {participant} - {log_message}")
+        
+        
 
     async def update_participants(self, event):
         participants = event["participants"]
