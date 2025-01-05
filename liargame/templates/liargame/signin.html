@@ -159,6 +159,12 @@
             </form>
         </div>
     </div>
+<!-- 에러 메시지 알림 -->
+{% if error_message %}
+<script>
+    alert("{{ error_message|escapejs }}");
+</script>
+{% endif %}
 
 </body>
 </html>

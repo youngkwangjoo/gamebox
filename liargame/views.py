@@ -31,9 +31,8 @@ def signin(request):
             # 로그인 후 홈으로 리디렉션
             return redirect('game')  # 로그인 후 게임 대기방 페이지로 리디렉션
         else:
-            # 로그인 실패
-            messages.error(request, '아이디나 비밀번호가 일치하지 않습니다.')
-            return redirect('signin')  # 다시 로그인 페이지로 돌아감
+            # 로그인 실패 시 컨텍스트에 실패 메시지 추가
+            return render(request, 'liargame/signin.html', {'error_message': '아이디나 비밀번호가 일치하지 않습니다.'})
     
     return render(request, 'liargame/signin.html')
 
