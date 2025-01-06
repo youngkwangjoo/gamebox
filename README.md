@@ -24,10 +24,3 @@ python, django. poetry, websocket, html, javascript, css, dbsqlite3, home NAS
 ![스크린샷 2024-12-02 오전 3 00 25](https://github.com/user-attachments/assets/f133c901-97a0-4f98-bba6-f8f5db0d9372)
 ![스크린샷 2024-12-02 오전 3 00 37](https://github.com/user-attachments/assets/59ddcf05-8cc2-490d-8a1d-e5695467cc9d)
 
-daphne -b 127.0.0.1 -p 8001 gamebox.asgi:application
-sudo nano /etc/nginx/sites-available/schedule
-sudo ln -s /etc/nginx/sites-available/schedule /etc/nginx/sites-enabled/
-ssh -i ~/.ssh/id_rsa -p 22 gamebox@172.30.1.37
-
-lsof -i :8001
-kill -9 <PID>

@@ -48,13 +48,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
             switch (data.type) {
                 case 'message':
-                    // 내가 보낸 메시지는 로그에 추가하지 않음
+                    // 내가 보낸 메시지는 서버에서 수신했을 때 로그에 추가하지 않음
                     if (data.sender !== nickname) {
                         addMessageToLog(data.sender, data.message);
                     }
                     break;
     
-                // 나머지 case 문은 그대로 유지
                 case 'participants':
                     console.log('[DEBUG] 참가자를 최산화합니다.:', data.participants);
                     participants = data.participants;
@@ -81,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
 
     // 타이머 초기화
@@ -269,19 +269,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
         console.log('[DEBUG] addMessageToLog 호출됨:', { sender, message });
+        
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
-
+    
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
-        messageElement.textContent = `${sender}: ${message}`;
-
+        messageElement.textContent = message; // 내 메시지에는 이름을 표시하지 않음
+    
+        if (!isSelf) {
+            // 상대방 메시지에만 이름을 표시
+            const nameElement = document.createElement('div');
+            nameElement.classList.add('sender-name');
+            nameElement.textContent = sender;
+            messageContainer.appendChild(nameElement);
+        }
+    
         messageContainer.appendChild(messageElement);
         chatLog.appendChild(messageContainer);
         chatLog.scrollTop = chatLog.scrollHeight;
-
+    
         console.log('[DEBUG] 메시지 로그에 추가:', { sender, message });
     }
+    
 
     // 메시지 전송 버튼 이벤트
     sendButton.addEventListener('click', sendMessage);
