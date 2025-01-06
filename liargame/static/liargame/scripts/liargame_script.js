@@ -256,14 +256,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sender: nickname,
                 message: message,
             }));
-            
-            // 로컬에서 내 채팅을 바로 로그에 추가
-            addMessageToLog(nickname, message, true);  // isSelf를 true로 설정
-            messageInput.value = '';
+    
+            messageInput.value = ''; // 입력 필드 초기화
         } else {
             console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
         }
     }
+    
     
 
     // 채팅 로그에 메시지 추가
