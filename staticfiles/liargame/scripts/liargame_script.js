@@ -276,15 +276,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
+            console.log('[DEBUG] 메시지 전송:', { sender: nickname, message });
+    
+            // WebSocket을 통해 메시지 서버로 전송
             socket.send(JSON.stringify({
                 action: 'message',
                 sender: nickname,
-                message: message
+                message: message,
             }));
-            addMessageToLog(nickname, message, true);
+    
+            // 입력 필드 초기화
             messageInput.value = '';
+        } else {
+            console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
         }
     }
+    
 
     // 채팅 메시지 로그에 추가하는 함수
     function addMessageToLog(sender, message, isSelf = false) {
