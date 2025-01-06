@@ -46,17 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = JSON.parse(event.data);
             console.log('[DEBUG] Message received:', data);
     
-            switch (data.type) {
-                case 'message':
-                    // 내가 보낸 메시지는 서버에서 수신했을 때 로그에 추가하지 않음
-                    if (data.type === 'message') {
-                        const isSelf = (data.sender === nickname); // 내가 보낸 메시지인지 확인
-                        addMessageToLog(data.sender, data.message, isSelf);
-                    }
-                    break;
+            if (data.type === 'message') {
+                // 내가 보낸 메시지인지 확인
+                const isSelf = (data.sender.trim() === nickname.trim()); // 공백 제거 후 비교
+                console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.sender}, nickname: ${nickname}`);
+                addMessageToLog(data.sender, data.message, isSelf);
+            }
     
+            switch (data.type) {
                 case 'participants':
-                    console.log('[DEBUG] 참가자를 최산화합니다.:', data.participants);
+                    console.log('[DEBUG] 참가자를 최신화합니다.:', data.participants);
                     participants = data.participants;
                     renderParticipants(participants, participantLogs);
                     renderParticipantInputFields(participants);
@@ -81,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
     
 
@@ -267,22 +267,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessageToLog(sender, message, isSelf = false) {
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
-    
+        
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
         messageElement.textContent = message;
-    
+        
         if (!isSelf) {
+            // 상대방 메시지에만 이름을 표시
             const nameElement = document.createElement('div');
             nameElement.classList.add('sender-name');
             nameElement.textContent = sender;
             messageContainer.appendChild(nameElement);
         }
-    
+        
         messageContainer.appendChild(messageElement);
         chatLog.appendChild(messageContainer);
         chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 스크롤
     }
+
     
     
     
