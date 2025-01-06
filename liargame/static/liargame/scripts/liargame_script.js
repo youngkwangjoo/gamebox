@@ -49,8 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
             switch (data.type) {
                 case 'message':
                     // 내가 보낸 메시지는 서버에서 수신했을 때 로그에 추가하지 않음
-                    if (data.sender !== nickname) {
-                        addMessageToLog(data.sender, data.message);
+                    if (data.type === 'message') {
+                        const isSelf = (data.sender === nickname); // 내가 보낸 메시지인지 확인
+                        addMessageToLog(data.sender, data.message, isSelf);
                     }
                     break;
     
@@ -250,7 +251,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
-            console.log('[DEBUG] 메시지 전송:', { sender: nickname, message });
             socket.send(JSON.stringify({
                 action: 'message',
                 sender: nickname,
@@ -258,8 +258,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }));
     
             messageInput.value = ''; // 입력 필드 초기화
-        } else {
-            console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
         }
     }
     
@@ -267,17 +265,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
-        console.log('[DEBUG] addMessageToLog 호출됨:', { sender, message });
-        
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
     
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
-        messageElement.textContent = message; // 내 메시지에는 이름을 표시하지 않음
+        messageElement.textContent = message;
     
         if (!isSelf) {
-            // 상대방 메시지에만 이름을 표시
             const nameElement = document.createElement('div');
             nameElement.classList.add('sender-name');
             nameElement.textContent = sender;
@@ -286,10 +281,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
         messageContainer.appendChild(messageElement);
         chatLog.appendChild(messageContainer);
-        chatLog.scrollTop = chatLog.scrollHeight;
-    
-        console.log('[DEBUG] 메시지 로그에 추가:', { sender, message });
+        chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 스크롤
     }
+    
+    
     
 
     // 메시지 전송 버튼 이벤트
