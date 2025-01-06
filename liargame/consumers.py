@@ -139,8 +139,13 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         elif action == "message":
             message = data.get("message", "")
+            message_id = data.get("id", None)  # 고유 메시지 ID 수신
             print(f"[DEBUG] Received message action from {nickname}: {message}")
-            
+
+            if not message_id:
+                print("[ERROR] Missing message ID")
+                return
+
             # WebSocket 그룹에 메시지 브로드캐스트
             print(f"[DEBUG] Preparing to broadcast message to group: {self.room_group_name}")
             await self.channel_layer.group_send(
@@ -149,9 +154,11 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     "type": "chat_message",
                     "message": message,
                     "sender": nickname,
+                    "id": message_id,  # 메시지 ID 포함
                 }
             )
             print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
+
             
         elif action == "update_log":
             log_message = data.get("log", "")
@@ -172,6 +179,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
     async def chat_message(self, event):
         message = event["message"]
         sender = event["sender"]
+        message_id = event["id"]  # 메시지 ID 수신
         print(f"[DEBUG] chat_message triggered. Message: {message}, Sender: {sender}")
 
         # WebSocket으로 메시지 전송
@@ -179,8 +187,10 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             "type": "message",
             "message": message,
             "sender": sender,
+            "id": message_id  # 메시지 ID 포함
         }))
-        print(f"[DEBUG] Message sent to WebSocket. Message: {message}, Sender: {sender}")
+        print(f"[DEBUG] Message sent to WebSocket. Message: {message}, Sender: {sender}, ID: {message_id}")
+
 
     async def log_update(self, event):
         participant = event["participant"]
