@@ -48,29 +48,47 @@ document.addEventListener('DOMContentLoaded', () => {
         socket.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                console.log('[DEBUG] WebSocket message received:', data);
-
+                console.log('[DEBUG] Message received:', data);
+        
+                if (data.type === 'message') {
+                    // 내가 보낸 메시지는 서버에서 수신했을 때 중복 출력되지 않도록 필터링
+                    if (data.sender === nickname) {
+                        console.log('[DEBUG] 내 메시지, 출력하지 않음.');
+                        return; // 내 메시지는 추가하지 않음
+                    }
+        
+                    // 상대방 메시지는 왼쪽에 출력
+                    addMessageToLog(data.sender, data.message, false);
+                }
+        
                 switch (data.type) {
                     case 'participants':
+                        console.log('[DEBUG] 참가자를 최신화합니다.:', data.participants);
                         participants = data.participants;
                         renderParticipants(participants, participantLogs);
                         renderParticipantInputFields(participants);
                         renderVoteUI(participants);
                         break;
-                    case 'message':
-                        addMessageToLog(data.sender, data.message);
-                        break;
+        
                     case 'log_update':
+                        console.log(`[DEBUG] Log update received for participant ${data.participant}`);
                         participantLogs[data.participant] = data.log;
                         renderParticipants(participants, participantLogs);
                         break;
+        
+                    case 'distribute_topic':
+                        console.log('[DEBUG] Topic distribution received');
+                        handleTopicDistribution(data);
+                        break;
+        
                     default:
-                        console.warn('[DEBUG] Unknown message type:', data.type);
+                        console.warn('[WARN] Unknown message type:', data.type);
                 }
             } catch (error) {
-                console.error('[DEBUG] Error parsing WebSocket message:', event.data, error);
+                console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
             }
         };
+        
 
         socket.onclose = (event) => {
             console.log('[DEBUG] WebSocket connection closed. Reconnecting...', event);
@@ -89,15 +107,24 @@ document.addEventListener('DOMContentLoaded', () => {
     function addMessageToLog(sender, message, isSelf = false) {
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
-
+    
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
-        messageElement.textContent = `${sender}: ${message}`;
-
+        messageElement.textContent = message; // 메시지만 출력
+    
+        if (!isSelf) {
+            // 상대방 메시지에만 이름을 표시
+            const nameElement = document.createElement('div');
+            nameElement.classList.add('sender-name');
+            nameElement.textContent = sender; // 상대방 이름 표시
+            messageContainer.appendChild(nameElement);
+        }
+    
         messageContainer.appendChild(messageElement);
         chatLog.appendChild(messageContainer);
-        chatLog.scrollTop = chatLog.scrollHeight;
+        chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 스크롤
     }
+    
 
     // 참가자 목록 렌더링
     function renderParticipants(participants, logs) {
@@ -249,15 +276,22 @@ document.addEventListener('DOMContentLoaded', () => {
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
+            console.log('[DEBUG] 메시지 전송:', { sender: nickname, message });
+    
+            // WebSocket을 통해 메시지 서버로 전송
             socket.send(JSON.stringify({
                 action: 'message',
                 sender: nickname,
-                message: message
+                message: message,
             }));
-            addMessageToLog(nickname, message, true);
+    
+            // 입력 필드 초기화
             messageInput.value = '';
+        } else {
+            console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
         }
     }
+    
 
     // 채팅 메시지 로그에 추가하는 함수
     function addMessageToLog(sender, message, isSelf = false) {
