@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     socket.onmessage = (event) => {
         try {
-            const data = JSON.parse(event.data);
+            const data = JSON.parse(event.data); 
             console.log('[DEBUG] Message received:', data);
     
             switch (data.type) {
