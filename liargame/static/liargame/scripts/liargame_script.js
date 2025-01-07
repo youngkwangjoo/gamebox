@@ -252,6 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sendMessage() {
         const message = messageInput.value.trim();
+        console.log(`[DEBUG] 메시지 입력 값: "${message}"`); // 디버깅 추가
         if (message) {
             socket.send(JSON.stringify({
                 action: 'message',
