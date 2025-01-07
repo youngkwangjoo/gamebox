@@ -46,16 +46,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = JSON.parse(event.data);
             console.log('[DEBUG] Message received:', data);
     
-            if (data.type === 'message') {
-                // 수신한 메시지가 본인의 것인지 확인
-                const isSelf = (data.nickname.trim() === nickname.trim());
-                console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.nickname}, nickname: ${nickname}`);
-    
-                // 채팅 로그에 메시지 추가
-                addMessageToLog(data.nickname, data.message, isSelf);
-            }
-    
             switch (data.type) {
+                case 'message':
+                    // 수신한 메시지가 본인의 것인지 확인
+                    const isSelf = (data.nickname.trim() === nickname.trim());
+                    console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.nickname}, nickname: ${nickname}`);
+    
+                    // 채팅 로그에 메시지 추가
+                    addMessageToLog(data.nickname, data.message, isSelf);
+                    break;
+    
                 case 'participants':
                     console.log('[DEBUG] 참가자를 최신화합니다.:', data.participants);
                     participants = data.participants;
@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
     
     
@@ -256,7 +257,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (message) {
             socket.send(JSON.stringify({
                 action: 'message',
-                nickname: nickname, // sender 대신 nickname 사용
+                nickname: nickname, 
                 message: message
             }));
     
@@ -287,10 +288,6 @@ document.addEventListener('DOMContentLoaded', () => {
         chatLog.appendChild(messageContainer);
         chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 스크롤
     }
-
-    
-    
-    
 
     // 메시지 전송 버튼 이벤트
     sendButton.addEventListener('click', sendMessage);
