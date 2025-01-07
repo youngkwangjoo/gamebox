@@ -139,12 +139,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         elif action == "message":
             message = data.get("message", "")
-            message_id = data.get("id", None)  # 고유 메시지 ID 수신
             print(f"[DEBUG] Received message action from {nickname}: {message}")
-
-            if not message_id:
-                print("[ERROR] Missing message ID")
-                return
 
             # WebSocket 그룹에 메시지 브로드캐스트
             print(f"[DEBUG] Preparing to broadcast message to group: {self.room_group_name}")
@@ -157,6 +152,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
+
 
             
         elif action == "update_log":
