@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    
     // DOM 요소 참조
     const chatLog = document.getElementById('chat-log');
     const messageInput = document.getElementById('chat-message-input');
@@ -7,182 +8,156 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantLogsContainer = document.getElementById('participant-logs-container');
     const voteContainer = document.getElementById('vote-participants');
     const voteResult = document.getElementById('vote-result');
+    // 타이머
     const timerElement = document.getElementById('timer');
     const alertMessage = document.getElementById('alert-message');
-    const startTimerButton = document.getElementById('start-timer-button');
+    const startTimerButton = document.getElementById('start-timer-button'); // 버튼 요소 참조
     const stopTimerButton = document.getElementById('stop-timer-button');
     const resetTimerButton = document.getElementById('reset-timer-button');
+    // WebSocket 설정
+    const roomId = document.getElementById('room-id')?.textContent.trim() || '';
+    const nickname = document.getElementById('user-nickname')?.textContent.trim() || '익명';
+    const socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
+
+    // topic 설정
     const topicSelect = document.getElementById('topic-select');
     const confirmTopicButton = document.getElementById('confirm-topic-button');
     const participantModal = document.getElementById('participant-modal');
     const participantModalMessage = document.getElementById('participant-modal-message');
     const distributeButton = document.getElementById('distribute-topic-button');
     const topicModal = document.getElementById('topic-modal');
-    const closeTopicModalButton = document.getElementById('close-topic-modal');
-    const closeModalButton = document.getElementById('close-modal-button');
+    const closeTopicModalButton = document.getElementById('close-topic-modal'); // 제시어 선택 모달 닫기 버튼
+    const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
+    
 
-    // WebSocket 및 상태 변수
-    const roomId = document.getElementById('room-id')?.textContent.trim() || '';
-    const nickname = document.getElementById('user-nickname')?.textContent.trim() || '익명';
-    let socket;
+    // 참가자와 방장 정보 (예시 데이터)
+    const isHost = true; // 방장 여부 (서버에서 받아오는 데이터로 설정)
+
+    // 상태 데이터 초기화
+    const votes = {}; // 투표 상태
     let participants = [];
-    const participantLogs = {};
-    const votes = {};
-    let hasVoted = false;
+    const participantLogs = {}; // 참가자 글 상태를 유지하는 객체
+    let hasVoted = false; // 투표 여부
 
-    // 타이머 변수
-    let timerDuration = 5 * 60; // 5분 (300초)
-    let timerInterval;
-    let isPaused = false;
 
-    // WebSocket 연결 함수
-    function connectWebSocket() {
-        console.log('[DEBUG] 웹소캣과 연결을 하고있습니다...');
-        socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
-
-        socket.onopen = () => {
-            console.log('[DEBUG] 웹소켓이 성공적으로 연결됨');
-            socket.send(JSON.stringify({ action: 'join', nickname }));
-        };
-
-        socket.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                console.log('[DEBUG] Message received:', data);
-        
-                if (data.type === 'message') {
-                    // 내가 보낸 메시지는 서버에서 수신했을 때 중복 출력되지 않도록 필터링
-                    if (data.sender === nickname) {
-                        console.log('[DEBUG] 내 메시지, 출력하지 않음.');
-                        return; // 내 메시지는 추가하지 않음
-                    }
-        
-                    // 상대방 메시지는 왼쪽에 출력
-                    addMessageToLog(data.sender, data.message, false);
-                }
-        
-                switch (data.type) {
-                    case 'participants':
-                        console.log('[DEBUG] 참가자를 최신화합니다.:', data.participants);
-                        participants = data.participants;
-                        renderParticipants(participants, participantLogs);
-                        renderParticipantInputFields(participants);
-                        renderVoteUI(participants);
-                        break;
-        
-                    case 'log_update':
-                        console.log(`[DEBUG] Log update received for participant ${data.participant}`);
-                        participantLogs[data.participant] = data.log;
-                        renderParticipants(participants, participantLogs);
-                        break;
-        
-                    case 'distribute_topic':
-                        console.log('[DEBUG] Topic distribution received');
-                        handleTopicDistribution(data);
-                        break;
-        
-                    default:
-                        console.warn('[WARN] Unknown message type:', data.type);
-                }
-            } catch (error) {
-                console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
+    
+    socket.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data); 
+            console.log('[DEBUG] Message received:', data);
+    
+            switch (data.type) {
+                case 'message':
+                    // 수신한 메시지가 본인의 것인지 확인
+                    const isSelf = (data.nickname.trim() === nickname.trim());
+                    console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.nickname}, nickname: ${nickname}`);
+    
+                    // 채팅 로그에 메시지 추가
+                    addMessageToLog(data.nickname, data.message, isSelf);
+                    break;
+    
+                case 'participants':
+                    console.log('[DEBUG] 참가자를 최신화합니다.:', data.participants);
+                    participants = data.participants;
+                    renderParticipants(participants, participantLogs);
+                    renderParticipantInputFields(participants);
+                    renderVoteUI(participants);
+                    break;
+    
+                case 'log_update':
+                    console.log(`[DEBUG] Log update received for participant ${data.participant}`);
+                    participantLogs[data.participant] = data.log;
+                    renderParticipants(participants, participantLogs);
+                    break;
+    
+                case 'distribute_topic':
+                    console.log('[DEBUG] Topic distribution received');
+                    handleTopicDistribution(data);
+                    break;
+    
+                default:
+                    console.warn('[WARN] Unknown message type:', data.type);
             }
-        };
-        
-
-        socket.onclose = (event) => {
-            console.log('[DEBUG] WebSocket connection closed. Reconnecting...', event);
-            setTimeout(connectWebSocket, 5000); // 5초 후 재연결
-        };
-
-        socket.onerror = (error) => {
-            console.error('[DEBUG] WebSocket error:', error);
-        };
-    }
-
-    // WebSocket 연결 시작
-    connectWebSocket();
-
-    // 채팅 메시지 로그에 추가하는 함수
-    function addMessageToLog(sender, message, isSelf = false) {
-        const messageContainer = document.createElement('div');
-        messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
+        } catch (error) {
+            console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
+        }
+    };
     
-        const messageElement = document.createElement('div');
-        messageElement.classList.add('message');
-        messageElement.textContent = message; // 메시지만 출력
-    
-        if (!isSelf) {
-            // 상대방 메시지에만 이름을 표시
-            const nameElement = document.createElement('div');
-            nameElement.classList.add('sender-name');
-            nameElement.textContent = sender; // 상대방 이름 표시
-            messageContainer.appendChild(nameElement);
+    // 타이머 초기화
+    let timerDuration = 5 * 60; // 5분 (300초)
+    let timerInterval; // 타이머 Interval ID
+    let isPaused = false; // 타이머 일시 중단 상태
+
+    // WebSocket 이벤트
+    socket.onopen = () => {
+        console.log('[DEBUG] WebSocket 연결 성공');
+        if (nickname) {
+            console.log(`[DEBUG] 사용자 참가: ${nickname}`);
+            socket.send(JSON.stringify({ action: 'join', nickname }));
+        }
+    };
+
+
+    //제시어 배포 
+    distributeButton.addEventListener('click', () => {
+        if (!isHost) {
+            alert('방장만 제시어를 배포할 수 있습니다.');
+            return;
         }
     
-        messageContainer.appendChild(messageElement);
-        chatLog.appendChild(messageContainer);
-        chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 스크롤
-    }
+        if (participants.length === 0) {
+            alert('참가자가 없습니다. 참가자를 먼저 확인하세요.');
+            return;
+        }
     
-
-    // 참가자 목록 렌더링
-    function renderParticipants(participants, logs) {
-        participantsContainer.innerHTML = '';
-        participants.forEach(participant => {
-            const participantElement = document.createElement('div');
-            participantElement.className = 'participant-item';
-
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = participant;
-
-            const logSpan = document.createElement('span');
-            logSpan.textContent = logs[participant] || '';
-            logSpan.style.marginLeft = '10px';
-            logSpan.style.color = 'gray';
-            logSpan.style.fontStyle = 'italic';
-
-            participantElement.appendChild(nameSpan);
-            participantElement.appendChild(logSpan);
-            participantsContainer.appendChild(participantElement);
-        });
-    }
-
-    // SubTopic 가져오기 및 배포
-    async function fetchSubtopicsAndDistribute() {
-        const selectedTopicId = topicSelect.value;
+        const topicModal = document.getElementById('topic-modal');
+        if (topicModal) {
+            topicModal.style.display = 'block'; // 모달 열기
+        } else {
+            console.error("topicModal 요소를 찾을 수 없습니다.");
+        }
+    });
+    
+    // "확인" 버튼과 SubTopic 배포
+    confirmTopicButton.addEventListener('click', async () => {
+        const selectedTopicId = topicSelect.value; // 이제 topic.id가 들어옴
+    
         if (!selectedTopicId) {
             alert("주제를 선택해주세요.");
             return;
         }
-
+    
         try {
             const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
-            if (!response.ok) throw new Error('Failed to fetch subtopics');
+            
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+                return;
+            }
+    
             const data = await response.json();
-
-            if (participants.length === 0) {
+    
+            if (!participants || participants.length < 1) {
                 alert("참가자가 없습니다. 제시어를 배포할 수 없습니다.");
                 return;
             }
-
+    
             const liar = participants[Math.floor(Math.random() * participants.length)];
-            socket.send(JSON.stringify({
-                action: 'distribute_topic',
-                subtopic1: data.subtopics[0],
-                subtopic2: data.subtopics[1],
-                liar: liar,
-            }));
+            socket.send(
+                JSON.stringify({
+                    action: 'distribute_topic',
+                    subtopic1: data.subtopics[0],
+                    subtopic2: data.subtopics[1],
+                    liar: liar,
+                })
+            );
 
-            participantModalMessage.textContent = nickname === liar
-                ? `당신은 Liar입니다. 주제어는: ${data.subtopics[1]}`
-                : `당신의 제시어는: ${data.subtopics[0]}`;
-            participantModal.style.display = 'flex';
         } catch (error) {
             console.error('Failed to fetch subtopics:', error);
-            alert("소주제를 가져오는 데 실패했습니다.");
+            alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
         }
-    }
+    });
     
 
     // modal
@@ -272,39 +247,42 @@ document.addEventListener('DOMContentLoaded', () => {
     // 초기 버튼 상태
     toggleButtons(false);
 
-    // 메시지 전송 함수
     function sendMessage() {
         const message = messageInput.value.trim();
+        console.log(`[DEBUG] 메시지 입력 값: "${message}"`); // 디버깅 추가
         if (message) {
-            console.log('[DEBUG] 메시지 전송:', { sender: nickname, message });
-    
-            // WebSocket을 통해 메시지 서버로 전송
             socket.send(JSON.stringify({
                 action: 'message',
-                sender: nickname,
-                message: message,
+                nickname: nickname, 
+                message: message
             }));
     
-            // 입력 필드 초기화
-            messageInput.value = '';
-        } else {
-            console.warn('[WARN] 빈 메시지는 전송할 수 없습니다.');
+            messageInput.value = ''; // 입력 필드 초기화
         }
     }
     
+    
 
-    // 채팅 메시지 로그에 추가하는 함수
+    // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
-
+        
         const messageElement = document.createElement('div');
         messageElement.classList.add('message');
-        messageElement.textContent = `${sender}: ${message}`;
-
+        messageElement.textContent = message;
+        
+        if (!isSelf) {
+            // 상대방 메시지에만 이름을 표시
+            const nameElement = document.createElement('div');
+            nameElement.classList.add('sender-name');
+            nameElement.textContent = sender;
+            messageContainer.appendChild(nameElement);
+        }
+        
         messageContainer.appendChild(messageElement);
         chatLog.appendChild(messageContainer);
-        chatLog.scrollTop = chatLog.scrollHeight;
+        chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 스크롤
     }
 
     // 메시지 전송 버튼 이벤트
@@ -315,14 +293,36 @@ document.addEventListener('DOMContentLoaded', () => {
             sendMessage();
         }
     });
-    
 
-    socket.onclose = () => {
-        console.log('[DEBUG] WebSocket connection closed.');
+    // socket.onmessage = (event) => {
+    //     const data = JSON.parse(event.data);
+    //     console.log('[DEBUG] Message received:', data);
+
+    //     switch (data.type) {
+    //         case 'participants':
+    //             participants = data.participants;
+    //             renderParticipants(participants, participantLogs); // 참가자 목록 갱신
+    //             renderParticipantInputFields(participants); // 글 입력 UI 갱신
+    //             renderVoteUI(participants); // 투표 UI 갱신
+    //             break;
+    //         case 'message':
+    //             addMessageToLog(data.sender, data.message); // 다른 사용자의 메시지를 채팅 로그에 추가
+    //             break;
+    //         case 'log_update':
+    //             participantLogs[data.participant] = data.log; // 참가자 글 업데이트
+    //             renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
+    //             break;
+    //         default:
+    //             console.error('[ERROR] Unknown message type:', data.type);
+    //     }
+    // };
+
+    socket.onclose = (event) => {
+        console.log('[DEBUG] WebSocket 연결 종료:', event);
     };
 
     socket.onerror = (error) => {
-        console.error('[ERROR] WebSocket error:', error);
+        console.error('[ERROR] WebSocket 오류:', error);
     };
 
 
@@ -675,14 +675,5 @@ confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
     // 이벤트 리스너
     confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
 
-    // WebSocket 메시지 수신
-    // socket.onmessage = (event) => {
-    //     const data = JSON.parse(event.data);
-
-    //     if (data.type === 'participants') {
-    //         participants = data.participants; // 참가자 업데이트
-    //         console.log('[DEBUG] Participants updated:', participants);
-    //     }
-    // };
 });
     

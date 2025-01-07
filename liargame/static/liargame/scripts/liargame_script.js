@@ -83,10 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     
-    
-    
-    
-
     // 타이머 초기화
     let timerDuration = 5 * 60; // 5분 (300초)
     let timerInterval; // 타이머 Interval ID
@@ -679,14 +675,5 @@ confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
     // 이벤트 리스너
     confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
 
-    // // WebSocket 메시지 수신
-    // socket.onmessage = (event) => {
-    //     const data = JSON.parse(event.data);
-
-    //     if (data.type === 'participants') {
-    //         participants = data.participants; // 참가자 업데이트
-    //         console.log('[DEBUG] Participants updated:', participants);
-    //     }
-    // };
 });
     
