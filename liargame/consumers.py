@@ -139,6 +139,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
         elif action == "message":
             message = data.get("message", "")
+            nickname = self.scope['user'].nickname
             print(f"[DEBUG] Received message action from {nickname}: {message}")
 
             # WebSocket 그룹에 메시지 브로드캐스트
