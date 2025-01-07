@@ -153,8 +153,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 {
                     "type": "chat_message",
                     "message": message,
-                    "sender": nickname,
-                    "id": message_id,  # 메시지 ID 포함
+                    "nickname": nickname  # nickname을 사용하여 전송
                 }
             )
             print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
@@ -178,18 +177,17 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
     async def chat_message(self, event):
         message = event["message"]
-        sender = event["sender"]
-        message_id = event["id"]  # 메시지 ID 수신
-        print(f"[DEBUG] chat_message triggered. Message: {message}, Sender: {sender}")
+        nickname = event["nickname"]  # nickname 사용
+        print(f"[DEBUG] chat_message triggered. Message: {message}, Sender: {nickname}")
 
         # WebSocket으로 메시지 전송
         await self.send(text_data=json.dumps({
             "type": "message",
             "message": message,
-            "sender": sender,
-            "id": message_id  # 메시지 ID 포함
+            "nickname": nickname  # nickname으로 전송
         }))
-        print(f"[DEBUG] Message sent to WebSocket. Message: {message}, Sender: {sender}, ID: {message_id}")
+        print(f"[DEBUG] Message sent to WebSocket. Message: {message}, Sender: {nickname}")
+
 
 
     async def log_update(self, event):

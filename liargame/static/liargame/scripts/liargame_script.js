@@ -47,10 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('[DEBUG] Message received:', data);
     
             if (data.type === 'message') {
-                // 내가 보낸 메시지인지 확인
-                const isSelf = (data.sender.trim() === nickname.trim()); // 공백 제거 후 비교
-                console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.sender}, nickname: ${nickname}`);
-                addMessageToLog(data.sender, data.message, isSelf);
+                // 수신한 메시지가 본인의 것인지 확인
+                const isSelf = (data.nickname.trim() === nickname.trim());
+                console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.nickname}, nickname: ${nickname}`);
+    
+                // 채팅 로그에 메시지 추가
+                addMessageToLog(data.nickname, data.message, isSelf);
             }
     
             switch (data.type) {
@@ -253,8 +255,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (message) {
             socket.send(JSON.stringify({
                 action: 'message',
-                sender: nickname,
-                message: message,
+                nickname: nickname, // sender 대신 nickname 사용
+                message: message
             }));
     
             messageInput.value = ''; // 입력 필드 초기화
