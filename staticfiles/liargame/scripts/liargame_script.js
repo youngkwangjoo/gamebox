@@ -42,19 +42,21 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            console.log('[DEBUG] Message received:', data);
+            console.log('[DEBUG] WebSocket message received:', data);
     
             switch (data.type) {
                 case 'message':
-                    // 메시지 처리
                     const isSelf = (data.nickname.trim() === nickname.trim());
                     addMessageToLog(data.nickname, data.message, isSelf);
                     break;
-    
+
                 case 'participants':
-                    participants = data.participants;
-                    renderParticipants(participants, participantLogs);
-                    renderParticipantInputFields(participants); // 여기서 호출
+                    console.log('[DEBUG] Participants data received:', data);
+                    participants = Array.isArray(data.participants) ? data.participants : [];
+                    console.log('[DEBUG] Parsed participants:', participants);
+                    renderParticipants(participants, participantLogs, votes);
+                    break;
+                    
     
                 case 'log_update':
                     participantLogs[data.participant] = data.log;
@@ -66,6 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderParticipants(participants, participantLogs, votes);
                     break;
     
+                case 'distribute_topic':  // 복원된 부분
+                    console.log('[DEBUG] Topic distribution received');
+                    handleTopicDistribution(data);  // 제시어 배포 처리
+                    break;
+    
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
@@ -73,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
     
     // 타이머 초기화
@@ -282,67 +290,68 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[ERROR] WebSocket 오류:', error);
     };
 
-
-    function renderParticipants(participants, logs, votes) {
+       // 참가자 목록 렌더링
+       function renderParticipants(participants, logs) {
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
-
-        participants.forEach((participant) => {
+    
+        participants.forEach(participant => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-
-            // 투표 버튼
-            const voteButton = document.createElement('button');
-            voteButton.textContent = '투표';
-            voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
-            voteButton.addEventListener('click', () => {
-                if (!hasVoted) {
-                    socket.send(
-                        JSON.stringify({
-                            action: 'vote',
-                            participant: participant,
-                        })
-                    );
-
-                    hasVoted = true;
-                    voteButton.disabled = true;
-                }
-            });
-
-            // 투표 수 표시
-            const voteCountSpan = document.createElement('span');
-            voteCountSpan.textContent = `${votes[participant] || 0}표`;
-            voteCountSpan.style.marginLeft = '10px';
-
-            // 참가자 이름
+    
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
-            nameSpan.style.marginLeft = '10px';
-
-            // 참가자 글 표시 영역
-            const logContainer = document.createElement('div');
-            logContainer.className = 'log-container';
-            logContainer.innerHTML = logs[participant] || '작성된 글이 없습니다.';
-
-            participantElement.appendChild(voteButton);
-            participantElement.appendChild(voteCountSpan);
+    
             participantElement.appendChild(nameSpan);
-            participantElement.appendChild(logContainer);
-
+    
+            if (participant === nickname) {
+                // 본인인 경우 input 박스를 표시
+                const inputBox = document.createElement('input');
+                inputBox.type = 'text';
+                inputBox.placeholder = '글을 입력하세요...';
+                inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
+                inputBox.addEventListener('change', () => {
+                    // 입력이 변경되었을 때 서버로 업데이트 전송
+                    const logMessage = inputBox.value.trim();
+                    if (logMessage) {
+                        socket.send(JSON.stringify({
+                            action: 'update_log',
+                            participant: participant,
+                            log: logMessage
+                        }));
+                    }
+                });
+                participantElement.appendChild(inputBox);
+            } else {
+                // 다른 참가자인 경우 투표 버튼을 표시
+                const voteButton = document.createElement('button');
+                voteButton.textContent = '투표';
+                voteButton.addEventListener('click', () => {
+                    if (!hasVoted) {
+                        socket.send(JSON.stringify({
+                            action: 'vote',
+                            participant: participant
+                        }));
+    
+                        alert(`${participant}에게 투표했습니다.`);
+                        hasVoted = true; // 투표 완료 상태로 변경
+                        voteButton.disabled = true; // 버튼 비활성화
+                    }
+                });
+                participantElement.appendChild(voteButton);
+            }
+    
             participantsContainer.appendChild(participantElement);
         });
     }
-
-
+    
     // 참가자 글 입력 영역 렌더링
     function renderParticipantInputFields(participants) {
         participantLogsContainer.innerHTML = ''; // 기존 입력 필드 초기화
         participants.forEach(participant => {
             const inputContainer = document.createElement('div');
             inputContainer.classList.add('input-container');
-
             const nameLabel = document.createElement('label');
             nameLabel.textContent = participant;
-
             const textArea = document.createElement('textarea');
             textArea.placeholder = `${participant}의 글을 작성하세요.`;
             textArea.addEventListener('keypress', (event) => {
@@ -356,106 +365,128 @@ document.addEventListener('DOMContentLoaded', () => {
                             participant: participant,
                             log: logMessage
                         }));
-
                         // 로컬 데이터 갱신
-                        if (!participantLogs[participant]) {
-                            participantLogs[participant] = logMessage;
-                        } else {
-                            participantLogs[participant] += `\n${logMessage}`;
-                        }
-
+                        participantLogs[participant] = logMessage;
                         // UI 갱신
                         renderParticipants(participants, participantLogs);
-
                         // 입력 필드 초기화
                         textArea.value = '';
                     }
                 }
-            });
-
+            }); // <-- 이 괄호가 누락되어 있었습니다.
             inputContainer.appendChild(nameLabel);
             inputContainer.appendChild(textArea);
             participantLogsContainer.appendChild(inputContainer);
         });
     }
+    // function renderParticipants(participants, logs) {
+    //     console.log('[DEBUG] Rendering participants:', participants);  // 디버그 추가
+    //     participantsContainer.innerHTML = ''; // 기존 목록 초기화
+    
+    //     participants.forEach((participant) => {
+    //         if (!participant) {
+    //             console.warn('[WARN] Undefined participant detected');  // 디버그 추가
+    //             return;
+    //         }
+            
+    //         const participantElement = document.createElement('div');
+    //         participantElement.className = 'participant-item';
+    
+    //         // 투표 버튼
+    //         const voteButton = document.createElement('button');
+    //         voteButton.textContent = '투표';
+    //         voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
+    //         voteButton.addEventListener('click', () => {
+    //             if (!hasVoted) {
+    //                 socket.send(JSON.stringify({
+    //                     action: 'vote',
+    //                     participant: participant
+    //                 }));
+    //                 alert(`${participant}에게 투표했습니다.`);
+    //                 hasVoted = true; // 투표 완료 상태로 변경
+    //                 voteButton.disabled = true; // 버튼 비활성화
+    //             }
+    //         });
+    
+    //         // 투표 수 표시 (votes[participant]가 없으면 기본값 0)
+    //         const voteCountSpan = document.createElement('span');
+    //         voteCountSpan.textContent = `${votes[participant] || 0}표`;
 
-    // 참가자 글 상태 업데이트
-    function updateParticipantLogs(participant, logMessage) {
-        if (!participantLogs[participant]) {
-            participantLogs[participant] = [];
-        }
-        participantLogs[participant].push(logMessage); // 기존 글에 새 글 추가
-    }
+    //         // 참가자 이름
+    //         const nameSpan = document.createElement('span');
+    //         nameSpan.textContent = participant;
+    //         nameSpan.style.marginLeft = '10px';
+    
+    //         // 참가자 로그 표시 (채팅 메시지)
+    //         const logContainer = document.createElement('div');
+    //         logContainer.className = 'participant-log';
+    //         logContainer.innerHTML = logs[participant] ? logs[participant].join('<br>') : '';
+    
+    //         // 요소 추가
+    //         participantElement.appendChild(voteButton);
+    //         participantElement.appendChild(voteCountSpan);
+    //         participantElement.appendChild(nameSpan);
+    //         participantElement.appendChild(logContainer);
+    
+    //         participantsContainer.appendChild(participantElement);
+    //     });
+    // }
+    
 
-    // 투표 UI 렌더링
-    function renderVoteUI(participants) {
-        voteContainer.innerHTML = ''; // 기존 UI 초기화
 
-        participants.forEach(participant => {
-            // 투표 항목 생성
-            const voteElement = document.createElement('div');
-            voteElement.classList.add('vote-participant');
+    // // 참가자 글 입력 영역 렌더링
+    // function renderParticipantInputFields(participants) {
+    //     participantLogsContainer.innerHTML = ''; // 기존 입력 필드 초기화
+    //     participants.forEach(participant => {
+    //         const inputContainer = document.createElement('div');
+    //         inputContainer.classList.add('input-container');
 
-            // 참가자 이름
-            const nameElement = document.createElement('span');
-            nameElement.textContent = participant;
+    //         const nameLabel = document.createElement('label');
+    //         nameLabel.textContent = participant;
 
-            // 투표 수
-            const voteCount = document.createElement('span');
-            voteCount.textContent = `${votes[participant] || 0}표`; // 현재 투표 수 표시
-            voteCount.style.marginLeft = '10px'; // 이름 옆 간격
+    //         const textArea = document.createElement('textarea');
+    //         textArea.placeholder = `${participant}의 글을 작성하세요.`;
+    //         textArea.addEventListener('keypress', (event) => {
+    //             if (event.key === 'Enter') {
+    //                 event.preventDefault();
+    //                 const logMessage = textArea.value.trim();
+    //                 if (logMessage) {
+    //                     // WebSocket으로 참가자 글 업데이트 요청 전송
+    //                     socket.send(JSON.stringify({
+    //                         action: 'update_log',
+    //                         participant: participant,
+    //                         log: logMessage
+    //                     }));
 
-            // 투표 버튼
-            const voteButton = document.createElement('button');
-            voteButton.textContent = '투표';
-            voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
-            voteButton.addEventListener('click', () => {
-                if (!hasVoted) {
-                    socket.send(JSON.stringify({
-                        action: 'vote',
-                        participant: participant
-                    })); // 서버로 투표 이벤트 전송
+    //                     // 로컬 데이터 갱신
+    //                     if (!participantLogs[participant]) {
+    //                         participantLogs[participant] = logMessage;
+    //                     } else {
+    //                         participantLogs[participant] += `\n${logMessage}`;
+    //                     }
 
-                    // 로컬 상태 업데이트
-                    votes[participant] = (votes[participant] || 0) + 1;
-                    voteCount.textContent = `${votes[participant]}표`; // 투표 수 갱신
+    //                     // UI 갱신
+    //                     renderParticipants(participants, participantLogs);
 
-                    alert(`${participant}에게 투표했습니다.`);
-                    hasVoted = true; // 투표 완료 상태로 변경
-                    voteButton.disabled = true; // 버튼 비활성화
-                }
-            });
+    //                     // 입력 필드 초기화
+    //                     textArea.value = '';
+    //                 }
+    //             }
+    //         });
 
-            // 항목 구성
-            voteElement.appendChild(nameElement);
-            voteElement.appendChild(voteCount);
-            voteElement.appendChild(voteButton);
+    //         inputContainer.appendChild(nameLabel);
+    //         inputContainer.appendChild(textArea);
+    //         participantLogsContainer.appendChild(inputContainer);
+    //     });
+    // }
 
-            // 컨테이너에 추가
-            voteContainer.appendChild(voteElement);
-        });
-
-        // "결과 보기" 버튼 추가
-        const resultsButton = document.createElement('button');
-        resultsButton.id = 'show-results';
-        resultsButton.textContent = '결과 보기';
-        resultsButton.addEventListener('click', renderVoteResults);
-        voteContainer.appendChild(resultsButton);
-    }
-
-    // 투표 결과 렌더링
-    function renderVoteResults() {
-        voteResult.innerHTML = '';
-        const maxVotes = Math.max(...Object.values(votes));
-        const topParticipants = Object.keys(votes).filter(participant => votes[participant] === maxVotes);
-
-        const resultElement = document.createElement('div');
-        resultElement.textContent = topParticipants.length
-            ? `최다 득표자: ${topParticipants.join(', ')} (${maxVotes}표)`
-            : '투표된 참가자가 없습니다.';
-        voteResult.appendChild(resultElement);
-        voteResult.style.display = 'block';
-    }
+    // // 참가자 글 상태 업데이트
+    // function updateParticipantLogs(participant, logMessage) {
+    //     if (!participantLogs[participant]) {
+    //         participantLogs[participant] = [];
+    //     }
+    //     participantLogs[participant].push(logMessage); // 기존 글에 새 글 추가
+    // }
 
     // 이벤트 핸들러
     sendButton.addEventListener('click', sendMessage);
