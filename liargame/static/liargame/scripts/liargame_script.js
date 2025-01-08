@@ -283,13 +283,13 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    function renderParticipants(participants, logs, votes) {
+    function renderParticipants(participants, logs) {
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
-
+    
         participants.forEach((participant) => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-
+    
             // 투표 버튼
             const voteButton = document.createElement('button');
             voteButton.textContent = '투표';
@@ -302,35 +302,36 @@ document.addEventListener('DOMContentLoaded', () => {
                             participant: participant,
                         })
                     );
-
-                    hasVoted = true;
+                    hasVoted = true; // 투표 완료 상태로 변경
                     voteButton.disabled = true;
                 }
             });
-
-            // 투표 수 표시
+    
+            // 투표 수 표시 (votes[participant]가 없으면 기본값 0)
             const voteCountSpan = document.createElement('span');
             voteCountSpan.textContent = `${votes[participant] || 0}표`;
             voteCountSpan.style.marginLeft = '10px';
-
+    
             // 참가자 이름
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
             nameSpan.style.marginLeft = '10px';
-
-            // 참가자 글 표시 영역
+    
+            // 참가자 로그 표시 (채팅 메시지)
             const logContainer = document.createElement('div');
-            logContainer.className = 'log-container';
-            logContainer.innerHTML = logs[participant] || '작성된 글이 없습니다.';
-
+            logContainer.className = 'participant-log';
+            logContainer.innerHTML = logs[participant] ? logs[participant].join('<br>') : '';
+    
+            // 요소 추가
             participantElement.appendChild(voteButton);
             participantElement.appendChild(voteCountSpan);
             participantElement.appendChild(nameSpan);
             participantElement.appendChild(logContainer);
-
+    
             participantsContainer.appendChild(participantElement);
         });
     }
+    
 
 
     // 참가자 글 입력 영역 렌더링
