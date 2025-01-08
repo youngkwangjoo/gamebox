@@ -46,17 +46,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
             switch (data.type) {
                 case 'message':
-                    // 메시지 처리
                     const isSelf = (data.nickname.trim() === nickname.trim());
                     addMessageToLog(data.nickname, data.message, isSelf);
                     break;
     
                 case 'participants':
-                    participants = data.participants;
+                    participants = Array.isArray(data.participants) ? data.participants : [];
                     renderParticipants(participants, participantLogs, votes);
-                    renderParticipantInputFields(participants); // 여기서 호출
                     break;
-    
     
                 case 'log_update':
                     participantLogs[data.participant] = data.log;
@@ -68,6 +65,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderParticipants(participants, participantLogs, votes);
                     break;
     
+                case 'distribute_topic':  // 복원된 부분
+                    console.log('[DEBUG] Topic distribution received');
+                    handleTopicDistribution(data);  // 제시어 배포 처리
+                    break;
+    
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
@@ -75,6 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
     
     // 타이머 초기화
@@ -298,22 +301,20 @@ document.addEventListener('DOMContentLoaded', () => {
             voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
             voteButton.addEventListener('click', () => {
                 if (!hasVoted) {
-                    socket.send(
-                        JSON.stringify({
-                            action: 'vote',
-                            participant: participant,
-                        })
-                    );
+                    socket.send(JSON.stringify({
+                        action: 'vote',
+                        participant: participant
+                    }));
+                    alert(`${participant}에게 투표했습니다.`);
                     hasVoted = true; // 투표 완료 상태로 변경
-                    voteButton.disabled = true;
+                    voteButton.disabled = true; // 버튼 비활성화
                 }
             });
     
             // 투표 수 표시 (votes[participant]가 없으면 기본값 0)
             const voteCountSpan = document.createElement('span');
             voteCountSpan.textContent = `${votes[participant] || 0}표`;
-            voteCountSpan.style.marginLeft = '10px';
-    
+
             // 참가자 이름
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
