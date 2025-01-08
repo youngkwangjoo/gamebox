@@ -141,6 +141,26 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             message = data.get("message", "")
             nickname = self.scope['user'].nickname
             print(f"[DEBUG] Received message action from {nickname}: {message}")
+            
+        elif action == "vote":
+            participant = data.get("participant")
+            print(f"[DEBUG] Received vote for participant: {participant}")
+
+            # 투표 수 갱신
+            votes = cache.get(f"room_{self.room_id}_votes", {})
+            votes[participant] = votes.get(participant, 0) + 1
+            cache.set(f"room_{self.room_id}_votes", votes)
+
+            # 모든 클라이언트에 투표 수 업데이트 브로드캐스트
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "vote_update",
+                    "participant": participant,
+                    "voteCount": votes[participant],
+                }
+            )
+
 
             # WebSocket 그룹에 메시지 브로드캐스트
             print(f"[DEBUG] Preparing to broadcast message to group: {self.room_group_name}")
@@ -219,6 +239,18 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 "participants": participants,
             }
         )
+
+    async def vote_update(self, event):
+        participant = event["participant"]
+        vote_count = event["voteCount"]
+
+        await self.send(text_data=json.dumps({
+            "type": "vote_update",
+            "participant": participant,
+            "voteCount": vote_count,
+        }))
+        print(f"[DEBUG] Sent vote update: {participant} - {vote_count}표")
+
 
     def add_to_room(self, room_id=None, nickname=None):
         Room = apps.get_model('liargame', 'Room')

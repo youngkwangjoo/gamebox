@@ -41,38 +41,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
     socket.onmessage = (event) => {
         try {
-            const data = JSON.parse(event.data); 
+            const data = JSON.parse(event.data);
             console.log('[DEBUG] Message received:', data);
     
             switch (data.type) {
                 case 'message':
-                    // 수신한 메시지가 본인의 것인지 확인
+                    // 메시지 처리
                     const isSelf = (data.nickname.trim() === nickname.trim());
-                    console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.nickname}, nickname: ${nickname}`);
-    
-                    // 채팅 로그에 메시지 추가
                     addMessageToLog(data.nickname, data.message, isSelf);
                     break;
     
                 case 'participants':
                     participants = data.participants;
                     renderParticipants(participants, participantLogs);
-                    renderParticipantInputFields(participants);
-                    break;
-            
+                    renderParticipantInputFields(participants); // 여기서 호출
     
                 case 'log_update':
                     participantLogs[data.participant] = data.log;
-                    renderParticipants(participants, participantLogs);
+                    renderParticipants(participants, participantLogs, votes);
                     break;
+    
                 case 'vote_update':
                     votes[data.participant] = data.voteCount;
-                    renderParticipants(participants, participantLogs);
-                    break;
-
-                case 'distribute_topic':
-                    console.log('[DEBUG] Topic distribution received');
-                    handleTopicDistribution(data);
+                    renderParticipants(participants, participantLogs, votes);
                     break;
     
                 default:
@@ -82,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
     // 타이머 초기화
     let timerDuration = 5 * 60; // 5분 (300초)
@@ -291,16 +283,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // 참가자 목록 렌더링
-    function renderParticipants(participants, logs) {
+    function renderParticipants(participants, logs, votes) {
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
 
-        participants.forEach(participant => {
+        participants.forEach((participant) => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-            participantElement.style.display = 'flex';
-            participantElement.style.alignItems = 'center';
-            participantElement.style.gap = '10px';
 
             // 투표 버튼
             const voteButton = document.createElement('button');
@@ -308,49 +296,42 @@ document.addEventListener('DOMContentLoaded', () => {
             voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
             voteButton.addEventListener('click', () => {
                 if (!hasVoted) {
-                    socket.send(JSON.stringify({
-                        action: 'vote',
-                        participant: participant
-                    }));
+                    socket.send(
+                        JSON.stringify({
+                            action: 'vote',
+                            participant: participant,
+                        })
+                    );
 
-                    alert(`${participant}에게 투표했습니다.`);
-                    hasVoted = true; // 투표 완료 상태로 변경
-                    voteButton.disabled = true; // 버튼 비활성화
+                    hasVoted = true;
+                    voteButton.disabled = true;
                 }
             });
 
-            // 투표 받은 수
-            const voteCount = document.createElement('span');
-            voteCount.textContent = `${votes[participant] || 0}표`;
+            // 투표 수 표시
+            const voteCountSpan = document.createElement('span');
+            voteCountSpan.textContent = `${votes[participant] || 0}표`;
+            voteCountSpan.style.marginLeft = '10px';
 
             // 참가자 이름
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
-            nameSpan.style.fontWeight = 'bold';
+            nameSpan.style.marginLeft = '10px';
 
-            // 읽기 전용 텍스트박스
-            const logBox = document.createElement('div');
-            logBox.className = 'log-box';
-            logBox.style.border = '1px solid #ccc';
-            logBox.style.padding = '5px';
-            logBox.style.borderRadius = '5px';
-            logBox.style.backgroundColor = '#f9f9f9';
-            logBox.style.width = '100%';
-            logBox.style.maxHeight = '100px';
-            logBox.style.overflowY = 'auto';
-            logBox.style.whiteSpace = 'pre-wrap';
-            logBox.textContent = logs[participant] || '채팅 메시지가 여기에 표시됩니다.';
+            // 참가자 글 표시 영역
+            const logContainer = document.createElement('div');
+            logContainer.className = 'log-container';
+            logContainer.innerHTML = logs[participant] || '작성된 글이 없습니다.';
 
-            // 요소들을 참가자 항목에 추가
             participantElement.appendChild(voteButton);
-            participantElement.appendChild(voteCount);
+            participantElement.appendChild(voteCountSpan);
             participantElement.appendChild(nameSpan);
-            participantElement.appendChild(logBox);
+            participantElement.appendChild(logContainer);
 
-            // 참가자 목록 컨테이너에 추가
             participantsContainer.appendChild(participantElement);
         });
     }
+
 
     // 참가자 글 입력 영역 렌더링
     function renderParticipantInputFields(participants) {
