@@ -65,11 +65,15 @@
 
 
     <div class="game-container">
-        <!-- 왼쪽 패널 (참가자 목록) -->
+        <!-- 왼쪽 패널 (참가자 목록 + 참가자 글) -->
         <div class="participants-panel">
             <div class="participants-container">
                 <h3>참가자 목록</h3>
                 <div id="participants-container"></div>
+            </div>
+            <div class="participant-logs">
+                <h3>참가자 글</h3>
+                <div id="participant-logs-container"></div>
             </div>
         </div>
     
@@ -84,20 +88,8 @@
                 </div>
             </div>
         </div>
-    
-        <!-- 하단 패널 (참가자 글 + 투표 UI) -->
-        <div class="combined-panel">
-            <div class="participant-logs">
-                <h3>참가자 글</h3>
-                <div id="participant-logs-container"></div>
-            </div>
-            <div class="vote-container">
-                <h3>투표</h3>
-                <div id="vote-participants"></div>
-                <div id="vote-result"></div>
-            </div>
-        </div>
     </div>
+    
     
     <!-- 숨겨진 데이터 -->
     <div id="user-nickname" style="display: none;">{{ user.nickname }}</div>
