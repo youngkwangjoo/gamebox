@@ -65,19 +65,7 @@
 
 
     <div class="game-container">
-        <!-- 왼쪽 패널 (참가자 목록 + 참가자 글) -->
-        <div class="participants-panel">
-            <div class="participants-container">
-                <h3>참가자 목록</h3>
-                <div id="participants-container"></div>
-            </div>
-            <div class="participant-logs">
-                <h3>참가자 글</h3>
-                <div id="participant-logs-container"></div>
-            </div>
-        </div>
-    
-        <!-- 오른쪽 패널 (실시간 채팅) -->
+        <!-- 상단 패널 (실시간 채팅: 1사분면 + 2사분면) -->
         <div class="interaction-panel">
             <div class="chat-container">
                 <h3>실시간 채팅</h3>
@@ -88,7 +76,20 @@
                 </div>
             </div>
         </div>
+    
+        <!-- 좌측 하단 패널 (참가자 글 + 투표 기능: 3사분면) -->
+        <div class="participant-logs-panel">
+            <h3>참가자 글 및 투표</h3>
+            <div id="participant-logs-container"></div>
+        </div>
+    
+        <!-- 우측 하단 패널 (참가자 목록: 4사분면) -->
+        <div class="participants-panel">
+            <h3>참가자 목록</h3>
+            <div id="participants-container"></div>
+        </div>
     </div>
+    
     
     
     <!-- 숨겨진 데이터 -->
