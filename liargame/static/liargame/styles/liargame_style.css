@@ -128,33 +128,53 @@ nav ul li a:hover {
     cursor: not-allowed;
 }
 
-/* 게임 컨테이너 */
+/* 게임 컨테이너: 4분면 배치 */
 .game-container {
-    display: flex;
-    justify-content: space-between; /* 좌우 패널 나눔 */
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 두 개의 열 */
+    grid-template-rows: 1fr 1fr;    /* 두 개의 행 */
+    gap: 20px;
     width: 90%;
     margin: 20px auto;
-    gap: 20px;
-    height: 80vh; /* 전체 높이의 80% */
+    height: 80vh;
 }
 
-.participants-panel, .interaction-panel {
-    flex: 1; /* 두 패널의 기본 너비 동일 */
-    display: flex;
-    flex-direction: column; /* 패널 내부 요소는 위아래로 정렬 */
-    gap: 20px; /* 내부 요소 간격 */
-}
-
-/* 참가자 목록 */
-.participants-container, .participant-logs {
+/* 1사분면: 참가자 글 + 투표 */
+.participant-logs-panel {
+    grid-column: 1 / 2; /* 첫 번째 열 */
+    grid-row: 1 / 2;    /* 첫 번째 행 */
     border: 1px solid #ccc;
     border-radius: 8px;
     padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    flex: 1; /* 동일한 높이를 차지하도록 설정 */
-    overflow-y: auto; /* 스크롤 가능 */
+    overflow-y: auto;
 }
+
+/* 2사분면: 참가자 목록 */
+.participants-panel {
+    grid-column: 1 / 2; /* 첫 번째 열 */
+    grid-row: 2 / 3;    /* 두 번째 행 */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+/* 1,2 및 2,2 사분면: 실시간 채팅 */
+.interaction-panel {
+    grid-column: 2 / 3; /* 두 번째 열 */
+    grid-row: 1 / 3;    /* 첫 번째 행부터 두 번째 행까지 차지 */
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
 
 .input-container {
     display: flex; /* 플렉스박스로 정렬 */
