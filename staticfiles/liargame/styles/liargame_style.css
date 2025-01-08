@@ -128,36 +128,6 @@ nav ul li a:hover {
     cursor: not-allowed;
 }
 
-.interaction-panel {
-    grid-column: 1 / 3;
-    grid-row: 1 / 2;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.participant-logs-panel {
-    grid-column: 1 / 2; /* 3사분면 (좌측 하단) */
-    grid-row: 2 / 3;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
-}
-
-.participants-panel {
-    grid-column: 2 / 3; /* 4사분면 (우측 하단) */
-    grid-row: 2 / 3;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow-y: auto;
-}
-
 /* 참가자 목록 */
 .participants-container,
 .participant-logs {
@@ -324,30 +294,89 @@ nav ul li a:hover {
         gap: 10px; /* 버튼 간 간격 조정 */
     }
 
-    .game-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* 두 개의 열 */
-        grid-template-rows: 1fr 1fr;    /* 두 개의 행 */
-        gap: 20px;
-        width: 90%;
-        margin: 20px auto;
-        height: 80vh;
-    }
-    
-    .participants-panel {
-        grid-column: 2 / 3; /* 두 번째 열에 배치 */
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    
-    .interaction-panel {
-        grid-column: 1 / 3; /* 1사분면 + 2사분면 (전체 상단) */
-        grid-row: 1 / 2;
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
+/* 메인 컨테이너: 4분면 배치 */
+.game-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 두 개의 열 */
+    grid-template-rows: 1fr 1fr;    /* 두 개의 행 */
+    gap: 20px;
+    width: 90%;
+    margin: 20px auto;
+    height: 80vh;
+}
+
+/* 1사분면 + 2사분면: 실시간 채팅 */
+.interaction-panel {
+    grid-column: 1 / 3; /* 두 열을 차지 (상단 전체) */
+    grid-row: 1 / 2;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 3사분면: 참가자 글 + 투표 */
+.participant-logs-panel {
+    grid-column: 1 / 2; /* 좌측 하단 */
+    grid-row: 2 / 3;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+/* 4사분면: 참가자 목록 */
+.participants-panel {
+    grid-column: 2 / 3; /* 우측 하단 */
+    grid-row: 2 / 3;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
+/* 참가자 목록 아이템 */
+.participant-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-bottom: 5px;
+}
+
+.participant-item input {
+    flex-grow: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.participant-item button {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.participant-item button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+
 
     .chat-box {
         height: 200px; /* 채팅 상자 높이를 줄임 */
@@ -361,43 +390,12 @@ nav ul li a:hover {
         font-size: 14px; /* 버튼 크기 조정 */
         padding: 8px 12px; /* 내부 여백 축소 */
     }
-
-    .participant-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 5px 10px;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        margin-bottom: 5px;
-    }
     
     .participant-item span {
         flex-shrink: 0;
         margin-right: 10px;
     }
     
-    .participant-item input {
-        flex-grow: 1;
-        padding: 5px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-    }
-    
-    .participant-item button {
-        padding: 5px 10px;
-        background-color: #4CAF50;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    
-    .participant-item button:disabled {
-        background-color: #6c757d;
-        cursor: not-allowed;
-    }
     
     
 
@@ -424,4 +422,14 @@ nav ul li a:hover {
     .modal-content {
         padding: 10px; /* 모달 내부 여백 줄임 */
     }
+    .game-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* 두 개의 열 */
+        grid-template-rows: 1fr 1fr;    /* 두 개의 행 */
+        gap: 20px;
+        width: 90%;
+        margin: 20px auto;
+        height: 80vh;
+    }
+
 }
