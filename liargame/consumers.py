@@ -223,8 +223,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
     async def update_participants(self, event):
         participants = event["participants"]
-        print(f"[DEBUG] Sending participants list to WebSocket: {participants}")
-
+        print(f"[DEBUG] Sending participants list: {participants} (type: {type(participants)})")
         await self.send(text_data=json.dumps({
             "type": "participants",
             "participants": participants,
