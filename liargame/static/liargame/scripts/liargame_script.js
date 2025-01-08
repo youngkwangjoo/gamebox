@@ -53,8 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
                 case 'participants':
                     participants = data.participants;
-                    renderParticipants(participants, participantLogs);
+                    renderParticipants(participants, participantLogs, votes);
                     renderParticipantInputFields(participants); // 여기서 호출
+                    break;
+    
     
                 case 'log_update':
                     participantLogs[data.participant] = data.log;
@@ -386,76 +388,6 @@ document.addEventListener('DOMContentLoaded', () => {
             participantLogs[participant] = [];
         }
         participantLogs[participant].push(logMessage); // 기존 글에 새 글 추가
-    }
-
-    // 투표 UI 렌더링
-    function renderVoteUI(participants) {
-        voteContainer.innerHTML = ''; // 기존 UI 초기화
-
-        participants.forEach(participant => {
-            // 투표 항목 생성
-            const voteElement = document.createElement('div');
-            voteElement.classList.add('vote-participant');
-
-            // 참가자 이름
-            const nameElement = document.createElement('span');
-            nameElement.textContent = participant;
-
-            // 투표 수
-            const voteCount = document.createElement('span');
-            voteCount.textContent = `${votes[participant] || 0}표`; // 현재 투표 수 표시
-            voteCount.style.marginLeft = '10px'; // 이름 옆 간격
-
-            // 투표 버튼
-            const voteButton = document.createElement('button');
-            voteButton.textContent = '투표';
-            voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
-            voteButton.addEventListener('click', () => {
-                if (!hasVoted) {
-                    socket.send(JSON.stringify({
-                        action: 'vote',
-                        participant: participant
-                    })); // 서버로 투표 이벤트 전송
-
-                    // 로컬 상태 업데이트
-                    votes[participant] = (votes[participant] || 0) + 1;
-                    voteCount.textContent = `${votes[participant]}표`; // 투표 수 갱신
-
-                    alert(`${participant}에게 투표했습니다.`);
-                    hasVoted = true; // 투표 완료 상태로 변경
-                    voteButton.disabled = true; // 버튼 비활성화
-                }
-            });
-
-            // 항목 구성
-            voteElement.appendChild(nameElement);
-            voteElement.appendChild(voteCount);
-            voteElement.appendChild(voteButton);
-
-            // 컨테이너에 추가
-            voteContainer.appendChild(voteElement);
-        });
-
-        // "결과 보기" 버튼 추가
-        const resultsButton = document.createElement('button');
-        resultsButton.id = 'show-results';
-        resultsButton.textContent = '결과 보기';
-        resultsButton.addEventListener('click', renderVoteResults);
-        voteContainer.appendChild(resultsButton);
-    }
-
-    // 투표 결과 렌더링
-    function renderVoteResults() {
-        voteResult.innerHTML = '';
-        const maxVotes = Math.max(...Object.values(votes));
-        const topParticipants = Object.keys(votes).filter(participant => votes[participant] === maxVotes);
-
-        const resultElement = document.createElement('div');
-        resultElement.textContent = topParticipants.length
-            ? `최다 득표자: ${topParticipants.join(', ')} (${maxVotes}표)`
-            : '투표된 참가자가 없습니다.';
-        voteResult.appendChild(resultElement);
-        voteResult.style.display = 'block';
     }
 
     // 이벤트 핸들러
