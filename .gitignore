@@ -1,1 +1,9 @@
+# Python 관련
+*.pyc
+__pycache__/
+
+# SQLite 데이터베이스
+db.sqlite3
+
+# 환경 설정 파일
 .env
