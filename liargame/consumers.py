@@ -55,9 +55,6 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         }))
 
 
-
-
-
 class GameRoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_id = self.scope["url_route"]["kwargs"].get("room_id", None)
