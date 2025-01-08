@@ -137,7 +137,7 @@ nav ul li a:hover {
 }
 
 .participant-logs-panel {
-    grid-column: 1 / 2;
+    grid-column: 1 / 2; /* 3사분면 (좌측 하단) */
     grid-row: 2 / 3;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -148,7 +148,7 @@ nav ul li a:hover {
 }
 
 .participants-panel {
-    grid-column: 2 / 3;
+    grid-column: 2 / 3; /* 4사분면 (우측 하단) */
     grid-row: 2 / 3;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -326,8 +326,8 @@ nav ul li a:hover {
 
     .game-container {
         display: grid;
-        grid-template-columns: 2fr 1fr; /* 왼쪽: 2, 오른쪽: 1 */
-        grid-template-rows: 1fr 1fr; /* 상단과 하단 동일 비율 */
+        grid-template-columns: 1fr 1fr; /* 두 개의 열 */
+        grid-template-rows: 1fr 1fr;    /* 두 개의 행 */
         gap: 20px;
         width: 90%;
         margin: 20px auto;
@@ -342,12 +342,13 @@ nav ul li a:hover {
     }
     
     .interaction-panel {
-        grid-column: 1 / 3;
+        grid-column: 1 / 3; /* 1사분면 + 2사분면 (전체 상단) */
         grid-row: 1 / 2;
         display: flex;
         flex-direction: column;
         gap: 20px;
     }
+
     .chat-box {
         height: 200px; /* 채팅 상자 높이를 줄임 */
     }
