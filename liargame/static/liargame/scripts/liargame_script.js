@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderParticipants(participants, participantLogs, votes);
                     break;
     
-                case 'distribute_topic':  // 복원된 부분
+                case 'distribute_topic':  
                     console.log('[DEBUG] Topic distribution received');
                     handleTopicDistribution(data);  // 제시어 배포 처리
                     break;

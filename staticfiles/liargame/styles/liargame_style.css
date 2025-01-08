@@ -306,6 +306,60 @@ nav ul li a:hover {
     text-align: center;
 }
 
+/* 참가자 아이템 스타일 */
+.participant-item {
+    display: flex;             /* 플렉스 정렬로 글 박스와 버튼 나란히 배치 */
+    align-items: center;       /* 수직 중앙 정렬 */
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 참가자 글 입력 박스 스타일 */
+.participant-item input[type="text"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 60%;
+    margin-left: 10px;
+}
+
+/* 참가자 글 표시 박스 스타일 */
+.participant-log-box {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-left: 10px;
+    background-color: #f1f1f1;
+    width: 60%;
+    text-align: center;
+}
+
+/* 투표 버튼 스타일 */
+.participant-item button {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.participant-item button:hover {
+    background-color: #0056b3;
+}
+
+.participant-item button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+
 /* 미디어 쿼리: 화면 너비가 768px 이하인 경우 */
 @media (max-width: 768px) {
     nav ul {

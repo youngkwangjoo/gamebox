@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     renderParticipants(participants, participantLogs, votes);
                     break;
     
-                case 'distribute_topic':  // 복원된 부분
+                case 'distribute_topic':  
                     console.log('[DEBUG] Topic distribution received');
                     handleTopicDistribution(data);  // 제시어 배포 처리
                     break;
@@ -298,19 +298,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
     
+            // 참가자 이름 표시
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
-    
             participantElement.appendChild(nameSpan);
     
             if (participant === nickname) {
-                // 본인인 경우 input 박스를 표시
+                // 본인인 경우 input 박스 표시
                 const inputBox = document.createElement('input');
                 inputBox.type = 'text';
                 inputBox.placeholder = '글을 입력하세요...';
                 inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
                 inputBox.addEventListener('change', () => {
-                    // 입력이 변경되었을 때 서버로 업데이트 전송
                     const logMessage = inputBox.value.trim();
                     if (logMessage) {
                         socket.send(JSON.stringify({
@@ -322,9 +321,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 participantElement.appendChild(inputBox);
             } else {
-                // 다른 참가자인 경우 투표 버튼을 표시
+                // 다른 참가자인 경우 투표 버튼 표시
                 const voteButton = document.createElement('button');
                 voteButton.textContent = '투표';
+                voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
                 voteButton.addEventListener('click', () => {
                     if (!hasVoted) {
                         socket.send(JSON.stringify({
@@ -340,9 +340,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 participantElement.appendChild(voteButton);
             }
     
+            // 참가자 글 표시 박스 (공통)
+            const logBox = document.createElement('div');
+            logBox.className = 'participant-log-box';
+            logBox.textContent = logs[participant] || '---'; // 글이 없으면 기본값 표시
+            logBox.style.marginLeft = '10px';
+            logBox.style.padding = '5px';
+            logBox.style.border = '1px solid #ccc';
+            logBox.style.display = 'inline-block';
+    
+            participantElement.appendChild(logBox);
             participantsContainer.appendChild(participantElement);
         });
     }
+    
     
     // 참가자 글 입력 영역 렌더링
     function renderParticipantInputFields(participants) {
