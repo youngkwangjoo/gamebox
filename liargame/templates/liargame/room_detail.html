@@ -70,23 +70,26 @@
             <div id="participant-logs-container"></div>
         </div>
     
-        <!-- 2사분면: 참가자 목록 -->
-        <div class="participants-panel">
-            <h3>참가자 목록</h3>
-            <div id="participants-container"></div>
-        </div>
+    <!-- 2사분면: 참가자 목록 -->
+    <div class="participants-panel">
+        <h3>참가자 목록</h3>
+        <div id="participants-container"></div>
+        <!-- 투표 UI 컨테이너 추가 -->
+        <div id="vote-container"></div>
+    </div>
+
     
-        <!-- 3사분면 + 4사분면: 실시간 채팅 -->
-        <div class="interaction-panel">
-            <h3>실시간 채팅</h3>
-            <div class="chat-box" id="chat-log"></div>
-            <div class="chat-input">
-                <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
-                <button id="chat-message-submit">전송</button>
-            </div>
+    <!-- 3사분면 + 4사분면: 실시간 채팅 -->
+    <div class="interaction-panel">
+        <h3>실시간 채팅</h3>
+        <div class="chat-box" id="chat-log"></div>
+        <div class="chat-input">
+            <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
+            <button id="chat-message-submit">전송</button>
         </div>
     </div>
-    
+</div>
+
     
     <!-- 숨겨진 데이터 -->
     <div id="user-nickname" style="display: none;">{{ user.nickname }}</div>
