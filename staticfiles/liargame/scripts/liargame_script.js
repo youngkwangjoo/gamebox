@@ -329,25 +329,57 @@ document.addEventListener('DOMContentLoaded', () => {
     // 참가자 목록 렌더링
     function renderParticipants(participants, logs) {
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
+    
         participants.forEach(participant => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-
+    
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
-
-            const logSpan = document.createElement('span');
-            logSpan.textContent = logs[participant] || ''; // 참가자의 로그 출력
-            logSpan.style.marginLeft = '10px';
-            logSpan.style.color = 'gray';
-            logSpan.style.fontStyle = 'italic';
-
+    
             participantElement.appendChild(nameSpan);
-            participantElement.appendChild(logSpan);
+    
+            if (participant === nickname) {
+                // 본인인 경우 input 박스를 표시
+                const inputBox = document.createElement('input');
+                inputBox.type = 'text';
+                inputBox.placeholder = '글을 입력하세요...';
+                inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
+                inputBox.addEventListener('change', () => {
+                    // 입력이 변경되었을 때 서버로 업데이트 전송
+                    const logMessage = inputBox.value.trim();
+                    if (logMessage) {
+                        socket.send(JSON.stringify({
+                            action: 'update_log',
+                            participant: participant,
+                            log: logMessage
+                        }));
+                    }
+                });
+                participantElement.appendChild(inputBox);
+            } else {
+                // 다른 참가자인 경우 투표 버튼을 표시
+                const voteButton = document.createElement('button');
+                voteButton.textContent = '투표';
+                voteButton.addEventListener('click', () => {
+                    if (!hasVoted) {
+                        socket.send(JSON.stringify({
+                            action: 'vote',
+                            participant: participant
+                        }));
+    
+                        alert(`${participant}에게 투표했습니다.`);
+                        hasVoted = true; // 투표 완료 상태로 변경
+                        voteButton.disabled = true; // 버튼 비활성화
+                    }
+                });
+                participantElement.appendChild(voteButton);
+            }
+    
             participantsContainer.appendChild(participantElement);
         });
     }
-
+    
     // 참가자 글 입력 영역 렌더링
     function renderParticipantInputFields(participants) {
         participantLogsContainer.innerHTML = ''; // 기존 입력 필드 초기화
