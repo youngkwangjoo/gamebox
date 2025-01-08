@@ -63,37 +63,29 @@
         </div>
     </div>
 
-    <div class="main-container">
-        <!-- 상단 행: 1사분면 + 2사분면 -->
-        <div class="row">
-            <!-- 1사분면: 실시간 채팅 -->
-            <div class="interaction-panel">
-                <h3>실시간 채팅</h3>
-                <div class="chat-box" id="chat-log"></div>
-                <div class="chat-input">
-                    <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
-                    <button id="chat-message-submit">전송</button>
-                </div>
-            </div>
+    <div class="game-container">
+        <!-- 1사분면: 참가자 글 + 투표 -->
+        <div class="participant-logs-panel">
+            <h3>참가자 글 및 투표</h3>
+            <div id="participant-logs-container"></div>
         </div>
     
-        <!-- 하단 행: 3사분면 + 4사분면 -->
-        <div class="row">
-            <!-- 3사분면: 참가자 글 + 투표 -->
-            <div class="participant-logs-panel">
-                <h3>참가자 글 및 투표</h3>
-                <div id="participant-logs-container"></div>
-            </div>
+        <!-- 2사분면: 참가자 목록 -->
+        <div class="participants-panel">
+            <h3>참가자 목록</h3>
+            <div id="participants-container"></div>
+        </div>
     
-            <!-- 4사분면: 참가자 목록 -->
-            <div class="participants-panel">
-                <h3>참가자 목록</h3>
-                <div id="participants-container"></div>
+        <!-- 3사분면 + 4사분면: 실시간 채팅 -->
+        <div class="interaction-panel">
+            <h3>실시간 채팅</h3>
+            <div class="chat-box" id="chat-log"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
+                <button id="chat-message-submit">전송</button>
             </div>
         </div>
     </div>
-    
-    
     
     
     <!-- 숨겨진 데이터 -->
