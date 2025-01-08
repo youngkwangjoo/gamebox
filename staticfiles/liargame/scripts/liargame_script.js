@@ -6,8 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sendButton = document.getElementById('chat-message-submit');
     const participantsContainer = document.getElementById('participants-container');
     const participantLogsContainer = document.getElementById('participant-logs-container');
-    const voteContainer = document.getElementById('vote-participants');
-    const voteResult = document.getElementById('vote-result');
     // 타이머
     const timerElement = document.getElementById('timer');
     const alertMessage = document.getElementById('alert-message');
@@ -43,36 +41,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
     socket.onmessage = (event) => {
         try {
-            const data = JSON.parse(event.data); 
+            const data = JSON.parse(event.data);
             console.log('[DEBUG] Message received:', data);
     
             switch (data.type) {
                 case 'message':
-                    // 수신한 메시지가 본인의 것인지 확인
+                    // 메시지 처리
                     const isSelf = (data.nickname.trim() === nickname.trim());
-                    console.log(`[DEBUG] isSelf: ${isSelf}, sender: ${data.nickname}, nickname: ${nickname}`);
-    
-                    // 채팅 로그에 메시지 추가
                     addMessageToLog(data.nickname, data.message, isSelf);
                     break;
     
                 case 'participants':
-                    console.log('[DEBUG] 참가자를 최신화합니다.:', data.participants);
                     participants = data.participants;
                     renderParticipants(participants, participantLogs);
-                    renderParticipantInputFields(participants);
-                    renderVoteUI(participants);
-                    break;
+                    renderParticipantInputFields(participants); // 여기서 호출
     
                 case 'log_update':
-                    console.log(`[DEBUG] Log update received for participant ${data.participant}`);
                     participantLogs[data.participant] = data.log;
-                    renderParticipants(participants, participantLogs);
+                    renderParticipants(participants, participantLogs, votes);
                     break;
     
-                case 'distribute_topic':
-                    console.log('[DEBUG] Topic distribution received');
-                    handleTopicDistribution(data);
+                case 'vote_update':
+                    votes[data.participant] = data.voteCount;
+                    renderParticipants(participants, participantLogs, votes);
                     break;
     
                 default:
@@ -82,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
+    
     
     // 타이머 초기화
     let timerDuration = 5 * 60; // 5분 (300초)
@@ -182,19 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // 타이머 업데이트 함수
-    function updateTimer() {
-        if (timerDuration <= 0) {
-            clearInterval(timerInterval);
-            alertMessage.textContent = "타이머 종료!";
-            timerElement.textContent = "00:00";
-            return;
-        }
-
-        timerElement.textContent = formatTime(timerDuration);
-        timerDuration--;
-    }
-
     // 타이머 포맷팅 함수
     function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
@@ -294,28 +273,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // socket.onmessage = (event) => {
-    //     const data = JSON.parse(event.data);
-    //     console.log('[DEBUG] Message received:', data);
-
-    //     switch (data.type) {
-    //         case 'participants':
-    //             participants = data.participants;
-    //             renderParticipants(participants, participantLogs); // 참가자 목록 갱신
-    //             renderParticipantInputFields(participants); // 글 입력 UI 갱신
-    //             renderVoteUI(participants); // 투표 UI 갱신
-    //             break;
-    //         case 'message':
-    //             addMessageToLog(data.sender, data.message); // 다른 사용자의 메시지를 채팅 로그에 추가
-    //             break;
-    //         case 'log_update':
-    //             participantLogs[data.participant] = data.log; // 참가자 글 업데이트
-    //             renderParticipants(participants, participantLogs); // 변경된 글 목록 반영
-    //             break;
-    //         default:
-    //             console.error('[ERROR] Unknown message type:', data.type);
-    //     }
-    // };
 
     socket.onclose = (event) => {
         console.log('[DEBUG] WebSocket 연결 종료:', event);
@@ -326,60 +283,56 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
 
-    // 참가자 목록 렌더링
-    function renderParticipants(participants, logs) {
+    function renderParticipants(participants, logs, votes) {
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
-    
-        participants.forEach(participant => {
+
+        participants.forEach((participant) => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-    
+
+            // 투표 버튼
+            const voteButton = document.createElement('button');
+            voteButton.textContent = '투표';
+            voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
+            voteButton.addEventListener('click', () => {
+                if (!hasVoted) {
+                    socket.send(
+                        JSON.stringify({
+                            action: 'vote',
+                            participant: participant,
+                        })
+                    );
+
+                    hasVoted = true;
+                    voteButton.disabled = true;
+                }
+            });
+
+            // 투표 수 표시
+            const voteCountSpan = document.createElement('span');
+            voteCountSpan.textContent = `${votes[participant] || 0}표`;
+            voteCountSpan.style.marginLeft = '10px';
+
+            // 참가자 이름
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
-    
+            nameSpan.style.marginLeft = '10px';
+
+            // 참가자 글 표시 영역
+            const logContainer = document.createElement('div');
+            logContainer.className = 'log-container';
+            logContainer.innerHTML = logs[participant] || '작성된 글이 없습니다.';
+
+            participantElement.appendChild(voteButton);
+            participantElement.appendChild(voteCountSpan);
             participantElement.appendChild(nameSpan);
-    
-            if (participant === nickname) {
-                // 본인인 경우 input 박스를 표시
-                const inputBox = document.createElement('input');
-                inputBox.type = 'text';
-                inputBox.placeholder = '글을 입력하세요...';
-                inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
-                inputBox.addEventListener('change', () => {
-                    // 입력이 변경되었을 때 서버로 업데이트 전송
-                    const logMessage = inputBox.value.trim();
-                    if (logMessage) {
-                        socket.send(JSON.stringify({
-                            action: 'update_log',
-                            participant: participant,
-                            log: logMessage
-                        }));
-                    }
-                });
-                participantElement.appendChild(inputBox);
-            } else {
-                // 다른 참가자인 경우 투표 버튼을 표시
-                const voteButton = document.createElement('button');
-                voteButton.textContent = '투표';
-                voteButton.addEventListener('click', () => {
-                    if (!hasVoted) {
-                        socket.send(JSON.stringify({
-                            action: 'vote',
-                            participant: participant
-                        }));
-    
-                        alert(`${participant}에게 투표했습니다.`);
-                        hasVoted = true; // 투표 완료 상태로 변경
-                        voteButton.disabled = true; // 버튼 비활성화
-                    }
-                });
-                participantElement.appendChild(voteButton);
-            }
-    
+            participantElement.appendChild(logContainer);
+
             participantsContainer.appendChild(participantElement);
         });
     }
-    
+
+
     // 참가자 글 입력 영역 렌더링
     function renderParticipantInputFields(participants) {
         participantLogsContainer.innerHTML = ''; // 기존 입력 필드 초기화
@@ -405,7 +358,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         }));
 
                         // 로컬 데이터 갱신
-                        participantLogs[participant] = logMessage;
+                        if (!participantLogs[participant]) {
+                            participantLogs[participant] = logMessage;
+                        } else {
+                            participantLogs[participant] += `\n${logMessage}`;
+                        }
 
                         // UI 갱신
                         renderParticipants(participants, participantLogs);
@@ -424,7 +381,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 참가자 글 상태 업데이트
     function updateParticipantLogs(participant, logMessage) {
-        participantLogs[participant] = logMessage;
+        if (!participantLogs[participant]) {
+            participantLogs[participant] = [];
+        }
+        participantLogs[participant].push(logMessage); // 기존 글에 새 글 추가
     }
 
     // 투표 UI 렌더링
@@ -695,11 +655,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
-    
-
-// 클릭 이벤트 중복 방지
-confirmTopicButton.removeEventListener('click', fetchSubtopicsAndDistribute);
-confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
 
     // 초기화
     loadTopics();
