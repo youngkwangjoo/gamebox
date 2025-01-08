@@ -232,6 +232,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
     async def broadcast_participants(self, participants):
         """참가자 목록을 WebSocket 그룹에 브로드캐스트하는 메서드"""
+        print(f"[DEBUG] Broadcasting participants: {participants}")
         await self.channel_layer.group_send(
             self.room_group_name,
             {

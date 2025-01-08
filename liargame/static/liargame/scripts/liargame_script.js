@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            console.log('[DEBUG] Message received:', data);
+            console.log('[DEBUG] WebSocket message received:', data);
     
             switch (data.type) {
                 case 'message':
@@ -289,9 +289,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     function renderParticipants(participants, logs) {
+        console.log('[DEBUG] Rendering participants:', participants);  // 디버그 추가
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
     
         participants.forEach((participant) => {
+            if (!participant) {
+                console.warn('[WARN] Undefined participant detected');  // 디버그 추가
+                return;
+            }
+            
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
     
