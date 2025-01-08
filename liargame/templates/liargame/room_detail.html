@@ -65,39 +65,40 @@
 
 
     <div class="game-container">
-        <!-- 왼쪽 패널 -->
+        <!-- 왼쪽 패널 (참가자 목록) -->
         <div class="participants-panel">
             <div class="participants-container">
                 <h3>참가자 목록</h3>
                 <div id="participants-container"></div>
             </div>
-            <div class="participant-logs">
-                <h3>참가자 글</h3>
-                <div id="participant-logs-container"></div>
-            </div>
         </div>
     
-        <!-- 오른쪽 패널 -->
+        <!-- 오른쪽 패널 (실시간 채팅) -->
         <div class="interaction-panel">
             <div class="chat-container">
                 <h3>실시간 채팅</h3>
-                <div class="chat-box" id="chat-log">
-                </div>
+                <div class="chat-box" id="chat-log"></div>
                 <div class="chat-input">
                     <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
                     <button id="chat-message-submit">전송</button>
                 </div>
             </div>
+        </div>
+    
+        <!-- 하단 패널 (참가자 글 + 투표 UI) -->
+        <div class="combined-panel">
+            <div class="participant-logs">
+                <h3>참가자 글</h3>
+                <div id="participant-logs-container"></div>
+            </div>
             <div class="vote-container">
                 <h3>투표</h3>
-                <!-- 참가자 목록 -->
                 <div id="vote-participants"></div>
-                <!-- 투표 결과 표시 -->
                 <div id="vote-result"></div>
-                <!-- 결과 보기 버튼 추가 -->
             </div>
         </div>
     </div>
+    
     <!-- 숨겨진 데이터 -->
     <div id="user-nickname" style="display: none;">{{ user.nickname }}</div>
     <div id="room-id" style="display: none;">{{ room.room_number|default:"" }}</div>

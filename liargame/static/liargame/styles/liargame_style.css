@@ -128,16 +128,6 @@ nav ul li a:hover {
     cursor: not-allowed;
 }
 
-/* 게임 컨테이너 */
-.game-container {
-    display: flex;
-    justify-content: space-between; /* 좌우 패널 나눔 */
-    width: 90%;
-    margin: 20px auto;
-    gap: 20px;
-    height: 80vh; /* 전체 높이의 80% */
-}
-
 .participants-panel, .interaction-panel {
     flex: 1; /* 두 패널의 기본 너비 동일 */
     display: flex;
@@ -177,14 +167,14 @@ nav ul li a:hover {
 }
 
 .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
     border: 1px solid #ccc;
     border-radius: 10px;
     padding: 10px;
     background-color: #f9f9f9;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    display: flex;
-    flex-direction: column; /* 세로로 정렬 */
-    height: 100%; /* 부모 컨테이너 높이에 맞추기 */
 }
 
 .chat-box {
@@ -285,6 +275,24 @@ nav ul li a:hover {
     background-color: #f9f9f9; /* 배경색 */
 }
 
+.combined-panel {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.participant-logs,
+.vote-container {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+}
+
 
 /* 투표 버튼 */
 .vote-participant button {
@@ -353,15 +361,23 @@ nav ul li a:hover {
     }
 
     .game-container {
-        flex-direction: column; /* 게임 영역을 세로 정렬 */
-        height: auto; /* 높이를 자동으로 설정 */
-        gap: 10px; /* 패널 간 간격 조정 */
-        width: 95%; /* 작은 화면에서는 패딩 추가 */
+        display: grid;
+        grid-template-columns: 1fr 2fr; /* 왼쪽 패널과 오른쪽 패널의 비율 */
+        grid-template-rows: 1fr 1fr; /* 위쪽과 아래쪽 패널의 비율 */
+        gap: 20px;
+        width: 90%;
+        margin: 20px auto;
+        height: 80vh;
     }
 
-    .participants-panel, .interaction-panel {
-        flex: none; /* 두 패널의 너비 비율 제거 */
-        width: 100%; /* 전체 너비 사용 */
+    .participants-panel {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+    }
+    
+    .interaction-panel {
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
     }
 
     .chat-box {
