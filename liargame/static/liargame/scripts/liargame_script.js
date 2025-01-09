@@ -252,6 +252,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
+        console.log(`[DEBUG] addMessageToLog called. Sender: ${sender}, Message: ${message}`);  // 디버깅 추가
+        
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
         
@@ -290,19 +292,19 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[ERROR] WebSocket 오류:', error);
     };
 
-       // 참가자 목록 렌더링
-       function renderParticipants(participants, logs) {
+    // 참가자 목록 렌더링
+    function renderParticipants(participants, logs, votes) {
         participantsContainer.innerHTML = ''; // 기존 목록 초기화
-    
+
         participants.forEach(participant => {
             const participantElement = document.createElement('div');
             participantElement.className = 'participant-item';
-    
+
             // 참가자 이름 표시
             const nameSpan = document.createElement('span');
             nameSpan.textContent = participant;
             participantElement.appendChild(nameSpan);
-    
+
             if (participant === nickname) {
                 // 본인인 경우 input 박스를 표시
                 const inputBox = document.createElement('input');
@@ -331,7 +333,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             action: 'vote',
                             participant: participant
                         }));
-                
+
                         alert(`${participant}에게 투표했습니다.`);
                         hasVoted = true;
                         voteButton.disabled = true;
@@ -339,16 +341,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 participantElement.appendChild(voteButton);
             }
-    
+
+            // 투표 수 표시
+            const voteCountSpan = document.createElement('span');
+            voteCountSpan.textContent = ` ${votes[participant] || 0}표`;
+            voteCountSpan.style.marginLeft = '10px';
+            participantElement.appendChild(voteCountSpan);
+
             participantsContainer.appendChild(participantElement);
         });
-    
+
         // 참가자 글 및 투표 패널 갱신
         renderParticipantLogs(logs);
     }
-    
-    
 
+    
     function renderParticipantLogs(logs) {
         participantLogsContainer.innerHTML = ''; // 기존 내용을 초기화
     
