@@ -179,37 +179,6 @@
         .delete-room-button:hover {
             background-color: #d11a1c;
         }
-        .room-list-container {
-            display: flex;
-            flex-direction: column;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            height: calc(100vh - 120px);
-            overflow-y: auto;
-        }
-
-        .room-list-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .create-room-button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 15px;
-            cursor: pointer;
-        }
-
-        .create-room-button:hover {
-            background-color: #45a049;
-        }
-
 
 
     </style>
@@ -229,7 +198,7 @@
                 <li><a href="{% url 'signin' %}">로그인</a></li>
             {% endif %}
             <li><a href="{% url 'game' %}">대기실</a></li>
-            <li><a href="{% url 'create_room' %}">방만들기</a></li>
+            <li><a href="{% url 'create_room' %}" id="create-room-link">방만들기</a></li>
         </ul>
     </nav>
     <div class="main-box">
@@ -284,6 +253,7 @@
             const nickname = "{{ user.nickname|default:'익명' }}";
             const participantsList = document.getElementById('participants-list');
             const roomList = document.querySelector('.room-list');
+            const createRoomLink = document.getElementById('create-room-link');
             const socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
 
             socket.onopen = () => {
@@ -294,26 +264,26 @@
             };
 
             socket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
+                const data = JSON.parse(event.data);
 
-            if (data.type === 'participants') {
-                renderParticipants(data.participants);
-            } else if (data.type === 'room_deleted') {
-                console.log(`[DEBUG] Room ${data.room_id} deleted.`);
-                removeRoomFromList(data.room_id);  // 방 목록에서 삭제
-            } else if (data.type === 'room_created') {
-                console.log(`[DEBUG] Room ${data.room_id} created.`);
-                addRoomToList(data.room_id, data.owner, data.game_type, data.player_count);
-            }
-        };
-
-            socket.onclose = () => {
-                console.log('WebSocket 연결 종료.');
+                if (data.type === 'participants') {
+                    renderParticipants(data.participants);
+                } else if (data.type === 'room_deleted') {
+                    console.log(`[DEBUG] Room ${data.room_id} deleted.`);
+                    removeRoomFromList(data.room_id);  // 방 목록에서 삭제
+                } else if (data.type === 'room_created') {
+                    console.log(`[DEBUG] Room ${data.room_id} created.`);
+                    addRoomToList(data.room_id, data.owner, data.game_type, data.player_count);
+                }
             };
 
-            socket.onerror = (error) => {
-                console.error('WebSocket 오류:', error);
-            };
+                socket.onclose = () => {
+                    console.log('WebSocket 연결 종료.');
+                };
+
+                socket.onerror = (error) => {
+                    console.error('WebSocket 오류:', error);
+                };
 
         // 방 목록에 방 추가 함수
         function addRoomToList(roomId, owner, gameType, playerCount) {
@@ -375,8 +345,10 @@
             //         }
             //     }
             // });
-                // 방 생성 버튼 클릭 이벤트
-            document.getElementById('create-room-button').addEventListener('click', () => {
+            // "방 만들기" 링크 클릭 이벤트 추가
+            createRoomLink.addEventListener('click', (event) => {
+                event.preventDefault();  // 기본 링크 동작 막기
+
                 const roomName = prompt('방 이름을 입력하세요');
                 const gameType = prompt('게임 유형을 입력하세요');
 
