@@ -133,29 +133,29 @@
         }
 
         .room {
-            border-bottom: 1px solid #ddd;
-            padding: 10px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 10px; /* 방 정보와 삭제 버튼 사이 간격 추가 */
+            border-bottom: 1px solid #ddd;
+            padding: 10px 0;
         }
 
-        .room:last-child {
-            border-bottom: none;
+        .room-content {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-grow: 1; /* 공간을 적절히 채우도록 설정 */
         }
 
         .room-info {
             font-weight: bold;
             font-size: 1.2rem;
             color: #333;
-            flex-grow: 1; /* 남은 공간을 차지하여 삭제 버튼을 오른쪽에 위치 */
         }
 
         .room-players {
             font-size: 1rem;
             color: #666;
-            margin-left: 10px;
         }
 
         .delete-room-button {
@@ -165,11 +165,23 @@
             border-radius: 5px;
             padding: 5px 10px;
             cursor: pointer;
+            margin-left: 10px;
         }
 
         .delete-room-button:hover {
             background-color: #d11a1c;
         }
+        .room-link {
+            text-decoration: none; /* 링크 밑줄 제거 */
+            color: inherit; /* 텍스트 색상 유지 */
+            display: block; /* 전체 영역 클릭 가능 */
+        }
+
+        .room-link:hover .room-info {
+            color: #007BFF; /* 마우스를 올렸을 때 방 이름 색상 변경 */
+            text-decoration: underline; /* 호버 상태에서 밑줄 추가 (선택 사항) */
+        }
+
     </style>
 </head>
 <body>
@@ -206,15 +218,19 @@
             {% if rooms %}
                 {% for room in rooms %}
                     <div class="room" data-room-id="{{ room.room_number }}">
-                        <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
-                            <div class="room-info">
-                                <strong>{{ room.owner.nickname }}의 방</strong> 
-                                <span>"{{ room.game_type }}"</span>
-                            </div>
-                            <div class="room-players">
-                                ({{ room.players.count }} player{{ room.players.count|pluralize }})
-                            </div>
-                        </a>
+                        <!-- 방 정보 및 링크 -->
+                        <div class="room-content">
+                            <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
+                                <div class="room-info">
+                                    <strong>{{ room.owner.nickname }}의 방</strong>
+                                    <span>"{{ room.game_type }}"</span>
+                                </div>
+                                <div class="room-players">
+                                    ({{ room.players.count }} player{{ room.players.count|pluralize }})
+                                </div>
+                            </a>
+                        </div>
+                        
                         <!-- 방 삭제 버튼 -->
                         <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
                     </div>
