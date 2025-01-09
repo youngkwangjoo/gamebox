@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Page</title>
     <style>
-        /* 스타일은 기존 내용 유지 */
+        /* 기존 스타일 그대로 유지 */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -154,22 +154,7 @@
             font-size: 1rem;
             color: #666;
         }
-        .room-players {
-            color: green;
-        }
 
-        .room-players.warning {
-            color: red;
-        }
-        .room-link {
-            text-decoration: none; /* 링크 밑줄 제거 */
-            color: inherit; /* 텍스트 색상 유지 */
-            display: block; /* 전체 영역 클릭 가능 */
-        }
-
-        .room-link:hover .room-info {
-            color: #007BFF; /* 마우스를 올렸을 때 방 이름 색상 변경 */
-        }
         .delete-room-button {
             background-color: #ff4d4f;
             color: white;
@@ -183,9 +168,6 @@
         .delete-room-button:hover {
             background-color: #d11a1c;
         }
-
-
-
     </style>
 </head>
 <body>
@@ -222,17 +204,14 @@
                 <h2>방 목록</h2>
                 {% if rooms %}
                     {% for room in rooms %}
-                        <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
-                            <div class="room">
-                                <div class="room-info">
-                                    <strong>{{ room.owner.nickname }}의 방</strong> 
-                                    <span>"{{ room.game_type }}"</span>
-                                </div>
-                                <div class="room-players">
-                                    ({{ room.players.count }} player{{ room.players.count|pluralize }})
-                                </div>
-                            </a>
-                            <!-- 방 삭제 버튼 -->
+                        <div class="room" data-room-id="{{ room.room_number }}">
+                            <div class="room-info">
+                                <strong>{{ room.owner.nickname }}의 방</strong> 
+                                <span>"{{ room.game_type }}"</span>
+                            </div>
+                            <div class="room-players">
+                                ({{ room.players.count }} player{{ room.players.count|pluralize }})
+                            </div>
                             <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
                         </div>
                     {% endfor %}
@@ -240,7 +219,6 @@
                     <p>아직 개설된 방이 없습니다.</p>
                 {% endif %}
             </div>
-            
         </div>
     </div>
     <script>
@@ -249,7 +227,6 @@
             const nickname = "{{ user.nickname|default:'익명' }}";
             const participantsList = document.getElementById('participants-list');
             const socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
-
 
             socket.onopen = () => {
                 console.log('WebSocket 연결 성공.');
@@ -263,8 +240,8 @@
                 if (data.type === 'participants') {
                     renderParticipants(data.participants);
                 } else if (data.type === 'room_deleted') {
-                    alert(data.message); // 방 삭제 알림
-                    location.reload(); // 방 목록 새로고침
+                    console.log(`[DEBUG] Room ${data.room_id} deleted.`);
+                    removeRoomFromList(data.room_id);
                 }
             };
 
@@ -276,6 +253,14 @@
                 console.error('WebSocket 오류:', error);
             };
 
+            function removeRoomFromList(roomId) {
+                const roomElement = document.querySelector(`.room[data-room-id='${roomId}']`);
+                if (roomElement) {
+                    roomElement.remove();
+                    console.log(`[DEBUG] Room ${roomId} removed from the list.`);
+                }
+            }
+
             function renderParticipants(participants) {
                 participantsList.innerHTML = '';
                 participants.forEach((participant) => {
@@ -284,10 +269,10 @@
                     participantsList.appendChild(listItem);
                 });
             }
-            // 방 삭제 버튼 클릭 이벤트 추가
-            document.querySelectorAll('.delete-room-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    const roomId = button.dataset.roomId; // 버튼에 설정된 방 ID 가져오기
+
+            document.querySelector('.room-list').addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-room-button')) {
+                    const roomId = event.target.dataset.roomId;
                     const confirmDelete = confirm('정말 이 방을 삭제하시겠습니까?');
                     if (confirmDelete) {
                         socket.send(JSON.stringify({
@@ -295,7 +280,7 @@
                             room_id: roomId
                         }));
                     }
-                });
+                }
             });
         });
     </script>

@@ -63,23 +63,25 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             if room_id:
                 await self.delete_room(room_id)
 
-    async def delete_room(self, room_id):
+    def delete_room(request, room_id):
         Room = apps.get_model('liargame', 'Room')
         try:
-            room = await sync_to_async(Room.objects.get)(room_number=room_id)
-            await sync_to_async(room.delete)()
-            print(f"[DEBUG] Room {room_id} deleted")
+            room = Room.objects.get(room_number=room_id)
+            room.delete()
 
-            # 방에 있는 모든 사용자에게 방 삭제 알림
-            await self.channel_layer.group_send(
-                f"room_{room_id}",
+            # WebSocket을 통해 방 삭제 이벤트 브로드캐스트
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                "lobby",  # 모든 사용자에게 알림
                 {
                     "type": "room_deleted",
-                    "message": "방이 삭제되었습니다. 로비로 이동합니다."
+                    "room_id": room_id
                 }
             )
+            messages.success(request, f"방 {room_id}이(가) 삭제되었습니다.")
         except Room.DoesNotExist:
-            print(f"[DEBUG] Room {room_id} not found for deletion")
+            messages.error(request, f"방 {room_id}을(를) 찾을 수 없습니다.")
+        return redirect('game')  # 대기실로 리디렉션
 
 
 
