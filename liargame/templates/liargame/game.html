@@ -179,6 +179,38 @@
         .delete-room-button:hover {
             background-color: #d11a1c;
         }
+        .room-list-container {
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 120px);
+            overflow-y: auto;
+        }
+
+        .room-list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .create-room-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+
+        .create-room-button:hover {
+            background-color: #45a049;
+        }
+
+
 
     </style>
 </head>
@@ -211,33 +243,41 @@
                 <ul id="participants-list"></ul>
             </div>
         </div>
-        <div class="room-list">
-            <h2>방 목록</h2>
-            {% if rooms %}
-                {% for room in rooms %}
-                    <div class="room" data-room-id="{{ room.room_number }}">
-                        <!-- 방 정보 및 삭제 버튼 -->
-                        <div class="room-left">
-                            <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
-                                <strong>{{ room.owner.nickname }}의 방</strong> 
-                                <span>"{{ room.game_type }}"</span>
-                            </a>
-                        </div>
-                        
-                        <div class="room-right">
-                            <div class="room-players">
-                                ({{ room.players.count }} player{{ room.players.count|pluralize }})
+    
+        <!-- 방 목록과 방 생성 버튼 -->
+        <div class="room-list-container">
+            <div class="room-list-header">
+                <h2>방 목록</h2>
+                <button id="create-room-button" class="create-room-button">방 생성</button>
+            </div>
+    
+            <div class="room-list">
+                {% if rooms %}
+                    {% for room in rooms %}
+                        <div class="room" data-room-id="{{ room.room_number }}">
+                            <!-- 방 정보 및 삭제 버튼 -->
+                            <div class="room-left">
+                                <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
+                                    <strong>{{ room.owner.nickname }}의 방</strong> 
+                                    <span>"{{ room.game_type }}"</span>
+                                </a>
                             </div>
-                            <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
+                            
+                            <div class="room-right">
+                                <div class="room-players">
+                                    ({{ room.players.count }} player{{ room.players.count|pluralize }})
+                                </div>
+                                <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
+                            </div>
                         </div>
-                    </div>
-                {% endfor %}
-            {% else %}
-                <p>아직 개설된 방이 없습니다.</p>
-            {% endif %}
-        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>아직 개설된 방이 없습니다.</p>
+                {% endif %}
+            </div>
         </div>
     </div>
+    
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const roomId = 'lobby';
