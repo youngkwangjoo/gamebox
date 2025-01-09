@@ -53,35 +53,76 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             "type": "participants",
             "participants": participants,
         }))
-        
+
     async def receive(self, text_data):
         data = json.loads(text_data)
         action = data.get("action")
+        nickname = self.scope['user'].nickname  # 사용자 닉네임 가져오기
 
         if action == "delete_room":
             room_id = data.get("room_id")
             if room_id:
-                await self.delete_room(room_id)
+                Room = apps.get_model('liargame', 'Room')
+                try:
+                    # 방 정보를 데이터베이스에서 가져옴
+                    room = await sync_to_async(Room.objects.get)(room_number=room_id)
 
-    def delete_room(request, room_id):
-        Room = apps.get_model('liargame', 'Room')
-        try:
-            room = Room.objects.get(room_number=room_id)
-            room.delete()
+                    # 방 삭제 권한 확인 (방 소유자인지 검증)
+                    if room.owner.nickname != nickname:
+                        print(f"[ERROR] {nickname} is not the owner of room {room_id}.")
+                        return  # 방 소유자가 아니면 삭제 불가
+                    
+                    # 방 삭제
+                    await sync_to_async(room.delete)()
+                    print(f"[DEBUG] Room {room_id} deleted.")
 
-            # WebSocket을 통해 방 삭제 이벤트 브로드캐스트
-            channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
-                "lobby",  # 모든 사용자에게 알림
-                {
-                    "type": "room_deleted",
-                    "room_id": room_id
-                }
-            )
-            messages.success(request, f"방 {room_id}이(가) 삭제되었습니다.")
-        except Room.DoesNotExist:
-            messages.error(request, f"방 {room_id}을(를) 찾을 수 없습니다.")
-        return redirect('game')  # 대기실로 리디렉션
+                    # 방 삭제 이벤트를 모든 클라이언트에 브로드캐스트
+                    await self.channel_layer.group_send(
+                        "lobby",
+                        {
+                            "type": "room_deleted",
+                            "room_id": room_id
+                        }
+                    )
+                except Room.DoesNotExist:
+                    print(f"[ERROR] Room {room_id} not found.")
+    
+
+    async def room_deleted(self, event):
+        room_id = event["room_id"]
+        await self.send(text_data=json.dumps({
+            "type": "room_deleted",
+            "room_id": room_id
+        }))
+
+    # async def receive(self, text_data):
+    #     data = json.loads(text_data)
+    #     action = data.get("action")
+
+    #     if action == "delete_room":
+    #         room_id = data.get("room_id")
+    #         if room_id:
+    #             await self.delete_room(room_id)
+
+    # def delete_room(request, room_id):
+    #     Room = apps.get_model('liargame', 'Room')
+    #     try:
+    #         room = Room.objects.get(room_number=room_id)
+    #         room.delete()
+
+    #         # WebSocket을 통해 방 삭제 이벤트 브로드캐스트
+    #         channel_layer = get_channel_layer()
+    #         async_to_sync(channel_layer.group_send)(
+    #             "lobby",  # 모든 사용자에게 알림
+    #             {
+    #                 "type": "room_deleted",
+    #                 "room_id": room_id
+    #             }
+    #         )
+    #         messages.success(request, f"방 {room_id}이(가) 삭제되었습니다.")
+    #     except Room.DoesNotExist:
+    #         messages.error(request, f"방 {room_id}을(를) 찾을 수 없습니다.")
+    #     return redirect('game')  # 대기실로 리디렉션
 
 
 
