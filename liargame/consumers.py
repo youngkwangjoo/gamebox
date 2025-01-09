@@ -86,7 +86,45 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                     )
                 except Room.DoesNotExist:
                     print(f"[ERROR] Room {room_id} not found.")
-    
+
+        elif action == "create_room":
+            room_name = data.get("room_name")
+            game_type = data.get("game_type")
+            
+            if room_name and game_type:
+                Room = apps.get_model('liargame', 'Room')
+                try:
+                    # 새로운 방 생성
+                    room = await sync_to_async(Room.objects.create)(
+                        room_number=self.generate_room_id(),
+                        owner=self.scope['user'],
+                        game_type=game_type
+                    )
+                    print(f"[DEBUG] Room {room.room_number} created by {nickname}.")
+
+                    # 방 생성 이벤트를 모든 클라이언트에 브로드캐스트
+                    await self.channel_layer.group_send(
+                        "lobby",
+                        {
+                            "type": "room_created",
+                            "room_id": room.room_number,
+                            "owner": nickname,
+                            "game_type": game_type,
+                            "player_count": 1
+                        }
+                    )
+                except Exception as e:
+                    print(f"[ERROR] Failed to create room: {e}")
+                    
+    #클라이언트에 새 방 정보를 전송하는 메서드
+    async def room_created(self, event):
+        await self.send(text_data=json.dumps({
+            "type": "room_created",
+            "room_id": event["room_id"],
+            "owner": event["owner"],
+            "game_type": event["game_type"],
+            "player_count": event["player_count"]
+        }))
 
     async def room_deleted(self, event):
         room_id = event["room_id"]
