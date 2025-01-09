@@ -53,6 +53,34 @@ class LobbyConsumer(AsyncWebsocketConsumer):
             "type": "participants",
             "participants": participants,
         }))
+        
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        action = data.get("action")
+
+        if action == "delete_room":
+            room_id = data.get("room_id")
+            if room_id:
+                await self.delete_room(room_id)
+
+    async def delete_room(self, room_id):
+        Room = apps.get_model('liargame', 'Room')
+        try:
+            room = await sync_to_async(Room.objects.get)(room_number=room_id)
+            await sync_to_async(room.delete)()
+            print(f"[DEBUG] Room {room_id} deleted")
+
+            # 방에 있는 모든 사용자에게 방 삭제 알림
+            await self.channel_layer.group_send(
+                f"room_{room_id}",
+                {
+                    "type": "room_deleted",
+                    "message": "방이 삭제되었습니다. 로비로 이동합니다."
+                }
+            )
+        except Room.DoesNotExist:
+            print(f"[DEBUG] Room {room_id} not found for deletion")
+
 
 
 class GameRoomConsumer(AsyncWebsocketConsumer):
@@ -300,3 +328,10 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print(f"[DEBUG] Generated new room ID: {room_id}")
                 return room_id
         raise ValueError("No available room IDs.")
+
+    async def room_deleted(self, event):
+        # 클라이언트로 방 삭제 메시지 전송
+        await self.send(text_data=json.dumps({
+            "type": "room_deleted",
+            "message": event["message"]
+        }))

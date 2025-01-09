@@ -170,6 +170,19 @@
         .room-link:hover .room-info {
             color: #007BFF; /* 마우스를 올렸을 때 방 이름 색상 변경 */
         }
+        .delete-room-button {
+            background-color: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        .delete-room-button:hover {
+            background-color: #d11a1c;
+        }
 
 
 
@@ -218,8 +231,10 @@
                                 <div class="room-players">
                                     ({{ room.players.count }} player{{ room.players.count|pluralize }})
                                 </div>
-                            </div>
-                        </a>
+                            </a>
+                            <!-- 방 삭제 버튼 -->
+                            <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
+                        </div>
                     {% endfor %}
                 {% else %}
                     <p>아직 개설된 방이 없습니다.</p>
@@ -247,6 +262,9 @@
                 const data = JSON.parse(event.data);
                 if (data.type === 'participants') {
                     renderParticipants(data.participants);
+                } else if (data.type === 'room_deleted') {
+                    alert(data.message); // 방 삭제 알림
+                    location.reload(); // 방 목록 새로고침
                 }
             };
 
@@ -266,6 +284,19 @@
                     participantsList.appendChild(listItem);
                 });
             }
+            // 방 삭제 버튼 클릭 이벤트 추가
+            document.querySelectorAll('.delete-room-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const roomId = button.dataset.roomId; // 버튼에 설정된 방 ID 가져오기
+                    const confirmDelete = confirm('정말 이 방을 삭제하시겠습니까?');
+                    if (confirmDelete) {
+                        socket.send(JSON.stringify({
+                            action: 'delete_room',
+                            room_id: roomId
+                        }));
+                    }
+                });
+            });
         });
     </script>
 </body>
