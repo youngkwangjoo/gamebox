@@ -139,6 +139,18 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             nickname = self.scope['user'].nickname
             print(f"[DEBUG] Received message action from {nickname}: {message}")
             
+            # WebSocket 그룹에 메시지 브로드캐스트
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "chat_message",
+                    "message": message,
+                    "nickname": nickname  # nickname을 사용하여 전송
+                }
+            )
+            print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
+
+            
         elif action == "vote":
             try:
                 participant = data.get("participant")
