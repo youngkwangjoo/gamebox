@@ -205,8 +205,8 @@
             <h2>방 목록</h2>
             {% if rooms %}
                 {% for room in rooms %}
-                    <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
-                        <div class="room" data-room-id="{{ room.room_number }}">
+                    <div class="room" data-room-id="{{ room.room_number }}">
+                        <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
                             <div class="room-info">
                                 <strong>{{ room.owner.nickname }}의 방</strong> 
                                 <span>"{{ room.game_type }}"</span>
@@ -214,10 +214,10 @@
                             <div class="room-players">
                                 ({{ room.players.count }} player{{ room.players.count|pluralize }})
                             </div>
-                        </div>
-                    </a>
-                    <!-- 방 삭제 버튼 -->
-                    <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
+                        </a>
+                        <!-- 방 삭제 버튼 -->
+                        <button class="delete-room-button" data-room-id="{{ room.room_number }}">삭제</button>
+                    </div>
                 {% endfor %}
             {% else %}
                 <p>아직 개설된 방이 없습니다.</p>
