@@ -138,6 +138,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px; /* 방 정보와 삭제 버튼 사이 간격 추가 */
         }
 
         .room:last-child {
@@ -148,11 +149,13 @@
             font-weight: bold;
             font-size: 1.2rem;
             color: #333;
+            flex-grow: 1; /* 남은 공간을 차지하여 삭제 버튼을 오른쪽에 위치 */
         }
 
         .room-players {
             font-size: 1rem;
             color: #666;
+            margin-left: 10px;
         }
 
         .delete-room-button {
@@ -162,7 +165,6 @@
             border-radius: 5px;
             padding: 5px 10px;
             cursor: pointer;
-            margin-left: 10px;
         }
 
         .delete-room-button:hover {
