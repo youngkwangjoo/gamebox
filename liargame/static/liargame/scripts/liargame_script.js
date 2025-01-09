@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
                 case 'log_update':
                     participantLogs[data.participant] = data.log;
-                    renderParticipants(participants, participantLogs, votes);
+                    renderParticipantLogs(participantLogs);
                     break;
     
                 case 'vote_update':
@@ -304,7 +304,7 @@ document.addEventListener('DOMContentLoaded', () => {
             participantElement.appendChild(nameSpan);
     
             if (participant === nickname) {
-                // 본인인 경우 input 박스 표시
+                // 본인인 경우 input 박스를 표시
                 const inputBox = document.createElement('input');
                 inputBox.type = 'text';
                 inputBox.placeholder = '글을 입력하세요...';
@@ -321,17 +321,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 participantElement.appendChild(inputBox);
             } else {
-                // 다른 참가자인 경우 투표 버튼 표시
+                // 다른 참가자인 경우 투표 버튼을 표시
                 const voteButton = document.createElement('button');
                 voteButton.textContent = '투표';
-                voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
                 voteButton.addEventListener('click', () => {
                     if (!hasVoted) {
                         socket.send(JSON.stringify({
                             action: 'vote',
                             participant: participant
                         }));
-    
                         alert(`${participant}에게 투표했습니다.`);
                         hasVoted = true; // 투표 완료 상태로 변경
                         voteButton.disabled = true; // 버튼 비활성화
@@ -340,17 +338,34 @@ document.addEventListener('DOMContentLoaded', () => {
                 participantElement.appendChild(voteButton);
             }
     
-            // 참가자 글 표시 박스 (공통)
-            const logBox = document.createElement('div');
-            logBox.className = 'participant-log-box';
-            logBox.textContent = logs[participant] || '---'; // 글이 없으면 기본값 표시
-            logBox.style.marginLeft = '10px';
-            logBox.style.padding = '5px';
-            logBox.style.border = '1px solid #ccc';
-            logBox.style.display = 'inline-block';
-    
-            participantElement.appendChild(logBox);
             participantsContainer.appendChild(participantElement);
+        });
+    
+        // 참가자 글 및 투표 패널 갱신
+        renderParticipantLogs(logs);
+    }
+    
+    
+
+    function renderParticipantLogs(logs) {
+        participantLogsContainer.innerHTML = ''; // 기존 내용을 초기화
+    
+        Object.keys(logs).forEach(participant => {
+            const logElement = document.createElement('div');
+            logElement.className = 'log-item';
+    
+            // 참가자 이름 표시
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = `${participant}: `;
+            nameSpan.style.fontWeight = 'bold';
+            logElement.appendChild(nameSpan);
+    
+            // 참가자 글 표시
+            const logMessage = document.createElement('span');
+            logMessage.textContent = logs[participant];
+            logElement.appendChild(logMessage);
+    
+            participantLogsContainer.appendChild(logElement);
         });
     }
     
