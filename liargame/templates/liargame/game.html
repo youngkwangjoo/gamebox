@@ -100,7 +100,7 @@
             flex-grow: 1;
             overflow-y: auto;
             height: 70%;
-            background-color: #eeeeee;
+            background-color: #fbfbfb;
         }
 
         .all-users ul {
@@ -135,7 +135,7 @@
             height: 100%;
             overflow-y: auto;
             height: 80%; /* 부모 높이에 맞춤 */
-            background-color: #eeeeee;
+            background-color: #fbfbfb;
             
         }
 
@@ -362,8 +362,7 @@
             //     }
             // });
             // "방 만들기" 링크 클릭 이벤트 추가
-            createRoomLink.addEventListener('click', (event) => {
-                event.preventDefault();  // 기본 링크 동작 막기
+            document.getElementById('create-room-button').addEventListener('click', () => {
 
                 const roomName = prompt('방 이름을 입력하세요');
                 const gameType = prompt('게임 유형을 입력하세요');
