@@ -326,13 +326,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 voteButton.textContent = '투표';
                 voteButton.addEventListener('click', () => {
                     if (!hasVoted) {
+                        console.log('[DEBUG] Sending vote for participant:', participant);
                         socket.send(JSON.stringify({
                             action: 'vote',
                             participant: participant
                         }));
+                
                         alert(`${participant}에게 투표했습니다.`);
-                        hasVoted = true; // 투표 완료 상태로 변경
-                        voteButton.disabled = true; // 버튼 비활성화
+                        hasVoted = true;
+                        voteButton.disabled = true;
                     }
                 });
                 participantElement.appendChild(voteButton);
