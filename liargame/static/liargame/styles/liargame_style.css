@@ -354,6 +354,15 @@ nav ul li a:hover {
     background-color: #0056b3;
 }
 
+.log-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.log-item span {
+    display: inline-block;
+    margin-right: 10px;
+}
 .participant-item button:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
