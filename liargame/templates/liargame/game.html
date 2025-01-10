@@ -303,6 +303,12 @@
 
         // 방 목록에 방 추가 함수
         function addRoomToList(roomId, owner, gameType, playerCount) {
+            // "아직 개설된 방이 없습니다." 문구 제거
+            const noRoomsMessage = document.querySelector('.room-list p');
+            if (noRoomsMessage) {
+                noRoomsMessage.remove();
+            }
+
             if (document.querySelector(`.room[data-room-id='${roomId}']`)) {
                 console.log(`[INFO] Room ${roomId} already exists.`);
                 return; // 중복 방이 추가되지 않도록 방지
@@ -338,22 +344,29 @@
         }
 
 
-            function removeRoomFromList(roomId) {
-                const roomElement = document.querySelector(`.room[data-room-id='${roomId}']`);
-                if (roomElement) {
-                    roomElement.remove();
-                    console.log(`[DEBUG] Room ${roomId} removed from the list.`);
-                }
+        function removeRoomFromList(roomId) {
+            const roomElement = document.querySelector(`.room[data-room-id='${roomId}']`);
+            if (roomElement) {
+                roomElement.remove();
+                console.log(`[DEBUG] Room ${roomId} removed from the list.`);
             }
 
-            function renderParticipants(participants) {
-                participantsList.innerHTML = '';
-                participants.forEach((participant) => {
-                    const listItem = document.createElement('li');
-                    listItem.textContent = participant;
-                    participantsList.appendChild(listItem);
-                });
+            // 방 목록이 비어 있으면 "아직 개설된 방이 없습니다." 문구 추가
+            if (roomList.children.length === 0) {
+                const noRoomsMessage = document.createElement('p');
+                noRoomsMessage.textContent = '아직 개설된 방이 없습니다.';
+                roomList.appendChild(noRoomsMessage);
             }
+        }
+
+        function renderParticipants(participants) {
+            participantsList.innerHTML = '';
+            participants.forEach((participant) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = participant;
+                participantsList.appendChild(listItem);
+            });
+        }
         });
     </script>
 </body>
