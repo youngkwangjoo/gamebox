@@ -128,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         try {
+            // 서버에서 랜덤 소주제 2개를 가져오기
             const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
             
             if (!response.ok) {
@@ -138,18 +139,27 @@ document.addEventListener('DOMContentLoaded', () => {
     
             const data = await response.json();
     
-            if (!participants || participants.length < 1) {
-                alert("참가자가 없습니다. 제시어를 배포할 수 없습니다.");
+            if (!participants || participants.length < 2) {
+                alert("참가자가 2명 이상 필요합니다.");
                 return;
             }
     
+    
+            // LIAR 랜덤 선정
             const liar = participants[Math.floor(Math.random() * participants.length)];
+            const subtopicForLiar = data.subtopics[0];
+            const subtopicForOthers = data.subtopics[1];
+
+            console.log(`[DEBUG] Selected Liar: ${liar}`);
+            console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
+
+            // 서버로 제시어 배포 요청을 WebSocket을 통해 전송
             socket.send(
                 JSON.stringify({
                     action: 'distribute_topic',
-                    subtopic1: data.subtopics[0],
-                    subtopic2: data.subtopics[1],
                     liar: liar,
+                    subtopic_liar: subtopicForLiar,
+                    subtopic_others: subtopicForOthers,
                 })
             );
 
@@ -158,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
         }
     });
-    
 
     // modal
     // 모달 닫기 버튼 이벤트 리스너

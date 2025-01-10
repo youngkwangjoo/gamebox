@@ -137,56 +137,54 @@ class LobbyConsumer(AsyncWebsocketConsumer):
 class GameRoomConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.room_id = self.scope["url_route"]["kwargs"].get("room_id", None)
-        print(f"[DEBUG] Attempting to connect. Room ID: {self.room_id}")
-
+        self.nickname = getattr(self.scope['user'], 'nickname', None)
+        
         if not self.room_id:
             await self.close(code=4001)
             print("[ERROR] Room ID is required for connection.")
             return
 
-        nickname = getattr(self.scope['user'], 'nickname', None)
-        print(f"[DEBUG] User nickname: {nickname}")
-
-        if not nickname:
+        if not self.nickname:
             await self.close(code=4002)
             print("[ERROR] Nickname is required to join a room.")
             return
 
-        participants = []
-        if self.room_id == "new":
-            print(f"[DEBUG] Creating a new room for user: {nickname}")
-            self.room_id, participants = await sync_to_async(self.add_to_room)(nickname=nickname)
-            self.room_group_name = f"room_{self.room_id}"
-        else:
-            try:
-                print(f"[DEBUG] Adding user {nickname} to existing room: {self.room_id}")
-                participants = await sync_to_async(self.add_to_room)(room_id=int(self.room_id), nickname=nickname)
-                self.room_group_name = f"room_{self.room_id}"
-            except ValueError as e:
-                await self.close(code=4003)
-                print(f"[ERROR] Invalid room ID: {e}")
-                return
+        # 방 그룹 이름과 참가자 개별 채널 이름 설정
+        self.room_group_name = f"room_{self.room_id}"
+        self.user_channel_name = f"user_{self.nickname}"
 
+        # 참가자를 방에 추가
+        try:
+            participants = await sync_to_async(self.add_to_room)(room_id=int(self.room_id), nickname=self.nickname)
+        except ValueError as e:
+            await self.close(code=4003)
+            print(f"[ERROR] Invalid room ID: {e}")
+            return
+
+        # 그룹과 개별 채널에 참가자 추가
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
-        await self.accept()
-        print(f"[DEBUG] User {nickname} connected to group {self.room_group_name}")
+        await self.channel_layer.group_add(self.user_channel_name, self.channel_name)
 
+        await self.accept()
+        print(f"[DEBUG] User {self.nickname} connected to group {self.room_group_name}")
+
+        # 참가자 목록을 클라이언트로 전송
         await self.send(text_data=json.dumps({
             "type": "participants",
             "participants": participants,
         }))
 
     async def disconnect(self, close_code):
-        nickname = self.scope['user'].nickname
-        print(f"[DEBUG] User {nickname} is disconnecting from room {self.room_id}")
+        print(f"[DEBUG] User {self.nickname} is disconnecting from room {self.room_id}")
 
         try:
-            participants = await sync_to_async(self.remove_from_room)(self.room_id, nickname)
+            participants = await sync_to_async(self.remove_from_room)(self.room_id, self.nickname)
             print(f"[DEBUG] Remaining participants in room {self.room_id}: {participants}")
         except Exception as e:
             print(f"[ERROR] Exception during disconnect: {e}")
             return
 
+        # 방이 비어 있으면 방 삭제
         if len(participants) == 0:
             Room = apps.get_model('liargame', 'Room')
             try:
@@ -196,8 +194,11 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             except Room.DoesNotExist:
                 print(f"[DEBUG] Room {self.room_id} not found for deletion.")
 
+        # 그룹과 개별 채널에서 참가자 제거
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
-        print(f"[DEBUG] User {nickname} removed from group {self.room_group_name}")
+        await self.channel_layer.group_discard(self.user_channel_name, self.channel_name)
+        print(f"[DEBUG] User {self.nickname} removed from group {self.room_group_name}")
+
 
     async def receive(self, text_data):
         data = json.loads(text_data)
@@ -277,6 +278,48 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
+            
+        elif action == "distribute_topic":
+            subtopic_liar = data.get("subtopic1", "")
+            subtopic_others = data.get("subtopic2", "")
+            liar = data.get("liar", "")
+
+            if not subtopic_liar or not subtopic_others or not liar:
+                print("[ERROR] Missing subtopics or liar in distribute_topic action")
+                return
+
+            participants = await sync_to_async(self.get_participants)()  # 방 참가자 목록 가져오기
+
+            print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
+            
+            for participant in participants:
+                subtopic = subtopic_liar if participant == liar else subtopic_others
+                is_liar = participant == liar
+
+                # 각 참가자의 채널 이름으로 직접 메시지 전송
+                await self.channel_layer.send(
+                    f"user_{participant}",  # 각 참가자에 대한 개별 채널
+                    {
+                        "type": "send_subtopic",
+                        "subtopic": subtopic,
+                        "is_liar": is_liar
+                    }
+                )
+            
+            print("[DEBUG] Successfully distributed topics to all participants")
+
+    async def send_subtopic(self, event):
+        subtopic = event["subtopic"]
+        is_liar = event["is_liar"]
+
+        # 참가자에게 제시어와 LIAR 여부 전송
+        await self.send(text_data=json.dumps({
+            "type": "subtopic",
+            "subtopic": subtopic,
+            "is_liar": is_liar
+        }))
+
+
 
     async def chat_message(self, event):
         message = event["message"]
