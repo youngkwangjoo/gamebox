@@ -291,22 +291,41 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             participants = await sync_to_async(self.get_participants)()  # 방 참가자 목록 가져오기
 
             print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
-            
-            for participant in participants:
-                subtopic = subtopic_liar if participant == liar else subtopic_others
-                is_liar = participant == liar
 
-                # 각 참가자의 채널 이름으로 직접 메시지 전송
-                await self.channel_layer.send(
-                    f"user_{participant}",  # 각 참가자에 대한 개별 채널
-                    {
-                        "type": "send_subtopic",
-                        "subtopic": subtopic,
-                        "is_liar": is_liar
-                    }
-                )
-            
-            print("[DEBUG] Successfully distributed topics to all participants")
+            # 모든 참가자에게 브로드캐스트
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "distribute_topic",
+                    "liar": liar,
+                    "subtopic_liar": subtopic_liar,
+                    "subtopic_others": subtopic_others,
+                    "participants": participants
+                }
+            )
+
+            print("[DEBUG] Successfully broadcasted topic distribution to all participants")
+
+    async def distribute_topic(self, event):
+        liar = event["liar"]
+        subtopic_liar = event["subtopic_liar"]
+        subtopic_others = event["subtopic_others"]
+        participants = event["participants"]
+
+        # 참가자별로 적절한 제시어와 역할을 설정
+        subtopic = subtopic_liar if self.nickname == liar else subtopic_others
+        is_liar = (self.nickname == liar)
+
+        print(f"[DEBUG] Sending topic to {self.nickname}: Subtopic - {subtopic}, Is Liar - {is_liar}")
+
+        # 참가자에게 제시어와 LIAR 여부 전송
+        await self.send(text_data=json.dumps({
+            "type": "subtopic",
+            "subtopic": subtopic,
+            "is_liar": is_liar
+        }))
+
+
 
     async def send_subtopic(self, event):
         subtopic = event["subtopic"]

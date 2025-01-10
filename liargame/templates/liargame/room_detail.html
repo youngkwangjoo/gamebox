@@ -19,7 +19,7 @@
                     {% csrf_token %}
                 </form>
             </li>
-            {% else %}a
+            {% else %}
                 <li><a href="{% url 'signin' %}">로그인</a></li>
             {% endif %}
             <li><a href="{% url 'game' %}">대기실</a></li>
@@ -41,6 +41,9 @@
         <button id="distribute-topic-button">제시어 배포</button>
         <script src="/static/liargame/scripts/liargame_script.js"></script>
     </div>
+
+    <!-- 제시어와 역할 표시 영역 -->
+    <div id="role-info" style="margin-top: 20px; font-weight: bold;"></div>
 
     <!-- 방장의 Topic 선택 모달 -->
     <div id="topic-modal" class="modal">

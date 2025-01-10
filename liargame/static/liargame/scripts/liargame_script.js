@@ -73,6 +73,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     handleTopicDistribution(data);  // 제시어 배포 처리
                     break;
     
+                case 'distribute_topic':  
+                    console.log('[DEBUG] Topic distribution received');
+                    handleTopicDistribution(data);  // 제시어 배포 처리
+                    break;
+                
+
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
@@ -99,24 +105,89 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     //제시어 배포 
-    distributeButton.addEventListener('click', () => {
-        if (!isHost) {
-            alert('방장만 제시어를 배포할 수 있습니다.');
+    distributeButton.addEventListener('click', async () => {
+        const selectedTopicId = topicSelect.value;
+    
+        if (!selectedTopicId) {
+            alert("주제를 선택해주세요.");
             return;
         }
     
-        if (participants.length === 0) {
-            alert('참가자가 없습니다. 참가자를 먼저 확인하세요.');
-            return;
-        }
+        try {
+            // 서버에서 랜덤 소주제 2개를 가져오기
+            const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
     
-        const topicModal = document.getElementById('topic-modal');
-        if (topicModal) {
-            topicModal.style.display = 'block'; // 모달 열기
-        } else {
-            console.error("topicModal 요소를 찾을 수 없습니다.");
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.error}`);
+                return;
+            }
+    
+            const data = await response.json();
+    
+            if (!participants || participants.length < 2) {
+                alert("참가자가 2명 이상 필요합니다.");
+                return;
+            }
+    
+            // LIAR 랜덤 선정
+            const liar = participants[Math.floor(Math.random() * participants.length)];
+            const subtopicForLiar = data.subtopics[0];
+            const subtopicForOthers = data.subtopics[1];
+    
+            console.log(`[DEBUG] Selected Liar: ${liar}`);
+            console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
+    
+            // 서버로 제시어 배포 요청 전송
+            socket.send(
+                JSON.stringify({
+                    action: 'distribute_topic',
+                    liar: liar,
+                    subtopic_liar: subtopicForLiar,
+                    subtopic_others: subtopicForOthers
+                })
+            );
+    
+        } catch (error) {
+            console.error('Failed to fetch subtopics:', error);
+            alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
         }
     });
+    
+
+    function handleTopicDistribution(data) {
+        const { subtopic, is_liar } = data;
+        const role = is_liar ? "LIAR" : "참가자";
+    
+        // 제시어와 역할을 화면에 표시할 요소
+        const roleInfoDiv = document.getElementById('role-info');
+        if (roleInfoDiv) {
+            roleInfoDiv.innerHTML = `당신의 역할: <strong>${role}</strong><br>제시어: <strong>${subtopic}</strong>`;
+        }
+    
+        console.log(`[DEBUG] Role: ${role}, Subtopic: ${subtopic}`);
+    }
+    
+
+
+    // distributeButton.addEventListener('click', () => {
+    //     if (!isHost) {
+    //         alert('방장만 제시어를 배포할 수 있습니다.');
+    //         return;
+    //     }
+    
+    //     if (participants.length === 0) {
+    //         alert('참가자가 없습니다. 참가자를 먼저 확인하세요.');
+    //         return;
+    //     }
+    
+    //     const topicModal = document.getElementById('topic-modal');
+    //     if (topicModal) {
+    //         topicModal.style.display = 'block'; // 모달 열기
+    //     } else {
+    //         console.error("topicModal 요소를 찾을 수 없습니다.");
+    //     }
+    // });
     
     // "확인" 버튼과 SubTopic 배포
     confirmTopicButton.addEventListener('click', async () => {
