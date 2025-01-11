@@ -284,6 +284,16 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             subtopic_others = data.get("subtopic2", "")
             liar = data.get("liar", "")
 
+            # 방장 여부 확인
+            room = await sync_to_async(Room.objects.get)(room_number=self.room_id)
+            if room.owner.nickname != nickname:
+                print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
+                await self.send(text_data=json.dumps({
+                    "type": "error",
+                    "message": "제시어 배포는 방장만 가능합니다."
+                }))
+                return
+
             if not subtopic_liar or not subtopic_others or not liar:
                 print("[ERROR] Missing subtopics or liar in distribute_topic action")
                 return
@@ -293,18 +303,20 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
 
             # 모든 참가자에게 브로드캐스트
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "distribute_topic",
-                    "liar": liar,
-                    "subtopic_liar": subtopic_liar,
-                    "subtopic_others": subtopic_others,
-                    "participants": participants
-                }
-            )
+            for participant in participants:
+                subtopic = subtopic_liar if participant == liar else subtopic_others
+                is_liar = (participant == liar)
 
-            print("[DEBUG] Successfully broadcasted topic distribution to all participants")
+                await self.channel_layer.send(
+                    f"user_{participant}",
+                    {
+                        "type": "send_subtopic",
+                        "subtopic": subtopic,
+                        "is_liar": is_liar
+                    }
+                )
+
+            print("[DEBUG] Successfully distributed topics to all participants")
 
     async def distribute_topic(self, event):
         liar = event["liar"]

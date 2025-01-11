@@ -95,7 +95,7 @@
     <!-- 숨겨진 데이터 -->
     <div id="user-nickname" style="display: none;">{{ user.nickname }}</div>
     <div id="room-id" style="display: none;">{{ room.room_number|default:"" }}</div>
-
+    <div id="room-owner" style="display: none;">{{ room.owner.nickname }}</div>
     <!-- <script src="{% static 'liargame/scripts/liargame_script.js' %}"></script> -->
 </body>
 </html>
