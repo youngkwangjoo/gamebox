@@ -4,6 +4,8 @@ from asgiref.sync import sync_to_async
 import json
 from django.core.cache import cache
 from .models import Room
+from asgiref.sync import sync_to_async
+
 
 class LobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -68,7 +70,8 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                     room = await sync_to_async(Room.objects.get)(room_number=room_id)
 
                     # 방 삭제 권한 확인 (방 소유자인지 검증)
-                    if room.owner.nickname != nickname:
+                    owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
+                    if owner_nickname != nickname:
                         print(f"[ERROR] {nickname} is not the owner of room {room_id}.")
                         return  # 방 소유자가 아니면 삭제 불가
                     
@@ -286,7 +289,8 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
             # 방장 여부 확인
             room = await sync_to_async(Room.objects.get)(room_number=self.room_id)
-            if room.owner.nickname != nickname:
+            owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
+            if owner_nickname != nickname:
                 print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
                 await self.send(text_data=json.dumps({
                     "type": "error",
