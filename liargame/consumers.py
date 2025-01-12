@@ -3,7 +3,7 @@ from django.apps import apps  # 동적 모델 접근을 위한 apps import
 from asgiref.sync import sync_to_async
 import json
 from django.core.cache import cache
-
+from .models import Room
 
 class LobbyConsumer(AsyncWebsocketConsumer):
     async def connect(self):
