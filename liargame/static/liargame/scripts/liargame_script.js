@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     votes[data.participant] = data.voteCount;
                     renderParticipants(participants, participantLogs, votes);
                     break;
-    
+
                 case 'distribute_topic':  
                     console.log('[DEBUG] Topic distribution received');
                     handleTopicDistribution(data);  // 제시어 배포 처리
@@ -165,6 +165,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     
         const isLiar = (nickname === liar); // 본인이 Liar인지 확인
+
+        console.log(`[DEBUG] Liar: ${liar}, Subtopic for Liar: ${subtopic_liar}, Subtopic for Others: ${subtopic_others}`);
+
         const modalHeader = isLiar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
         const modalContent = isLiar 
             ? `제시어는 <strong>${subtopic_liar}</strong>입니다.`
