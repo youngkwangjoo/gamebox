@@ -283,13 +283,13 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
             
         elif action == "distribute_topic":
-            subtopic_liar = data.get("subtopic1", "")
-            subtopic_others = data.get("subtopic2", "")
+            subtopic_liar = data.get("subtopic_liar", "")
+            subtopic_others = data.get("subtopic_others", "")
             liar = data.get("liar", "")
 
-            # 방장 여부 확인
             room = await sync_to_async(Room.objects.get)(room_number=self.room_id)
             owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
+            
             if owner_nickname != nickname:
                 print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
                 await self.send(text_data=json.dumps({
@@ -302,23 +302,24 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print("[ERROR] Missing subtopics or liar in distribute_topic action")
                 return
 
-            participants = await sync_to_async(self.get_participants)()  # 방 참가자 목록 가져오기
+            participants = await sync_to_async(self.get_participants)()
 
             print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
 
-            # 모든 참가자에게 브로드캐스트
             for participant in participants:
                 subtopic = subtopic_liar if participant == liar else subtopic_others
                 is_liar = (participant == liar)
 
-                await self.channel_layer.send(
-                    f"user_{participant}",
+                await self.channel_layer.group_send(
+                    self.room_group_name,
                     {
                         "type": "send_subtopic",
+                        "participant": participant,
                         "subtopic": subtopic,
                         "is_liar": is_liar
                     }
                 )
+
 
             print("[DEBUG] Successfully distributed topics to all participants")
 

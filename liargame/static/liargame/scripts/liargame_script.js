@@ -132,6 +132,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     handleTopicDistribution(data);  // 제시어 배포 처리
                     break;
     
+                case 'send_subtopic':
+                    const { participant, subtopic, is_liar } = data;
+                    if (participant === nickname) {
+                        const modalHeader = is_liar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+                        const modalContent = `제시어는 <strong>${subtopic}</strong>입니다.`;
+    
+                        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+                        participantModal.style.display = 'flex';
+                    }
+                    break;
+
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
