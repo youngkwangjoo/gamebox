@@ -156,9 +156,9 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f"room_{self.room_id}"
         self.user_channel_name = f"user_{self.nickname}"
 
-        # 참가자를 방에 추가
+        # 참가자를 방에 추가 (sync_to_async 제거, 직접 호출)
         try:
-            participants = await sync_to_async(self.add_to_room)(room_id=int(self.room_id), nickname=self.nickname)
+            participants = await self.add_to_room(room_id=int(self.room_id), nickname=self.nickname)
         except ValueError as e:
             await self.close(code=4003)
             print(f"[ERROR] Invalid room ID: {e}")
