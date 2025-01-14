@@ -281,6 +281,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }
             )
             print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
+            
         elif action == "distribute_topic":
             subtopic_liar = data.get("subtopic_liar", "")
             subtopic_others = data.get("subtopic_others", "")
@@ -288,7 +289,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
             room = await sync_to_async(Room.objects.get)(room_number=self.room_id)
             owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
-
+            
             if owner_nickname != nickname:
                 print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
                 await self.send(text_data=json.dumps({
@@ -301,8 +302,8 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print("[ERROR] Missing subtopics or liar in distribute_topic action")
                 return
 
-            # 캐시에서 참가자 목록 가져오기
-            participants = await self.get_participants()
+            participants = await sync_to_async(self.get_participants)()
+
             print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
 
             for participant in participants:
@@ -319,48 +320,8 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     }
                 )
 
+
             print("[DEBUG] Successfully distributed topics to all participants")
-
-        # elif action == "distribute_topic":
-        #     subtopic_liar = data.get("subtopic_liar", "")
-        #     subtopic_others = data.get("subtopic_others", "")
-        #     liar = data.get("liar", "")
-
-        #     room = await sync_to_async(Room.objects.get)(room_number=self.room_id)
-        #     owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
-            
-        #     if owner_nickname != nickname:
-        #         print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
-        #         await self.send(text_data=json.dumps({
-        #             "type": "error",
-        #             "message": "제시어 배포는 방장만 가능합니다."
-        #         }))
-        #         return
-
-        #     if not subtopic_liar or not subtopic_others or not liar:
-        #         print("[ERROR] Missing subtopics or liar in distribute_topic action")
-        #         return
-
-        #     participants = await sync_to_async(self.get_participants)()
-
-        #     print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
-
-        #     for participant in participants:
-        #         subtopic = subtopic_liar if participant == liar else subtopic_others
-        #         is_liar = (participant == liar)
-
-        #         await self.channel_layer.group_send(
-        #             self.room_group_name,
-        #             {
-        #                 "type": "send_subtopic",
-        #                 "participant": participant,
-        #                 "subtopic": subtopic,
-        #                 "is_liar": is_liar
-        #             }
-        #         )
-
-
-        #     print("[DEBUG] Successfully distributed topics to all participants")
 
     async def distribute_topic(self, event):
         liar = event["liar"]
