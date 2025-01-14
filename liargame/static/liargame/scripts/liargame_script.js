@@ -157,23 +157,26 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     
     function handleTopicDistribution(data) {
-        const { subtopic, is_liar } = data;
+        const { liar, subtopic_liar, subtopic_others } = data;
     
-        if (!subtopic || typeof is_liar === 'undefined') {
-            console.error('[ERROR] Missing or invalid topic data:', data);
+        if (!liar || !subtopic_liar || !subtopic_others) {
+            console.error('[ERROR] Missing or invalid topic distribution data:', data);
             return;
         }
     
-        const role = is_liar ? "LIAR" : "참가자";
+        const isLiar = (nickname === liar); // 본인이 Liar인지 확인
+        const modalHeader = isLiar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+        const modalContent = isLiar 
+            ? `제시어는 <strong>${subtopic_liar}</strong>입니다.`
+            : `제시어는 <strong>${subtopic_others}</strong>입니다.`;
     
-        // 제시어와 역할을 화면에 표시할 요소
-        const roleInfoDiv = document.getElementById('role-info');
-        if (roleInfoDiv) {
-            roleInfoDiv.innerHTML = `당신의 역할: <strong>${role}</strong><br>제시어: <strong>${subtopic}</strong>`;
-        }
+        // 모달에 내용 업데이트
+        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+        participantModal.style.display = 'flex'; // 모달 표시
     
-        console.log(`[DEBUG] Role: ${role}, Subtopic: ${subtopic}`);
+        console.log(`[DEBUG] Role: ${isLiar ? "Liar" : "Participant"}, Subtopic: ${isLiar ? subtopic_liar : subtopic_others}`);
     }
+    
     
     
 
