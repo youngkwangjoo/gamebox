@@ -170,12 +170,29 @@ document.addEventListener('DOMContentLoaded', () => {
             ? `제시어는 <strong>${subtopic_liar}</strong>입니다.`
             : `제시어는 <strong>${subtopic_others}</strong>입니다.`;
     
-        // 모달에 내용 업데이트
+        // 모달 내용 설정
         participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+        
+        // 모달 열기
         participantModal.style.display = 'flex'; // 모달 표시
     
         console.log(`[DEBUG] Role: ${isLiar ? "Liar" : "Participant"}, Subtopic: ${isLiar ? subtopic_liar : subtopic_others}`);
     }
+    
+    // 모달 닫기 버튼 이벤트 핸들러 추가
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', () => {
+            participantModal.style.display = 'none';
+        });
+    }
+    
+    // ESC 키로 모달 닫기 기능
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && participantModal.style.display === 'flex') {
+            participantModal.style.display = 'none';
+        }
+    });
+    
     
     
     
