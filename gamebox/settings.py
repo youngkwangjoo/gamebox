@@ -28,12 +28,15 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware', 
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     'https://schdule.site',
     'https://www.schdule.site',
 ]
+
+CSRF_COOKIE_SECURE = True
 
 ROOT_URLCONF = 'gamebox.urls'
 
