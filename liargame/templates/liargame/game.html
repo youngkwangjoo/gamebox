@@ -293,81 +293,85 @@
                 }
             };
 
-                socket.onclose = () => {
-                    console.log('WebSocket 연결 종료.');
-                };
+            socket.onclose = () => {
+                console.log('WebSocket 연결 종료.');
+            };
 
-                socket.onerror = (error) => {
-                    console.error('WebSocket 오류:', error);
-                };
+            socket.onerror = (error) => {
+                console.error('WebSocket 오류:', error);
+            };
 
-        // 방 목록에 방 추가 함수
-        function addRoomToList(roomId, owner, gameType, playerCount) {
-            // "아직 개설된 방이 없습니다." 문구 제거
-            const noRoomsMessage = document.querySelector('.room-list p');
-            if (noRoomsMessage) {
-                noRoomsMessage.remove();
+            // 방 목록에 방 추가 함수
+            function addRoomToList(roomId, owner, gameType, playerCount) {
+                // "아직 개설된 방이 없습니다." 문구 제거
+                const noRoomsMessage = document.querySelector('.room-list p');
+                if (noRoomsMessage) {
+                    noRoomsMessage.remove();
+                }
+
+                if (document.querySelector(`.room[data-room-id='${roomId}']`)) {
+                    console.log(`[INFO] Room ${roomId} already exists.`);
+                    return; // 중복 방이 추가되지 않도록 방지
+                }
+
+                const roomElement = document.createElement('div');
+                roomElement.className = 'room';
+                roomElement.dataset.roomId = roomId;
+                roomElement.innerHTML = `
+                    <div class="room-left">
+                        <a href="/room/${roomId}" class="room-link">
+                            <strong>${owner}의 방</strong>
+                            <span>"${gameType}"</span>
+                        </a>
+                    </div>
+                    <div class="room-right">
+                        <div class="room-players">(${playerCount} player)</div>
+                        <button class="delete-room-button" data-room-id="${roomId}">삭제</button>
+                    </div>
+                `;
+
+                roomList.appendChild(roomElement);
             }
 
-            if (document.querySelector(`.room[data-room-id='${roomId}']`)) {
-                console.log(`[INFO] Room ${roomId} already exists.`);
-                return; // 중복 방이 추가되지 않도록 방지
-            }
-
-            const roomElement = document.createElement('div');
-            roomElement.className = 'room';
-            roomElement.dataset.roomId = roomId;
-            roomElement.innerHTML = `
-                <div class="room-left">
-                    <a href="/room/${roomId}" class="room-link">
-                        <strong>${owner}의 방</strong>
-                        <span>"${gameType}"</span>
-                    </a>
-                </div>
-                <div class="room-right">
-                    <div class="room-players">(${playerCount} player)</div>
-                    <button class="delete-room-button" data-room-id="${roomId}">삭제</button>
-                </div>
-            `;
-
-            roomList.appendChild(roomElement);
-
-            roomElement.querySelector('.delete-room-button').addEventListener('click', () => {
-                const confirmDelete = confirm('정말 이 방을 삭제하시겠습니까?');
-                if (confirmDelete) {
-                    socket.send(JSON.stringify({
-                        action: 'delete_room',
-                        room_id: roomId
-                    }));
+            // 이벤트 위임을 사용하여 방 삭제 버튼 클릭 이벤트 처리
+            roomList.addEventListener('click', (event) => {
+                if (event.target.classList.contains('delete-room-button')) {
+                    const roomId = event.target.dataset.roomId;
+                    const confirmDelete = confirm('정말 이 방을 삭제하시겠습니까?');
+                    if (confirmDelete) {
+                        socket.send(JSON.stringify({
+                            action: 'delete_room',
+                            room_id: roomId
+                        }));
+                    }
                 }
             });
-        }
 
+            function removeRoomFromList(roomId) {
+                const roomElement = document.querySelector(`.room[data-room-id='${roomId}']`);
+                if (roomElement) {
+                    roomElement.remove();
+                    console.log(`[DEBUG] Room ${roomId} removed from the list.`);
+                }
 
-        function removeRoomFromList(roomId) {
-            const roomElement = document.querySelector(`.room[data-room-id='${roomId}']`);
-            if (roomElement) {
-                roomElement.remove();
-                console.log(`[DEBUG] Room ${roomId} removed from the list.`);
+                // 방 목록이 비어 있으면 "아직 개설된 방이 없습니다." 문구 추가
+                if (roomList.children.length === 0) {
+                    const noRoomsMessage = document.createElement('p');
+                    noRoomsMessage.textContent = '아직 개설된 방이 없습니다.';
+                    roomList.appendChild(noRoomsMessage);
+                }
             }
 
-            // 방 목록이 비어 있으면 "아직 개설된 방이 없습니다." 문구 추가
-            if (roomList.children.length === 0) {
-                const noRoomsMessage = document.createElement('p');
-                noRoomsMessage.textContent = '아직 개설된 방이 없습니다.';
-                roomList.appendChild(noRoomsMessage);
+            function renderParticipants(participants) {
+                participantsList.innerHTML = '';
+                participants.forEach((participant) => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = participant;
+                    participantsList.appendChild(listItem);
+                });
             }
-        }
-
-        function renderParticipants(participants) {
-            participantsList.innerHTML = '';
-            participants.forEach((participant) => {
-                const listItem = document.createElement('li');
-                listItem.textContent = participant;
-                participantsList.appendChild(listItem);
-            });
-        }
         });
+
     </script>
 </body>
 </html>
