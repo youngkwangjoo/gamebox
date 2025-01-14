@@ -34,6 +34,7 @@ MIDDLEWARE = [
 CSRF_TRUSTED_ORIGINS = [
     'https://schdule.site',
     'https://www.schdule.site',
+    'https://schdule.site:1443',
 ]
 
 CSRF_COOKIE_SECURE = True
