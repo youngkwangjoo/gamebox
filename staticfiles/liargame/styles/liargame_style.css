@@ -286,7 +286,6 @@ nav ul li a:hover {
 
 /*제시어 모달*/
 .modal {
-    display: none; /* 기본적으로 숨김 */
     position: fixed;
     top: 0;
     left: 0;

@@ -148,6 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const modalContent2 = `제시어는 <strong>${subtopic2}</strong>입니다.`;
                         participantModalMessage.innerHTML = `<h2>${modalHeader2}</h2><p>${modalContent2}</p>`;
                         participantModal.style.display = 'flex';
+                        console.log('[DEBUG] Modal displayed'); 
                     }
                     break;
                     

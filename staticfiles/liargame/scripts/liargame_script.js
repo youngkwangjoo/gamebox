@@ -132,16 +132,26 @@ document.addEventListener('DOMContentLoaded', () => {
                     handleTopicDistribution(data);  // 제시어 배포 처리
                     break;
     
-                case 'send_subtopic':
-                    const { participant, subtopic, is_liar } = data;
-                    if (participant === nickname) {
-                        const modalHeader = is_liar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
-                        const modalContent = `제시어는 <strong>${subtopic}</strong>입니다.`;
+                    
+                case 'send_subtopic':  // subtopic 타입에 대한 처리 추가
+                    const { subtopic, is_liar } = data;
+                    const modalHeader = is_liar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+                    const modalContent = `제시어는 <strong>${subtopic}</strong>입니다.`;
+                    participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+                    participantModal.style.display = 'flex';
+                    break;
     
-                        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+                case 'subtopic':  // 기존 처리
+                    const { participant, subtopic: subtopic2, is_liar: isLiar2 } = data;
+                    if (participant === nickname) {
+                        const modalHeader2 = isLiar2 ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+                        const modalContent2 = `제시어는 <strong>${subtopic2}</strong>입니다.`;
+                        participantModalMessage.innerHTML = `<h2>${modalHeader2}</h2><p>${modalContent2}</p>`;
                         participantModal.style.display = 'flex';
+                        console.log('[DEBUG] Modal displayed'); 
                     }
                     break;
+                    
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
