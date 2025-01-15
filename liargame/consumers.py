@@ -61,8 +61,11 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         action = data.get("action")
         nickname = self.scope['user'].nickname  # 사용자 닉네임 가져오기
 
+        print(f"[DEBUG] Received action: {action}, data: {data}")
+
         if action == "delete_room":
             room_id = data.get("room_id")
+            print(f"[DEBUG] Delete request for room_id: {room_id}")
             if room_id:
                 Room = apps.get_model('liargame', 'Room')
                 try:
@@ -74,7 +77,8 @@ class LobbyConsumer(AsyncWebsocketConsumer):
                     if owner_nickname != nickname:
                         print(f"[ERROR] {nickname} is not the owner of room {room_id}.")
                         return  # 방 소유자가 아니면 삭제 불가
-                    
+                    else:
+                        print(f"[DEBUG] {nickname} is the owner of room {room_id}. Proceeding with deletion.")
                     # 방 삭제
                     await sync_to_async(room.delete)()
                     print(f"[DEBUG] Room {room_id} deleted.")
