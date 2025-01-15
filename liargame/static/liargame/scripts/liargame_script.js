@@ -142,7 +142,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         participantModal.style.display = 'flex';
                     }
                     break;
-
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
