@@ -27,9 +27,68 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeTopicModalButton = document.getElementById('close-topic-modal'); // 제시어 선택 모달 닫기 버튼
     const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
     
+    // 참가자와 방장 정보 초기화
+    const roomOwnerNickname = document.getElementById('room-owner')?.textContent.trim();
+    const isHost = nickname === roomOwnerNickname; // 방장 여부 확인
 
-    // 참가자와 방장 정보 (예시 데이터)
-    const isHost = true; // 방장 여부 (서버에서 받아오는 데이터로 설정)
+
+
+        // 제시어 배포 버튼 동작 설정
+        if (!isHost) {
+            distributeButton.disabled = true; // 방장이 아니면 버튼 비활성화
+            distributeButton.addEventListener('click', () => {
+                alert("제시어 배포는 방장만 가능합니다.");
+            });
+        } else {
+            distributeButton.addEventListener('click', async () => {
+                const selectedTopicId = topicSelect.value;
+    
+                if (!selectedTopicId) {
+                    alert("주제를 선택해주세요.");
+                    return;
+                }
+    
+                try {
+                    // 서버에서 랜덤 소주제 2개를 가져오기
+                    const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
+    
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        alert(`Error: ${errorData.error}`);
+                        return;
+                    }
+    
+                    const data = await response.json();
+    
+                    if (!participants || participants.length < 2) {
+                        alert("참가자가 2명 이상 필요합니다.");
+                        return;
+                    }
+    
+                    // LIAR 랜덤 선정
+                    const liar = participants[Math.floor(Math.random() * participants.length)];
+                    const subtopicForLiar = data.subtopics[0];
+                    const subtopicForOthers = data.subtopics[1];
+    
+                    console.log(`[DEBUG] Selected Liar: ${liar}`);
+                    console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
+    
+                    // 서버로 제시어 배포 요청 전송
+                    socket.send(
+                        JSON.stringify({
+                            action: 'distribute_topic',
+                            liar: liar,
+                            subtopic_liar: subtopicForLiar,
+                            subtopic_others: subtopicForOthers
+                        })
+                    );
+    
+                } catch (error) {
+                    console.error('Failed to fetch subtopics:', error);
+                    alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+                }
+            });
+        }
 
     // 상태 데이터 초기화
     const votes = {}; // 투표 상태
@@ -67,18 +126,22 @@ document.addEventListener('DOMContentLoaded', () => {
                     votes[data.participant] = data.voteCount;
                     renderParticipants(participants, participantLogs, votes);
                     break;
-    
-                case 'distribute_topic':  
-                    console.log('[DEBUG] Topic distribution received');
-                    handleTopicDistribution(data);  // 제시어 배포 처리
-                    break;
-    
-                case 'distribute_topic':  
-                    console.log('[DEBUG] Topic distribution received');
-                    handleTopicDistribution(data);  // 제시어 배포 처리
-                    break;
-                
 
+                case 'distribute_topic':  
+                    console.log('[DEBUG] Topic distribution received');
+                    handleTopicDistribution(data);  // 제시어 배포 처리
+                    break;
+    
+                case 'send_subtopic':
+                    const { participant, subtopic, is_liar } = data;
+                    if (participant === nickname) {
+                        const modalHeader = is_liar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+                        const modalContent = `제시어는 <strong>${subtopic}</strong>입니다.`;
+    
+                        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+                        participantModal.style.display = 'flex';
+                    }
+                    break;
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
@@ -102,71 +165,49 @@ document.addEventListener('DOMContentLoaded', () => {
             socket.send(JSON.stringify({ action: 'join', nickname }));
         }
     };
-
-
-    //제시어 배포 
-    distributeButton.addEventListener('click', async () => {
-        const selectedTopicId = topicSelect.value;
     
-        if (!selectedTopicId) {
-            alert("주제를 선택해주세요.");
+    function handleTopicDistribution(data) {
+        const { liar, subtopic_liar, subtopic_others } = data;
+    
+        if (!liar || !subtopic_liar || !subtopic_others) {
+            console.error('[ERROR] Missing or invalid topic distribution data:', data);
             return;
         }
     
-        try {
-            // 서버에서 랜덤 소주제 2개를 가져오기
-            const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
+        const isLiar = (nickname === liar); // 본인이 Liar인지 확인
+
+        console.log(`[DEBUG] Liar: ${liar}, Subtopic for Liar: ${subtopic_liar}, Subtopic for Others: ${subtopic_others}`);
+
+        const modalHeader = isLiar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+        const modalContent = isLiar 
+            ? `제시어는 <strong>${subtopic_liar}</strong>입니다.`
+            : `제시어는 <strong>${subtopic_others}</strong>입니다.`;
     
-            if (!response.ok) {
-                const errorData = await response.json();
-                alert(`Error: ${errorData.error}`);
-                return;
-            }
+        // 모달 내용 설정
+        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+        
+        // 모달 열기
+        participantModal.style.display = 'flex'; // 모달 표시
     
-            const data = await response.json();
+        console.log(`[DEBUG] Role: ${isLiar ? "Liar" : "Participant"}, Subtopic: ${isLiar ? subtopic_liar : subtopic_others}`);
+    }
     
-            if (!participants || participants.length < 2) {
-                alert("참가자가 2명 이상 필요합니다.");
-                return;
-            }
+    // 모달 닫기 버튼 이벤트 핸들러 추가
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', () => {
+            participantModal.style.display = 'none';
+        });
+    }
     
-            // LIAR 랜덤 선정
-            const liar = participants[Math.floor(Math.random() * participants.length)];
-            const subtopicForLiar = data.subtopics[0];
-            const subtopicForOthers = data.subtopics[1];
-    
-            console.log(`[DEBUG] Selected Liar: ${liar}`);
-            console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
-    
-            // 서버로 제시어 배포 요청 전송
-            socket.send(
-                JSON.stringify({
-                    action: 'distribute_topic',
-                    liar: liar,
-                    subtopic_liar: subtopicForLiar,
-                    subtopic_others: subtopicForOthers
-                })
-            );
-    
-        } catch (error) {
-            console.error('Failed to fetch subtopics:', error);
-            alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+    // ESC 키로 모달 닫기 기능
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && participantModal.style.display === 'flex') {
+            participantModal.style.display = 'none';
         }
     });
     
-
-    function handleTopicDistribution(data) {
-        const { subtopic, is_liar } = data;
-        const role = is_liar ? "LIAR" : "참가자";
     
-        // 제시어와 역할을 화면에 표시할 요소
-        const roleInfoDiv = document.getElementById('role-info');
-        if (roleInfoDiv) {
-            roleInfoDiv.innerHTML = `당신의 역할: <strong>${role}</strong><br>제시어: <strong>${subtopic}</strong>`;
-        }
     
-        console.log(`[DEBUG] Role: ${role}, Subtopic: ${subtopic}`);
-    }
     
 
 
@@ -742,7 +783,6 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Failed to load topics:', error);
         }
     }
-    
 
     // SubTopic 가져오기 및 배포
     async function fetchSubtopicsAndDistribute() {
@@ -804,9 +844,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 초기화
     loadTopics();
-
-    // 이벤트 리스너
-    confirmTopicButton.addEventListener('click', fetchSubtopicsAndDistribute);
 
 });
     
