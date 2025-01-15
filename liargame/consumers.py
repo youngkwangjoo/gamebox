@@ -307,7 +307,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print("[ERROR] Missing subtopics or liar in distribute_topic action")
                 return
 
-            # 참가자 목록 Redis에서 동기적으로 가져오기
+            # Redis 캐시에서 참가자 목록 가져오기
             participants = await sync_to_async(cache.get)(f"room_{self.room_id}_participants", [])
 
             if not participants:
@@ -320,19 +320,20 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
             print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
 
-            for participant in self.channel_layer.groups.get(self.room_group_name, []):
+            for participant in participants:
                 subtopic = subtopic_liar if participant == liar else subtopic_others
                 is_liar = (participant == liar)
 
-                await self.channel_layer.send(
-                    participant,  # 개별 참가자의 채널 이름
+                await self.channel_layer.group_send(
+                    self.room_group_name,
                     {
                         "type": "send_subtopic",
+                        "participant": participant,
                         "subtopic": subtopic,
-                        "is_liar": is_liar,
-                        "participant": participant
+                        "is_liar": is_liar
                     }
                 )
+
 
 
     async def distribute_topic(self, event):
@@ -354,8 +355,6 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             "is_liar": is_liar
         }))
 
-
-
     async def send_subtopic(self, event):
         subtopic = event["subtopic"]
         is_liar = event["is_liar"]
@@ -369,9 +368,6 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 "is_liar": is_liar
             }))
             print(f"[DEBUG] Sent subtopic to {self.nickname}: {subtopic}, Is Liar: {is_liar}")
-
-
-
 
     async def chat_message(self, event):
         message = event["message"]
