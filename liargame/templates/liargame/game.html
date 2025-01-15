@@ -269,6 +269,13 @@
             const nickname = "{{ user.nickname|default:'익명' }}";
             const participantsList = document.getElementById('participants-list');
             const roomList = document.querySelector('.room-list');
+
+            if (!roomList) {
+                console.error('[ERROR] .room-list 요소가 존재하지 않습니다.');
+                return;
+            }
+
+            console.log('[DEBUG] roomList 요소가 정상적으로 선택되었습니다.');
             const createRoomLink = document.getElementById('create-room-link');
             const socket = new WebSocket(`wss://${window.location.host}/ws/room/${roomId}/`);
 
@@ -336,16 +343,18 @@
             // 이벤트 위임을 사용하여 방 삭제 버튼 클릭 이벤트 처리
             roomList.addEventListener('click', (event) => {
                 if (event.target.classList.contains('delete-room-button')) {
-                    const roomId = event.target.dataset.roomId;
-                    const confirmDelete = confirm('정말 이 방을 삭제하시겠습니까?');
-                    if (confirmDelete) {
-                        socket.send(JSON.stringify({
-                            action: 'delete_room',
-                            room_id: roomId
-                        }));
-                    }
+                console.log('[DEBUG] Delete button clicked');
+                const roomId = event.target.dataset.roomId;
+                const confirmDelete = confirm('정말 이 방을 삭제하시겠습니까?');
+                if (confirmDelete) {
+                    console.log(`[DEBUG] Sending delete request for room ${roomId}`);
+                    socket.send(JSON.stringify({
+                        action: 'delete_room',
+                        room_id: roomId
+                    }));
                 }
-            });
+            }
+        });
 
             function removeRoomFromList(roomId) {
                 const roomElement = document.querySelector(`.room[data-room-id='${roomId}']`);
