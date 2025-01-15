@@ -214,11 +214,11 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         print(f"[DEBUG] Received action: {action} from user {nickname} with data: {data}")
 
         if action == "join":
-            participants = await sync_to_async(self.add_to_room)(self.room_id, nickname)
+            participants = await self.add_to_room(self.room_id, nickname)
             await self.broadcast_participants(participants)
 
         elif action == "leave":
-            participants = await sync_to_async(self.remove_from_room)(self.room_id, nickname)
+            participants = await self.remove_from_room(self.room_id, nickname)
             await self.broadcast_participants(participants)
 
         elif action == "message":
