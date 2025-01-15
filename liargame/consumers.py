@@ -306,7 +306,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print("[ERROR] Missing subtopics or liar in distribute_topic action")
                 return
 
-            participants = await sync_to_async(self.get_participants)()
+            participants = await self.get_participants()
 
             print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
 
