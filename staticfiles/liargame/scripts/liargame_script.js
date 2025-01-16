@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // topic 설정
     const topicSelect = document.getElementById('topic-select');
-    const confirmTopicButton = document.getElementById('confirm-topic-button');
+    const selectTopicButton = document.getElementById('select-topic-button');
     const participantModal = document.getElementById('participant-modal');
     const participantModalMessage = document.getElementById('participant-modal-message');
     const distributeButton = document.getElementById('distribute-topic-button');
@@ -33,77 +33,76 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-        // 제시어 배포 버튼 동작 설정
-        if (!isHost) {
-            // 방장이 아니면 버튼 비활성화 및 경고 메시지 설정
-            distributeButton.disabled = true; 
-            distributeButton.addEventListener('click', () => {
-                alert("제시어 배포는 방장만 가능합니다.");
-            });
-        } else {
-            distributeButton.addEventListener('click', () => {
-                // 방장이 배포 버튼을 클릭하면 모달창 열기
-                topicModal.style.display = 'block';
-            });
-        
-            // 모달 내 확인 버튼 동작 설정
-            confirmTopicButton.addEventListener('click', async () => {
-                const selectedTopicId = topicSelect.value;
-        
-                if (!selectedTopicId) {
-                    alert("주제를 선택해주세요.");
+
+    // 제시어 배포 버튼 동작 설정
+    if (!isHost) {
+        // 방장이 아니면 버튼 비활성화 및 경고 메시지 설정
+        distributeButton.disabled = true;
+        distributeButton.addEventListener('click', () => {
+            alert("제시어 배포는 방장만 가능합니다.");
+        });
+    } else {
+        distributeButton.addEventListener('click', async () => {
+            const selectedTopicId = topicSelect.value;
+
+            if (!selectedTopicId) {
+                alert("주제를 선택해주세요.");
+                return;
+            }
+
+            try {
+                // 서버에서 선택된 주제와 관련된 소주제를 가져오기
+                const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.error}`);
                     return;
                 }
-        
-                try {
-                    // 서버에서 랜덤 소주제 2개 가져오기
-                    const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
-        
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        alert(`Error: ${errorData.error}`);
-                        return;
-                    }
-        
-                    const data = await response.json();
-        
-                    if (!participants || participants.length < 2) {
-                        alert("참가자가 2명 이상 필요합니다.");
-                        return;
-                    }
-        
-                    // Liar 랜덤 선정
-                    const liar = participants[Math.floor(Math.random() * participants.length)];
-                    const subtopicForLiar = data.subtopics[0];
-                    const subtopicForOthers = data.subtopics[1];
-        
-                    console.log(`[DEBUG] Selected Liar: ${liar}`);
-                    console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
-        
-                    // 서버로 제시어 배포 요청 전송
-                    socket.send(
-                        JSON.stringify({
-                            action: 'distribute_topic',
-                            liar: liar,
-                            subtopic_liar: subtopicForLiar,
-                            subtopic_others: subtopicForOthers
-                        })
-                    );
-        
-                    // 모달 닫기
-                    topicModal.style.display = 'none';
-        
-                } catch (error) {
-                    console.error('Failed to fetch subtopics:', error);
-                    alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+
+                const data = await response.json();
+
+                if (!participants || participants.length < 2) {
+                    alert("참가자가 2명 이상 필요합니다.");
+                    return;
                 }
-            });
-        
-            // 모달 닫기 버튼 동작 설정
-            closeTopicModalButton.addEventListener('click', () => {
-                topicModal.style.display = 'none';
-            });
-        }
+
+                // Liar 랜덤 선정
+                const liar = participants[Math.floor(Math.random() * participants.length)];
+                const subtopicForLiar = data.subtopics[0];
+                const subtopicForOthers = data.subtopics[1];
+
+                console.log(`[DEBUG] Selected Liar: ${liar}`);
+                console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
+
+                // 서버로 제시어 배포 요청 전송
+                socket.send(
+                    JSON.stringify({
+                        action: 'distribute_topic',
+                        liar: liar,
+                        subtopic_liar: subtopicForLiar,
+                        subtopic_others: subtopicForOthers,
+                    })
+                );
+
+                alert('제시어가 성공적으로 배포되었습니다.');
+
+            } catch (error) {
+                console.error('Failed to fetch subtopics:', error);
+                alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+            }
+        });
+
+        // 드롭다운 주제 선택 이벤트 추가
+        topicSelect.addEventListener('change', () => {
+            if (topicSelect.value) {
+                distributeButton.disabled = false; // 주제를 선택하면 배포 버튼 활성화
+            } else {
+                distributeButton.disabled = true; // 선택하지 않으면 배포 버튼 비활성화
+            }
+        });
+    }
+
         
 
     // 상태 데이터 초기화
@@ -231,31 +230,7 @@ document.addEventListener('DOMContentLoaded', () => {
             participantModal.style.display = 'none';
         }
     });
-    
-    
-    
-    
 
-
-    // distributeButton.addEventListener('click', () => {
-    //     if (!isHost) {
-    //         alert('방장만 제시어를 배포할 수 있습니다.');
-    //         return;
-    //     }
-    
-    //     if (participants.length === 0) {
-    //         alert('참가자가 없습니다. 참가자를 먼저 확인하세요.');
-    //         return;
-    //     }
-    
-    //     const topicModal = document.getElementById('topic-modal');
-    //     if (topicModal) {
-    //         topicModal.style.display = 'block'; // 모달 열기
-    //     } else {
-    //         console.error("topicModal 요소를 찾을 수 없습니다.");
-    //     }
-    // });
-    
     // "확인" 버튼과 SubTopic 배포
     confirmTopicButton.addEventListener('click', async () => {
         const selectedTopicId = topicSelect.value; // 이제 topic.id가 들어옴
@@ -555,120 +530,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         textArea.value = '';
                     }
                 }
-            }); // <-- 이 괄호가 누락되어 있었습니다.
+            }); 
             inputContainer.appendChild(nameLabel);
             inputContainer.appendChild(textArea);
             participantLogsContainer.appendChild(inputContainer);
         });
     }
-    // function renderParticipants(participants, logs) {
-    //     console.log('[DEBUG] Rendering participants:', participants);  // 디버그 추가
-    //     participantsContainer.innerHTML = ''; // 기존 목록 초기화
-    
-    //     participants.forEach((participant) => {
-    //         if (!participant) {
-    //             console.warn('[WARN] Undefined participant detected');  // 디버그 추가
-    //             return;
-    //         }
-            
-    //         const participantElement = document.createElement('div');
-    //         participantElement.className = 'participant-item';
-    
-    //         // 투표 버튼
-    //         const voteButton = document.createElement('button');
-    //         voteButton.textContent = '투표';
-    //         voteButton.disabled = hasVoted; // 이미 투표했으면 비활성화
-    //         voteButton.addEventListener('click', () => {
-    //             if (!hasVoted) {
-    //                 socket.send(JSON.stringify({
-    //                     action: 'vote',
-    //                     participant: participant
-    //                 }));
-    //                 alert(`${participant}에게 투표했습니다.`);
-    //                 hasVoted = true; // 투표 완료 상태로 변경
-    //                 voteButton.disabled = true; // 버튼 비활성화
-    //             }
-    //         });
-    
-    //         // 투표 수 표시 (votes[participant]가 없으면 기본값 0)
-    //         const voteCountSpan = document.createElement('span');
-    //         voteCountSpan.textContent = `${votes[participant] || 0}표`;
 
-    //         // 참가자 이름
-    //         const nameSpan = document.createElement('span');
-    //         nameSpan.textContent = participant;
-    //         nameSpan.style.marginLeft = '10px';
-    
-    //         // 참가자 로그 표시 (채팅 메시지)
-    //         const logContainer = document.createElement('div');
-    //         logContainer.className = 'participant-log';
-    //         logContainer.innerHTML = logs[participant] ? logs[participant].join('<br>') : '';
-    
-    //         // 요소 추가
-    //         participantElement.appendChild(voteButton);
-    //         participantElement.appendChild(voteCountSpan);
-    //         participantElement.appendChild(nameSpan);
-    //         participantElement.appendChild(logContainer);
-    
-    //         participantsContainer.appendChild(participantElement);
-    //     });
-    // }
-    
-
-
-    // // 참가자 글 입력 영역 렌더링
-    // function renderParticipantInputFields(participants) {
-    //     participantLogsContainer.innerHTML = ''; // 기존 입력 필드 초기화
-    //     participants.forEach(participant => {
-    //         const inputContainer = document.createElement('div');
-    //         inputContainer.classList.add('input-container');
-
-    //         const nameLabel = document.createElement('label');
-    //         nameLabel.textContent = participant;
-
-    //         const textArea = document.createElement('textarea');
-    //         textArea.placeholder = `${participant}의 글을 작성하세요.`;
-    //         textArea.addEventListener('keypress', (event) => {
-    //             if (event.key === 'Enter') {
-    //                 event.preventDefault();
-    //                 const logMessage = textArea.value.trim();
-    //                 if (logMessage) {
-    //                     // WebSocket으로 참가자 글 업데이트 요청 전송
-    //                     socket.send(JSON.stringify({
-    //                         action: 'update_log',
-    //                         participant: participant,
-    //                         log: logMessage
-    //                     }));
-
-    //                     // 로컬 데이터 갱신
-    //                     if (!participantLogs[participant]) {
-    //                         participantLogs[participant] = logMessage;
-    //                     } else {
-    //                         participantLogs[participant] += `\n${logMessage}`;
-    //                     }
-
-    //                     // UI 갱신
-    //                     renderParticipants(participants, participantLogs);
-
-    //                     // 입력 필드 초기화
-    //                     textArea.value = '';
-    //                 }
-    //             }
-    //         });
-
-    //         inputContainer.appendChild(nameLabel);
-    //         inputContainer.appendChild(textArea);
-    //         participantLogsContainer.appendChild(inputContainer);
-    //     });
-    // }
-
-    // // 참가자 글 상태 업데이트
-    // function updateParticipantLogs(participant, logMessage) {
-    //     if (!participantLogs[participant]) {
-    //         participantLogs[participant] = [];
-    //     }
-    //     participantLogs[participant].push(logMessage); // 기존 글에 새 글 추가
-    // }
 
     // 이벤트 핸들러
     sendButton.addEventListener('click', sendMessage);

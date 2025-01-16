@@ -269,26 +269,8 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 print(f"[ERROR] Exception during vote handling: {e}")
                 await self.close(code=1011)
 
-            
-        elif action == "update_log":
-            log_message = data.get("log", "")
-            participant = data.get("participant", "")
-            print(f"[DEBUG] Received log update from {participant}: {log_message}")
-
-            # WebSocket 그룹에 참가자 글 업데이트 브로드캐스트
-            await self.channel_layer.group_send(
-                self.room_group_name,
-                {
-                    "type": "log_update",
-                    "participant": participant,
-                    "log": log_message,
-                }
-            )
-            print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
-            
         elif action == "distribute_topic":
-            subtopic_liar = data.get("subtopic_liar", "")
-            subtopic_others = data.get("subtopic_others", "")
+            selected_subtopic = data.get("selected_subtopic", "")
             liar = data.get("liar", "")
 
             # 방장 여부 확인
@@ -303,8 +285,12 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }))
                 return
 
-            if not subtopic_liar or not subtopic_others or not liar:
-                print("[ERROR] Missing subtopics or liar in distribute_topic action")
+            if not selected_subtopic or not liar:
+                print("[ERROR] Missing selected subtopic or liar in distribute_topic action")
+                await self.send(text_data=json.dumps({
+                    "type": "error",
+                    "message": "제시어 또는 Liar가 올바르지 않습니다."
+                }))
                 return
 
             # Redis 캐시에서 참가자 목록 가져오기
@@ -318,10 +304,9 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 }))
                 return
 
-            print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
+            print(f"[DEBUG] Distributing selected subtopic: {selected_subtopic} to participants.")
 
             for participant in participants:
-                subtopic = subtopic_liar if participant == liar else subtopic_others
                 is_liar = (participant == liar)
 
                 await self.channel_layer.group_send(
@@ -329,10 +314,75 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     {
                         "type": "send_subtopic",
                         "participant": participant,
-                        "subtopic": subtopic,
+                        "subtopic": selected_subtopic,
                         "is_liar": is_liar
                     }
                 )
+
+            
+        # elif action == "update_log":
+        #     log_message = data.get("log", "")
+        #     participant = data.get("participant", "")
+        #     print(f"[DEBUG] Received log update from {participant}: {log_message}")
+
+        #     # WebSocket 그룹에 참가자 글 업데이트 브로드캐스트
+        #     await self.channel_layer.group_send(
+        #         self.room_group_name,
+        #         {
+        #             "type": "log_update",
+        #             "participant": participant,
+        #             "log": log_message,
+        #         }
+        #     )
+        #     print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
+            
+        # elif action == "distribute_topic":
+        #     subtopic_liar = data.get("subtopic_liar", "")
+        #     subtopic_others = data.get("subtopic_others", "")
+        #     liar = data.get("liar", "")
+
+        #     # 방장 여부 확인
+        #     room = await sync_to_async(Room.objects.get)(room_number=self.room_id)
+        #     owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
+
+        #     if owner_nickname != nickname:
+        #         print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
+        #         await self.send(text_data=json.dumps({
+        #             "type": "error",
+        #             "message": "제시어 배포는 방장만 가능합니다."
+        #         }))
+        #         return
+
+        #     if not subtopic_liar or not subtopic_others or not liar:
+        #         print("[ERROR] Missing subtopics or liar in distribute_topic action")
+        #         return
+
+        #     # Redis 캐시에서 참가자 목록 가져오기
+        #     participants = await sync_to_async(cache.get)(f"room_{self.room_id}_participants", [])
+
+        #     if not participants:
+        #         print("[ERROR] No participants found.")
+        #         await self.send(text_data=json.dumps({
+        #             "type": "error",
+        #             "message": "참가자가 없습니다."
+        #         }))
+        #         return
+
+        #     print(f"[DEBUG] Distributing topics: Liar - {liar}, Subtopic for Liar - {subtopic_liar}, Subtopic for Others - {subtopic_others}")
+
+        #     for participant in participants:
+        #         subtopic = subtopic_liar if participant == liar else subtopic_others
+        #         is_liar = (participant == liar)
+
+        #         await self.channel_layer.group_send(
+        #             self.room_group_name,
+        #             {
+        #                 "type": "send_subtopic",
+        #                 "participant": participant,
+        #                 "subtopic": subtopic,
+        #                 "is_liar": is_liar
+        #             }
+        #         )
 
 
 
@@ -427,40 +477,6 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             "voteCount": vote_count,
         }))
         print(f"[DEBUG] Sent vote update: {participant} - {vote_count}표")
-
-
-    # def add_to_room(self, room_id=None, nickname=None):
-    #     Room = apps.get_model('liargame', 'Room')
-    #     CustomUser = apps.get_model('liargame', 'CustomUser')
-
-    #     if room_id is None:
-    #         room_id = self.generate_room_id()
-
-    #     room, _ = Room.objects.get_or_create(room_number=room_id)
-    #     user = CustomUser.objects.get(nickname=nickname)
-
-    #     if not room.players.filter(pk=user.pk).exists():
-    #         room.players.add(user)
-
-    #     participants = list(room.players.values_list('nickname', flat=True))
-    #     print(f"[DEBUG] add_to_room: Room ID {room_id}, Participants: {participants}")
-    #     return participants
-
-    # def remove_from_room(self, room_id, nickname):
-    #     Room = apps.get_model("liargame", "Room")
-    #     try:
-    #         room = Room.objects.get(room_number=room_id)
-    #     except Room.DoesNotExist:
-    #         print(f"[DEBUG] Room {room_id} not found.")
-    #         return []
-
-    #     CustomUser = apps.get_model("liargame", "CustomUser")
-    #     user = CustomUser.objects.get(nickname=nickname)
-    #     room.players.remove(user)
-
-    #     participants = [player.nickname for player in room.players.all()]
-    #     print(f"[DEBUG] remove_from_room: Room ID {room_id}, Participants: {participants}")
-    #     return participants
 
     def generate_room_id(self):
         Room = apps.get_model('liargame', 'Room')

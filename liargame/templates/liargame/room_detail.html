@@ -27,39 +27,28 @@
         </ul>
     </nav>
 
-        <!-- Timer Bar -->
+    <!-- 타이머 영역 -->
     <div class="bar-container" id="timer-bar">
         <span id="timer">00:00</span>
-        <span id="alert-message">게임 준비가 완료되면 시작버튼을 눌러주세요. 타이머 없이 게임을 진행 할 수도 있습니다.</span>
+        <span id="alert-message">게임 준비가 완료되면 시작버튼을 눌러주세요.</span>
     </div>
 
-    <!-- Timer Controls -->
+    <!-- 타이머 컨트롤 -->
     <div id="timer-controls">
         <button id="start-timer-button">타이머 시작</button>
         <button id="stop-timer-button" disabled>게임 중단</button>
-        <button id="reset-timer-button">재시작</button>    
-        <button id="distribute-topic-button">제시어 배포</button>
-        <script src="/static/liargame/scripts/liargame_script.js"></script>
+        <button id="reset-timer-button" disabled>재시작</button>
+        <button id="distribute-topic-button" disabled>제시어 배포</button>
+        <!-- 제시어 배포 -->
+        <select id="topic-select">
+            <option value="">주제를 선택하세요</option>
+        </select>
+        <button id="select-topic-button">주제선택</button>
+        
     </div>
 
-    <!-- 제시어와 역할 표시 영역 -->
+    <!-- 제시어와 역할 표시 -->
     <div id="role-info" style="margin-top: 20px; font-weight: bold;"></div>
-
-    <!-- 방장의 Topic 선택 모달 -->
-    <div id="topic-modal" class="modal">
-        <div class="modal-content">
-            <h2>제시어 배포</h2>
-            <label for="topic-select">Topic을 선택하세요:</label>
-            <select id="topic-select"></select>
-            <button id="fetch-subtopics-button">서브토픽 가져오기</button>
-            <div id="subtopic-container" style="display: none;">
-                <label for="subtopic-select">서브토픽을 선택하세요:</label>
-                <select id="subtopic-select"></select>
-            </div>
-            <button id="distribute-subtopic-button" style="display: none;">제시어 배포</button>
-            <button id="close-topic-modal">닫기</button>
-        </div>
-    </div>
 
     <!-- 참가자 제시어 모달 -->
     <div id="participant-modal" class="modal">
@@ -69,36 +58,35 @@
         </div>
     </div>
 
+    <!-- 참가자 글 및 투표 -->
     <div class="game-container">
-        <!-- 1사분면: 참가자 글 + 투표 -->
         <div class="participant-logs-panel">
             <h3>참가자 글 및 투표</h3>
             <div id="participant-logs-container"></div>
         </div>
-    
-    <!-- 2사분면: 참가자 목록 -->
-    <div class="participants-panel">
-        <h3>참가자 목록</h3>
-        <div id="participants-container"></div>
-    </div>
 
-    
-    <!-- 3사분면 + 4사분면: 실시간 채팅 -->
-    <div class="interaction-panel">
-        <h3>실시간 채팅</h3>
-        <div class="chat-box" id="chat-log"></div>
-        <div class="chat-input">
-            <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
-            <button id="chat-message-submit">전송</button>
+        <!-- 참가자 목록 -->
+        <div class="participants-panel">
+            <h3>참가자 목록</h3>
+            <div id="participants-container"></div>
+        </div>
+
+        <!-- 실시간 채팅 -->
+        <div class="interaction-panel">
+            <h3>실시간 채팅</h3>
+            <div class="chat-box" id="chat-log"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
+                <button id="chat-message-submit">전송</button>
+            </div>
         </div>
     </div>
-</div>
 
-    
     <!-- 숨겨진 데이터 -->
     <div id="user-nickname" style="display: none;">{{ user.nickname }}</div>
     <div id="room-id" style="display: none;">{{ room.room_number|default:"" }}</div>
     <div id="room-owner" style="display: none;">{{ room.owner.nickname }}</div>
-    <!-- <script src="{% static 'liargame/scripts/liargame_script.js' %}"></script> -->
+
+    <script src="{% static 'liargame/scripts/liargame_script.js' %}"></script>
 </body>
 </html>
