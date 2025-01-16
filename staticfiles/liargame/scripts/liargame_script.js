@@ -35,44 +35,51 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 제시어 배포 버튼 동작 설정
         if (!isHost) {
-            distributeButton.disabled = true; // 방장이 아니면 버튼 비활성화
+            // 방장이 아니면 버튼 비활성화 및 경고 메시지 설정
+            distributeButton.disabled = true; 
             distributeButton.addEventListener('click', () => {
                 alert("제시어 배포는 방장만 가능합니다.");
             });
         } else {
-            distributeButton.addEventListener('click', async () => {
+            distributeButton.addEventListener('click', () => {
+                // 방장이 배포 버튼을 클릭하면 모달창 열기
+                topicModal.style.display = 'block';
+            });
+        
+            // 모달 내 확인 버튼 동작 설정
+            confirmTopicButton.addEventListener('click', async () => {
                 const selectedTopicId = topicSelect.value;
-    
+        
                 if (!selectedTopicId) {
                     alert("주제를 선택해주세요.");
                     return;
                 }
-    
+        
                 try {
-                    // 서버에서 랜덤 소주제 2개를 가져오기
+                    // 서버에서 랜덤 소주제 2개 가져오기
                     const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
-    
+        
                     if (!response.ok) {
                         const errorData = await response.json();
                         alert(`Error: ${errorData.error}`);
                         return;
                     }
-    
+        
                     const data = await response.json();
-    
+        
                     if (!participants || participants.length < 2) {
                         alert("참가자가 2명 이상 필요합니다.");
                         return;
                     }
-    
-                    // LIAR 랜덤 선정
+        
+                    // Liar 랜덤 선정
                     const liar = participants[Math.floor(Math.random() * participants.length)];
                     const subtopicForLiar = data.subtopics[0];
                     const subtopicForOthers = data.subtopics[1];
-    
+        
                     console.log(`[DEBUG] Selected Liar: ${liar}`);
                     console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
-    
+        
                     // 서버로 제시어 배포 요청 전송
                     socket.send(
                         JSON.stringify({
@@ -82,13 +89,22 @@ document.addEventListener('DOMContentLoaded', () => {
                             subtopic_others: subtopicForOthers
                         })
                     );
-    
+        
+                    // 모달 닫기
+                    topicModal.style.display = 'none';
+        
                 } catch (error) {
                     console.error('Failed to fetch subtopics:', error);
                     alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
                 }
             });
+        
+            // 모달 닫기 버튼 동작 설정
+            closeTopicModalButton.addEventListener('click', () => {
+                topicModal.style.display = 'none';
+            });
         }
+        
 
     // 상태 데이터 초기화
     const votes = {}; // 투표 상태
