@@ -287,7 +287,6 @@ nav ul li a:hover {
 /*제시어 모달*/
 /* 드롭다운 메뉴 스타일 */
 select {
-    width: 100%;
     padding: 10px;
     font-size: 16px;
     border: 1px solid #ccc;

@@ -232,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // "확인" 버튼과 SubTopic 배포
-    confirmTopicButton.addEventListener('click', async () => {
+    selectTopicButton.addEventListener('click', async () => {
         const selectedTopicId = topicSelect.value; // 이제 topic.id가 들어옴
     
         if (!selectedTopicId) {
