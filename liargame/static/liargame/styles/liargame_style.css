@@ -368,14 +368,13 @@ select:focus {
     z-index: 1000;
 }
 
-.modal-content {
-    display: none;
+/* .modal-content {
     background-color: #fff;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
-}
+} */
 
 /* 참가자 아이템 스타일 */
 .participant-item {
