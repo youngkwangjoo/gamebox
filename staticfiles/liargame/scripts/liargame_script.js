@@ -33,7 +33,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    // 제시어 배포 버튼 동작 설정
+    function openTopicModal(liar, subtopicForLiar, subtopicForOthers) {
+        const isLiar = nickname === liar; // 현재 사용자가 Liar인지 확인
+        const modalHeader = isLiar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
+        const modalContent = isLiar 
+            ? `제시어는 <strong>${subtopicForLiar}</strong>입니다.` 
+            : `제시어는 <strong>${subtopicForOthers}</strong>입니다.`;
+    
+        // 모달 내부 내용 업데이트
+        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+    
+        // 모달 표시
+        participantModal.style.display = 'flex';
+    }
+    
+    function closeTopicModal() {
+        participantModal.style.display = 'none';
+    }
+    
+    // ✅ **제시어 배포 버튼 동작 설정**
     if (!isHost) {
         // 방장이 아니면 버튼 비활성화 및 경고 메시지 설정
         distributeButton.disabled = true;
@@ -86,9 +104,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         subtopic_others: subtopicForOthers,
                     })
                 );
+                
+                // ✅ **토픽 모달창 열기**
+                openTopicModal(liar, subtopicForLiar, subtopicForOthers);
     
-                // 성공 메시지 UI 업데이트
-                alert('제시어가 성공적으로 배포되었습니다.');
             } catch (error) {
                 console.error('[ERROR] Failed to fetch subtopics:', error);
                 alert("소주제를 가져오는 데 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
@@ -97,13 +116,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
         // 드롭다운 주제 선택 이벤트 추가
         topicSelect.addEventListener('change', () => {
-            if (topicSelect.value) {
-                distributeButton.disabled = false; // 주제를 선택하면 배포 버튼 활성화
-            } else {
-                distributeButton.disabled = true; // 선택하지 않으면 배포 버튼 비활성화
-            }
+            distributeButton.disabled = !topicSelect.value; // 주제를 선택하면 버튼 활성화
         });
     }
+    
+    // ✅ **모달 닫기 버튼 이벤트 리스너**
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', () => {
+            closeTopicModal();
+        });
+    }
+    
+    // ✅ **ESC 키로 모달 닫기**
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && participantModal.style.display === 'flex') {
+            closeTopicModal();
+        }
+    });
+    
 
         
 
