@@ -48,12 +48,15 @@
     <!-- 방장의 Topic 선택 모달 -->
     <div id="topic-modal" class="modal">
         <div class="modal-content">
-            <h2>제시어 선택</h2>
+            <h2>제시어 배포</h2>
             <label for="topic-select">Topic을 선택하세요:</label>
-            <select id="topic-select">
-
-            </select>
-            <button id="confirm-topic-button">확인</button>
+            <select id="topic-select"></select>
+            <button id="fetch-subtopics-button">서브토픽 가져오기</button>
+            <div id="subtopic-container" style="display: none;">
+                <label for="subtopic-select">서브토픽을 선택하세요:</label>
+                <select id="subtopic-select"></select>
+            </div>
+            <button id="distribute-subtopic-button" style="display: none;">제시어 배포</button>
             <button id="close-topic-modal">닫기</button>
         </div>
     </div>
