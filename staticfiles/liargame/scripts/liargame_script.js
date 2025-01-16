@@ -33,25 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
-    function openTopicModal(liar, subtopicForLiar, subtopicForOthers) {
-        const isLiar = nickname === liar; // 현재 사용자가 Liar인지 확인
-        const modalHeader = isLiar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
-        const modalContent = isLiar 
-            ? `제시어는 <strong>${subtopicForLiar}</strong>입니다.` 
-            : `제시어는 <strong>${subtopicForOthers}</strong>입니다.`;
-    
-        // 모달 내부 내용 업데이트
-        participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
-    
-        // 모달 표시
-        participantModal.style.display = 'flex';
-    }
-    
-    function closeTopicModal() {
-        participantModal.style.display = 'none';
-    }
-    
-    // ✅ **제시어 배포 버튼 동작 설정**
+    // 제시어 배포 버튼 동작 설정
     if (!isHost) {
         // 방장이 아니면 버튼 비활성화 및 경고 메시지 설정
         distributeButton.disabled = true;
@@ -59,42 +41,39 @@ document.addEventListener('DOMContentLoaded', () => {
             alert("제시어 배포는 방장만 가능합니다.");
         });
     } else {
-        // 방장인 경우 버튼 활성화 및 이벤트 설정
-        distributeButton.disabled = false;
         distributeButton.addEventListener('click', async () => {
-            // 선택한 주제 ID 가져오기
             const selectedTopicId = topicSelect.value;
-    
+
             if (!selectedTopicId) {
-                alert("주제를 선택해주세요."); // 주제가 선택되지 않은 경우 경고
+                alert("주제를 선택해주세요.");
                 return;
             }
-    
+
             try {
-                // 서버에서 랜덤 소주제 가져오기
+                // 서버에서 선택된 주제와 관련된 소주제를 가져오기
                 const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
                 
                 if (!response.ok) {
                     const errorData = await response.json();
-                    alert(`Error: ${errorData.error || "소주제를 가져오는 데 실패했습니다."}`);
+                    alert(`Error: ${errorData.error}`);
                     return;
                 }
-    
+
                 const data = await response.json();
-    
+
                 if (!participants || participants.length < 2) {
-                    alert("참가자가 2명 이상 필요합니다."); // 참가자 부족 시 경고
+                    alert("참가자가 2명 이상 필요합니다.");
                     return;
                 }
-    
+
                 // Liar 랜덤 선정
                 const liar = participants[Math.floor(Math.random() * participants.length)];
                 const subtopicForLiar = data.subtopics[0];
                 const subtopicForOthers = data.subtopics[1];
-    
+
                 console.log(`[DEBUG] Selected Liar: ${liar}`);
                 console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
-    
+
                 // 서버로 제시어 배포 요청 전송
                 socket.send(
                     JSON.stringify({
@@ -104,36 +83,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         subtopic_others: subtopicForOthers,
                     })
                 );
-                
-                // ✅ **토픽 모달창 열기**
-                openTopicModal(liar, subtopicForLiar, subtopicForOthers);
-    
+
+                alert('제시어가 성공적으로 배포되었습니다.');
+
             } catch (error) {
-                console.error('[ERROR] Failed to fetch subtopics:', error);
-                alert("소주제를 가져오는 데 실패했습니다. 네트워크 상태를 확인하고 다시 시도해주세요.");
+                console.error('Failed to fetch subtopics:', error);
+                alert("소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
             }
         });
-    
+
         // 드롭다운 주제 선택 이벤트 추가
         topicSelect.addEventListener('change', () => {
-            distributeButton.disabled = !topicSelect.value; // 주제를 선택하면 버튼 활성화
+            if (topicSelect.value) {
+                distributeButton.disabled = false; // 주제를 선택하면 배포 버튼 활성화
+            } else {
+                distributeButton.disabled = true; // 선택하지 않으면 배포 버튼 비활성화
+            }
         });
     }
-    
-    // ✅ **모달 닫기 버튼 이벤트 리스너**
-    if (closeModalButton) {
-        closeModalButton.addEventListener('click', () => {
-            closeTopicModal();
-        });
-    }
-    
-    // ✅ **ESC 키로 모달 닫기**
-    window.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && participantModal.style.display === 'flex') {
-            closeTopicModal();
-        }
-    });
-    
 
         
 
