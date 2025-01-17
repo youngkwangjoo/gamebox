@@ -116,11 +116,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-
-    
-
-        
-
     // 상태 데이터 초기화
     const votes = {}; // 투표 상태
     let participants = [];
@@ -164,12 +159,25 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
     
                     
-                case 'send_subtopic':  // subtopic 타입에 대한 처리 추가
+                case 'send_subtopic':  // 🔥 이 메시지를 받으면 모달을 띄우는 코드
                     const { subtopic, is_liar } = data;
-                    const modalHeader = is_liar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
-                    const modalContent = `제시어는 <strong>${subtopic}</strong>입니다.`;
+                    
+                    console.log(`[DEBUG] 받은 제시어: ${subtopic}, Liar 여부: ${is_liar}`);
+    
+                    const modalHeader = is_liar ? "당신은 Liar입니다! 🤫" : "당신은 Liar가 아닙니다. 😊";
+                    const modalContent = subtopic 
+                        ? `🔑 당신의 제시어는 <strong>${subtopic}</strong>입니다.`
+                        : "⚠️ 아직 제시어가 배포되지 않았습니다.";
+    
                     participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
-                    participantModal.style.display = 'flex';
+    
+                    // ✅ 모달을 띄우기 전에 제시어가 있는지 확인
+                    if (subtopic) {
+                        participantModal.style.display = 'flex';
+                        console.log("📢 WebSocket 메시지 수신 → 모달 표시됨: display = 'flex'");
+                    } else {
+                        console.warn("⚠️ 제시어가 없으므로 모달을 띄우지 않음.");
+                    }
                     break;
     
                 case 'subtopic':  // 기존 처리
