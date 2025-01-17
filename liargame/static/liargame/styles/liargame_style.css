@@ -50,7 +50,7 @@ nav ul li a:hover {
 .bar-container {
     display: flex; /* 플렉스 박스 */
     align-items: center; /* 수직 정렬 */
-    justify-content: space-between; /* 양쪽 정렬 */
+    justify-content: center; /* 기본적으로 가운데 정렬 */
     background-color: #f8f9fa; /* 밝은 배경색 */
     border: 2px solid #dee2e6; /* 경계선 */
     padding: 15px 20px; /* 충분한 내부 여백 */
@@ -64,16 +64,21 @@ nav ul li a:hover {
     box-sizing: border-box; /* 패딩 포함 크기 계산 */
 }
 
+/* 부모 요소에 flex-grow 적용하여 타이머를 오른쪽으로 정렬 */
+.bar-container .timer-container {
+    margin-left: auto; /* 자동 마진으로 오른쪽 정렬 */
+}
+
 #timer {
-    font-size: 24px; /* 글씨 크기 */
-    font-weight: bold; /* 글씨 두껍게 */
-    color: #343a40; /* 어두운 색상 */
-    line-height: 1.2; /* 줄 높이 */
+    font-size: 18px; /* 타이머 크기 */
+    font-weight: bold; /* 굵게 */
+    color: #333; /* 진한 회색 */
+    margin-left: auto; /* 오른쪽 정렬 */
 }
 
 #alert-message {
     font-size: 16px; /* 알림 메시지 크기 */
-    font-weight: normal; /* 보통 굵기 */
+    font-weight: big; /* 보통 굵기 */
     color: #6c757d; /* 회색 */
     margin-left: 15px; /* 타이머와 간격 */
     line-height: 1.2; /* 줄 높이 */
@@ -355,7 +360,6 @@ select:focus {
     }
 }
 
-
 .modal {
     display: none;  /* 기본적으로 숨김 */
     position: fixed;
@@ -364,7 +368,6 @@ select:focus {
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
-    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
