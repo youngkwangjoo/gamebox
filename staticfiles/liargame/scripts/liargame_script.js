@@ -36,6 +36,124 @@ document.addEventListener('DOMContentLoaded', () => {
         console.log("🔒 페이지 로드됨 → 모달 숨김: display = 'none'");
     }
 
+    // 참가자 목록 렌더링
+    function renderParticipants(participants, logs, votes) {
+        participantsContainer.innerHTML = ''; // 기존 목록 초기화
+
+        participants.forEach(participant => {
+            const participantElement = document.createElement('div');
+            participantElement.className = 'participant-item';
+
+            // 참가자 이름 표시
+            const nameSpan = document.createElement('span');
+            nameSpan.textContent = participant;
+            participantElement.appendChild(nameSpan);
+
+            if (participant === nickname) {
+                // 본인인 경우 input 박스를 표시
+                const inputBox = document.createElement('input');
+                inputBox.type = 'text';
+                inputBox.placeholder = '본인 단어에 대한 설명을 적어주세요';
+                inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
+                inputBox.addEventListener('change', () => {
+                    const logMessage = inputBox.value.trim();
+                    if (logMessage) {
+                        socket.send(JSON.stringify({
+                            action: 'update_log',
+                            participant: participant,
+                            log: logMessage
+                        }));
+                    }
+                });
+                participantElement.appendChild(inputBox);
+            } else {
+                // 다른 참가자인 경우 투표 버튼을 표시
+                const voteButton = document.createElement('button');
+                voteButton.textContent = '투표';
+                voteButton.addEventListener('click', () => {
+                    if (!hasVoted) {
+                        console.log('[DEBUG] Sending vote for participant:', participant);
+                        socket.send(JSON.stringify({
+                            action: 'vote',
+                            participant: participant
+                        }));
+
+                        alert(`${participant}에게 투표했습니다.`);
+                        hasVoted = true;
+                        voteButton.disabled = true;
+                    }
+                });
+                participantElement.appendChild(voteButton);
+            }
+
+            // 투표 수 표시
+            const voteCountSpan = document.createElement('span');
+            voteCountSpan.textContent = ` ${votes[participant] || 0}표`;
+            voteCountSpan.style.marginLeft = '10px';
+            participantElement.appendChild(voteCountSpan);
+
+            participantsContainer.appendChild(participantElement);
+        });
+
+        // 참가자 글 및 투표 패널 갱신
+        renderParticipantLogs(logs);
+    }
+
+    
+    // 타이머 초기화
+    let timerDuration = 5 * 60; // 5분 (300초)
+    let timerInterval; // 타이머 Interval ID
+    let isPaused = false; // 타이머 일시 중단 상태
+    let isRunning = false; // ✅ 타이머가 실행 중인지 추적
+
+    // 타이머 포맷팅 함수
+    function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    }
+
+    // 타이머 시작 함수
+    function startTimer() {
+        if (isRunning) return; // ✅ 타이머가 이미 실행 중이면 중복 실행 방지
+    
+        isRunning = true;
+        isPaused = false;
+        alertMessage.textContent = "🕹️ 게임 진행 중...";
+        timerElement.textContent = formatTime(timerDuration);
+    
+        timerInterval = setInterval(updateTimer, 1000);
+        toggleButtons(true); // 버튼 상태 갱신
+
+    // ✅ 타이머 중단 함수
+    function stopTimer() {
+        if (!isRunning) return; // ✅ 실행 중이 아닐 경우 방지
+
+        clearInterval(timerInterval);
+        isPaused = true;
+        isRunning = false;
+        alertMessage.textContent = "⏸️ 타이머가 중단되었습니다.";
+        toggleButtons(false);
+    }
+
+    // ✅ 타이머 초기화 함수 (재시작 포함)
+    function resetTimer() {
+        clearInterval(timerInterval);
+        timerDuration = 5 * 60; // 5분으로 초기화
+        timerElement.textContent = formatTime(timerDuration);
+        alertMessage.textContent = "🔄 타이머가 초기화되었습니다.";
+        isRunning = false;
+        isPaused = false;
+        toggleButtons(false);
+    }
+
+    // ✅ 버튼 상태 토글 함수
+    function toggleButtons(running) {
+        startTimerButton.disabled = running;
+        stopTimerButton.disabled = !running;
+        resetTimerButton.disabled = !running;
+    }
+
     // 방장 여부 확인
     if (!isHost) {
         distributeButton.disabled = true; // 방장이 아니라면 버튼 비활성화
@@ -266,60 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
         
-    
-    // 타이머 초기화
-    let timerDuration = 5 * 60; // 5분 (300초)
-    let timerInterval; // 타이머 Interval ID
-    let isPaused = false; // 타이머 일시 중단 상태
-    let isRunning = false; // ✅ 타이머가 실행 중인지 추적
 
-    // 타이머 포맷팅 함수
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    // 타이머 시작 함수
-    function startTimer() {
-        if (isRunning) return; // ✅ 타이머가 이미 실행 중이면 중복 실행 방지
-    
-        isRunning = true;
-        isPaused = false;
-        alertMessage.textContent = "🕹️ 게임 진행 중...";
-        timerElement.textContent = formatTime(timerDuration);
-    
-        timerInterval = setInterval(updateTimer, 1000);
-        toggleButtons(true); // 버튼 상태 갱신
-
-    // ✅ 타이머 중단 함수
-    function stopTimer() {
-        if (!isRunning) return; // ✅ 실행 중이 아닐 경우 방지
-
-        clearInterval(timerInterval);
-        isPaused = true;
-        isRunning = false;
-        alertMessage.textContent = "⏸️ 타이머가 중단되었습니다.";
-        toggleButtons(false);
-    }
-
-    // ✅ 타이머 초기화 함수 (재시작 포함)
-    function resetTimer() {
-        clearInterval(timerInterval);
-        timerDuration = 5 * 60; // 5분으로 초기화
-        timerElement.textContent = formatTime(timerDuration);
-        alertMessage.textContent = "🔄 타이머가 초기화되었습니다.";
-        isRunning = false;
-        isPaused = false;
-        toggleButtons(false);
-    }
-
-    // ✅ 버튼 상태 토글 함수
-    function toggleButtons(running) {
-        startTimerButton.disabled = running;
-        stopTimerButton.disabled = !running;
-        resetTimerButton.disabled = !running;
-    }
 
     // 타이머 버튼 이벤트
     startTimerButton.addEventListener('click', startTimer);
@@ -387,68 +452,7 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('[ERROR] WebSocket 오류:', error);
     };
 
-    // 참가자 목록 렌더링
-    function renderParticipants(participants, logs, votes) {
-        participantsContainer.innerHTML = ''; // 기존 목록 초기화
 
-        participants.forEach(participant => {
-            const participantElement = document.createElement('div');
-            participantElement.className = 'participant-item';
-
-            // 참가자 이름 표시
-            const nameSpan = document.createElement('span');
-            nameSpan.textContent = participant;
-            participantElement.appendChild(nameSpan);
-
-            if (participant === nickname) {
-                // 본인인 경우 input 박스를 표시
-                const inputBox = document.createElement('input');
-                inputBox.type = 'text';
-                inputBox.placeholder = '본인 단어에 대한 설명을 적어주세요';
-                inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
-                inputBox.addEventListener('change', () => {
-                    const logMessage = inputBox.value.trim();
-                    if (logMessage) {
-                        socket.send(JSON.stringify({
-                            action: 'update_log',
-                            participant: participant,
-                            log: logMessage
-                        }));
-                    }
-                });
-                participantElement.appendChild(inputBox);
-            } else {
-                // 다른 참가자인 경우 투표 버튼을 표시
-                const voteButton = document.createElement('button');
-                voteButton.textContent = '투표';
-                voteButton.addEventListener('click', () => {
-                    if (!hasVoted) {
-                        console.log('[DEBUG] Sending vote for participant:', participant);
-                        socket.send(JSON.stringify({
-                            action: 'vote',
-                            participant: participant
-                        }));
-
-                        alert(`${participant}에게 투표했습니다.`);
-                        hasVoted = true;
-                        voteButton.disabled = true;
-                    }
-                });
-                participantElement.appendChild(voteButton);
-            }
-
-            // 투표 수 표시
-            const voteCountSpan = document.createElement('span');
-            voteCountSpan.textContent = ` ${votes[participant] || 0}표`;
-            voteCountSpan.style.marginLeft = '10px';
-            participantElement.appendChild(voteCountSpan);
-
-            participantsContainer.appendChild(participantElement);
-        });
-
-        // 참가자 글 및 투표 패널 갱신
-        renderParticipantLogs(logs);
-    }
 
     
     function renderParticipantLogs(logs) {
@@ -530,7 +534,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 메시지 변경 함수
     function updateMessage(duration) {
         if (duration <= 300 && duration > 290) {
-            alertMessage.textContent = "게임이 시작되었습니다. 제시어를 기억해주세요.";
+            alertMessage.textContent = "게임이 시작되었습니다.";
         } else if (duration <= 290 && duration > 240) {
             alertMessage.textContent = "플레이어는 한 명씩 제시어를 설명해주세요.";
         } else if (duration <= 240 && duration > 210) {
