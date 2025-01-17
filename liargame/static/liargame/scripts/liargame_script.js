@@ -222,14 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
             participantModal.style.display = 'none';
         });
     }
-
-    // modal
-    // 모달 닫기 버튼 이벤트 리스너
-    if (closeModalButton) {
-        closeModalButton.addEventListener('click', () => {
-            participantModal.style.display = 'none';
-        });
-    }
     
     // ESC 키로 모달 닫기
     window.addEventListener('keydown', (event) => {
@@ -237,13 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
             participantModal.style.display = 'none';
         }
     });
-    // 제시어 선택 모달 닫기 버튼 클릭 이벤트
-    if (closeTopicModalButton) {
-        closeTopicModalButton.addEventListener('click', () => {
-            topicModal.style.display = 'none'; // 모달 닫기
-        });
-    }
-
 
     // 타이머 포맷팅 함수
     function formatTime(seconds) {

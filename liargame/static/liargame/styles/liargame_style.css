@@ -357,22 +357,28 @@ select:focus {
 
 
 .modal {
+    display: none;  /* 기본적으로 숨김 */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* 반투명 배경 */
+    display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
 .modal-content {
-    display: none;
-    background-color: #fff;
+    background-color: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+    width: 80%;
+    max-width: 400px;
     text-align: center;
+    animation: fadeIn 0.3s ease-in-out; /* 애니메이션 효과 */
 }
 
 /* 참가자 아이템 스타일 */

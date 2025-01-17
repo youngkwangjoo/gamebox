@@ -15,6 +15,7 @@ python, django. poetry, websocket, html, javascript, css, dbsqlite3, home NAS
 5. 방장의 개념을 적용해 퇴장시 방 삭제 기능
 8. html, css, javascript를 적용해서 장고템플릿을 사용한 백엔드 배포 웹페이지
 9. nginx 와 colletstatic을 사용한 정적배포
+10.  성능향상을 위해 기존 데이터베이스에 저장한 정보를 가져오는 방식 대신 redis캐시에서 정보를 가져오는 방식으로 변경
 
 페이지 사진
 ![스크린샷 2024-12-02 오전 2 59 51](https://github.com/user-attachments/assets/52bbfe58-ed1d-44a7-98e0-ed76d4d705a5)
