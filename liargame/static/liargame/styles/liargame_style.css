@@ -7,6 +7,7 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    margin-bottom: 20px;
 }
 
 /* 네비게이션 바 */
@@ -73,15 +74,17 @@ nav ul li a:hover {
     font-size: 18px; /* 타이머 크기 */
     font-weight: bold; /* 굵게 */
     color: #333; /* 진한 회색 */
-    margin-left: auto; /* 오른쪽 정렬 */
+    margin-right: auto; /* 왼쪽 정렬 */
+    margin-top: 10px;
 }
 
 #alert-message {
-    font-size: 16px; /* 알림 메시지 크기 */
+    font-size: 20px; /* 알림 메시지 크기 */
     font-weight: big; /* 보통 굵기 */
-    color: #6c757d; /* 회색 */
+    color: #17191a; /* 회색 */
     margin-left: 15px; /* 타이머와 간격 */
     line-height: 1.2; /* 줄 높이 */
+    margin-top: 10px;
 }
 
 #start-timer-button {
@@ -132,6 +135,64 @@ nav ul li a:hover {
     background-color: #6c757d;
     cursor: not-allowed;
 }
+
+/* ✅ "주제 선택 (topic-select)"과 "투표 초기화 버튼"을 나란히 정렬 */
+.topic-container {
+    display: flex;        /* 플렉스 정렬 */
+    align-items: center;  /* 수직 중앙 정렬 */
+    gap: 10px;            /* 버튼과 선택창 사이 여백 */
+    justify-content: center; /* 중앙 정렬 */
+    flex-wrap: wrap;       /* 작은 화면에서는 자동 줄바꿈 */
+}
+
+/* ✅ 드롭다운 (주제 선택창) 스타일 */
+#topic-select {
+    flex-grow: 1; /* 드롭다운이 남은 공간을 차지하도록 설정 */
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    cursor: pointer;
+    appearance: none; /* 기본 드롭다운 스타일 제거 */
+}
+
+/* ✅ 투표 초기화 버튼 */
+#reset-vote-button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #007bff; /* 타이머 버튼과 동일 */
+    color: white;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* 버튼 크기를 유지하도록 설정 */
+}
+
+#reset-vote-button:hover {
+    background-color: #0056b3;
+}
+
+#reset-vote-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* ✅ 반응형 스타일 (작은 화면에서 버튼과 드롭다운 정렬) */
+@media (max-width: 768px) {
+    .topic-container {
+        flex-direction: column; /* 모바일에서는 세로 배치 */
+        align-items: center; /* 중앙 정렬 */
+    }
+
+    #topic-select, #reset-vote-button {
+        width: 100%; /* 전체 너비 사용 */
+        text-align: center; /* 텍스트 중앙 정렬 */
+    }
+}
+
+
 
 /* 게임 컨테이너: 4분면 배치 */
 .game-container {

@@ -4,7 +4,7 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>게임 페이지</title>
+    <title>liar liar</title>
     <link rel="stylesheet" href="{% static 'liargame/styles/liargame_style.css' %}">
 </head>
 <body>
@@ -30,7 +30,7 @@
     <!-- 타이머 영역 -->
     <div class="bar-container" id="timer-bar">
         <span id="timer">00:00</span>
-        <span id="alert-message">주제를 선택하고 제시어 배포를 눌러주세요</span>
+        <span id="alert-message">타이머는 guide를 제공합니다 타이머 없이 게임이 가능합니다.</span>
     </div>
 
     <!-- 타이머 컨트롤 -->
@@ -39,9 +39,11 @@
     <button id="stop-timer-button" disabled>게임 중단</button>
     <button id="reset-timer-button" disabled>재시작</button>
     <button id="distribute-topic-button" disabled>제시어 배포</button>
-    <select id="topic-select">
-        <option value="">주제를 선택하세요</option>
-    </select>
+    <div class="topic-container">
+        <select id="topic-select">
+            <option value="">주제를 선택하세요</option>
+        </select>    <button id="reset-vote-button">투표 초기화</button>
+    </div>
 </div>
 
 

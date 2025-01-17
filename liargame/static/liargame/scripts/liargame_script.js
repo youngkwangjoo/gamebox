@@ -30,6 +30,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomOwnerNickname = document.getElementById('room-owner')?.textContent.trim();
     const isHost = nickname === roomOwnerNickname; // 방장 여부 확인
 
+    const resetVoteButton = document.getElementById('reset-vote-button');
+    if (resetVoteButton) {
+        resetVoteButton.addEventListener('click', resetVotes);
+    } else {
+        console.warn("[WARN] reset-vote-button 버튼을 찾을 수 없습니다.");
+    }
+
+
     // ✅ 페이지 로드 시 모달 강제 숨김
     if (participantModal) {
         participantModal.style.display = 'none';
@@ -203,6 +211,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                     break;
                     
+                    case 'reset_votes': // 🔥 투표 초기화 처리 추가
+                    resetVotes();
+                    break;    
+
                 default:
                     console.warn('[WARN] Unknown message type:', data.type);
             }
@@ -509,6 +521,29 @@ document.addEventListener('DOMContentLoaded', () => {
     
             participantLogsContainer.appendChild(logElement);
         });
+    }
+    
+
+    function resetVotes() {
+        console.log('[DEBUG] Resetting all votes...');
+    
+        if (!participants || participants.length === 0) {
+            console.warn("[WARN] 참가자가 없습니다. 투표 초기화가 불가능합니다.");
+            return;
+        }
+    
+        // 모든 참가자의 투표 수 초기화
+        Object.keys(votes).forEach(participant => {
+            votes[participant] = 0;
+        });
+    
+        hasVoted = false; // 플레이어가 다시 투표할 수 있도록 초기화
+        renderParticipants(participants, participantLogs, votes); // 화면 업데이트
+    
+        // 서버에도 투표 초기화 요청 전송
+        socket.send(JSON.stringify({ action: 'reset_votes' }));
+    
+        alert('🗳️ 모든 투표가 초기화되었습니다.');
     }
     
     
