@@ -112,6 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+        // ✅ ESC 또는 Enter 키로 모달 닫기
+        window.addEventListener('keydown', (event) => {
+            if ((event.key === 'Escape' || event.key === 'Enter') && participantModal.style.display === 'flex') {
+                console.log(`📢 ${event.key} 키 입력 → 모달 닫기`);
+                participantModal.style.display = 'none';
+            }
+        });
+
     // ✅ 닫기 버튼 클릭 시 모달 닫기
     if (closeModalButton) {
         closeModalButton.addEventListener('click', () => {
