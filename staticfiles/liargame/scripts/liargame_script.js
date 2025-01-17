@@ -30,7 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const roomOwnerNickname = document.getElementById('room-owner')?.textContent.trim();
     const isHost = nickname === roomOwnerNickname; // 방장 여부 확인
 
-
+    // ✅ 페이지 로드 시 모달 강제 숨김
+    if (participantModal) {
+        participantModal.style.display = 'none';
+        console.log("🔒 페이지 로드됨 → 모달 숨김: display = 'none'");
+    }
 
     // 방장 여부 확인
     if (!isHost) {
@@ -386,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 // 본인인 경우 input 박스를 표시
                 const inputBox = document.createElement('input');
                 inputBox.type = 'text';
-                inputBox.placeholder = '글을 입력하세요...';
+                inputBox.placeholder = '본인 단어에 대한 설명을 적어주세요';
                 inputBox.value = logs[participant] || ''; // 기존 로그 값 표시
                 inputBox.addEventListener('change', () => {
                     const logMessage = inputBox.value.trim();
