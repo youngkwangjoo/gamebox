@@ -32,88 +32,90 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
 
+    // 방장 여부 확인
+    if (!isHost) {
+        distributeButton.disabled = true; // 방장이 아니라면 버튼 비활성화
+        distributeButton.addEventListener('click', () => {
+            alert("❌ 제시어 배포는 방장만 가능합니다.");
+        });
+    } else {
+        distributeButton.addEventListener('click', async () => {
+            const selectedTopicId = topicSelect.value;
 
-        // 방장 여부 확인
-        if (!isHost) {
-            distributeButton.disabled = true; // 방장이 아니라면 버튼 비활성화
-            distributeButton.addEventListener('click', () => {
-                alert("❌ 제시어 배포는 방장만 가능합니다.");
-            });
-        } else {
-            distributeButton.addEventListener('click', async () => {
-                const selectedTopicId = topicSelect.value;
+            if (!selectedTopicId) {
+                alert("⚠️ 주제를 선택해주세요.");
+                return;
+            }
 
-                if (!selectedTopicId) {
-                    alert("⚠️ 주제를 선택해주세요.");
+            try {
+                // ✅ 서버에서 선택된 주제의 소주제를 가져옴
+                const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`❌ 오류 발생: ${errorData.error}`);
                     return;
                 }
 
-                try {
-                    // ✅ 서버에서 선택된 주제의 소주제를 가져옴
-                    const response = await fetch(`/liargame/random-subtopics/?topic_id=${selectedTopicId}`);
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json();
-                        alert(`❌ 오류 발생: ${errorData.error}`);
-                        return;
-                    }
+                const data = await response.json();
 
-                    const data = await response.json();
-
-                    if (!participants || participants.length < 2) {
-                        alert("⚠️ 참가자가 2명 이상 필요합니다.");
-                        return;
-                    }
-
-                    // ✅ Liar 랜덤 선정
-                    const liar = participants[Math.floor(Math.random() * participants.length)];
-                    const subtopicForLiar = data.subtopics[0];
-                    const subtopicForOthers = data.subtopics[1];
-
-                    console.log(`[DEBUG] 선택된 Liar: ${liar}`);
-                    console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
-
-                    // ✅ 서버로 제시어 배포 요청 전송
-                    socket.send(
-                        JSON.stringify({
-                            action: 'distribute_topic',
-                            liar: liar,
-                            subtopic_liar: subtopicForLiar,
-                            subtopic_others: subtopicForOthers,
-                        })
-                    );
-
-                    // ✅ 모달에 역할 및 제시어 표시
-                    const modalHeader = (nickname === liar) ? "당신은 Liar입니다! 🤫" : "당신은 Liar가 아닙니다. 😊";
-                    const modalContent = (nickname === liar) 
-                        ? `🔒 당신의 제시어는 <strong>${subtopicForLiar}</strong>입니다.`
-                        : `🔑 당신의 제시어는 <strong>${subtopicForOthers}</strong>입니다.`;
-
-                    participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
-
-                    // ✅ 모달 열기
-                    participantModal.style.display = 'flex';
-
-                    alert('✅ 제시어가 성공적으로 배포되었습니다.');
-
-                } catch (error) {
-                    console.error('❌ 소주제 가져오기 실패:', error);
-                    alert("❌ 소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+                if (!participants || participants.length < 2) {
+                    alert("⚠️ 참가자가 2명 이상 필요합니다.");
+                    return;
                 }
-            });
 
-            // ✅ 드롭다운 주제 선택 시 배포 버튼 활성화
-            topicSelect.addEventListener('change', () => {
-                distributeButton.disabled = !topicSelect.value; // 주제가 선택되면 활성화
-            });
-        }
+                // ✅ Liar 랜덤 선정
+                const liar = participants[Math.floor(Math.random() * participants.length)];
+                const subtopicForLiar = data.subtopics[0];
+                const subtopicForOthers = data.subtopics[1];
 
-        // ✅ 닫기 버튼 클릭 시 모달 닫기
-        if (closeModalButton) {
-            closeModalButton.addEventListener('click', () => {
-                participantModal.style.display = 'none';
-            });
-        }
+                console.log(`[DEBUG] 선택된 Liar: ${liar}`);
+                console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
+
+                // ✅ 서버로 제시어 배포 요청 전송
+                socket.send(
+                    JSON.stringify({
+                        action: 'distribute_topic',
+                        liar: liar,
+                        subtopic_liar: subtopicForLiar,
+                        subtopic_others: subtopicForOthers,
+                    })
+                );
+
+                // ✅ 모달에 역할 및 제시어 표시
+                const modalHeader = (nickname === liar) ? "당신은 Liar입니다! 🤫" : "당신은 Liar가 아닙니다. 😊";
+                const modalContent = (nickname === liar) 
+                    ? `🔒 당신의 제시어는 <strong>${subtopicForLiar}</strong>입니다.`
+                    : `🔑 당신의 제시어는 <strong>${subtopicForOthers}</strong>입니다.`;
+
+                participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+
+                // ✅ 모달 열기 (여기에 추가!)
+                participantModal.style.display = 'flex';
+                console.log("📢 모달이 표시됨: display = 'flex'");
+
+                alert('✅ 제시어가 성공적으로 배포되었습니다.');
+
+            } catch (error) {
+                console.error('❌ 소주제 가져오기 실패:', error);
+                alert("❌ 소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
+            }
+        });
+
+        // ✅ 드롭다운 주제 선택 시 배포 버튼 활성화
+        topicSelect.addEventListener('change', () => {
+            distributeButton.disabled = !topicSelect.value; // 주제가 선택되면 활성화
+        });
+    }
+
+    // ✅ 닫기 버튼 클릭 시 모달 닫기
+    if (closeModalButton) {
+        closeModalButton.addEventListener('click', () => {
+            participantModal.style.display = 'none';
+            console.log("📢 모달이 닫힘: display = 'none'");
+        });
+    }
+
 
     
 
