@@ -112,6 +112,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+        // ✅ ESC 또는 Enter 키로 모달 닫기
+        window.addEventListener('keydown', (event) => {
+            if ((event.key === 'Escape' || event.key === 'Enter') && participantModal.style.display === 'flex') {
+                console.log(`📢 ${event.key} 키 입력 → 모달 닫기`);
+                participantModal.style.display = 'none';
+            }
+        });
+
     // ✅ 닫기 버튼 클릭 시 모달 닫기
     if (closeModalButton) {
         closeModalButton.addEventListener('click', () => {
@@ -202,13 +210,7 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Failed to parse WebSocket message:', event.data, error);
         }
     };
-    
-    
-    
-    // 타이머 초기화
-    let timerDuration = 5 * 60; // 5분 (300초)
-    let timerInterval; // 타이머 Interval ID
-    let isPaused = false; // 타이머 일시 중단 상태
+
 
     // WebSocket 이벤트
     socket.onopen = () => {
@@ -263,6 +265,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
 
+        
+    
+    // 타이머 초기화
+    let timerDuration = 5 * 60; // 5분 (300초)
+    let timerInterval; // 타이머 Interval ID
+    let isPaused = false; // 타이머 일시 중단 상태
+    let isRunning = false; // ✅ 타이머가 실행 중인지 추적
+
     // 타이머 포맷팅 함수
     function formatTime(seconds) {
         const minutes = Math.floor(seconds / 60);
@@ -272,39 +282,43 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 타이머 시작 함수
     function startTimer() {
-        if (!isPaused) {
-            timerDuration = 5 * 60;
-        }
-        alertMessage.textContent = "게임 준비 중...";
-        timerElement.textContent = formatTime(timerDuration);
-        timerInterval = setInterval(updateTimer, 1000);
+        if (isRunning) return; // ✅ 타이머가 이미 실행 중이면 중복 실행 방지
+    
+        isRunning = true;
         isPaused = false;
-        toggleButtons(true);
-    }
+        alertMessage.textContent = "🕹️ 게임 진행 중...";
+        timerElement.textContent = formatTime(timerDuration);
+    
+        timerInterval = setInterval(updateTimer, 1000);
+        toggleButtons(true); // 버튼 상태 갱신
 
-    // 타이머 중단 함수
+    // ✅ 타이머 중단 함수
     function stopTimer() {
+        if (!isRunning) return; // ✅ 실행 중이 아닐 경우 방지
+
         clearInterval(timerInterval);
         isPaused = true;
-        alertMessage.textContent = "타이머가 중단되었습니다.";
+        isRunning = false;
+        alertMessage.textContent = "⏸️ 타이머가 중단되었습니다.";
         toggleButtons(false);
     }
 
-    // 타이머 초기화 함수
+    // ✅ 타이머 초기화 함수 (재시작 포함)
     function resetTimer() {
         clearInterval(timerInterval);
-        timerDuration = 5 * 60;
+        timerDuration = 5 * 60; // 5분으로 초기화
         timerElement.textContent = formatTime(timerDuration);
-        alertMessage.textContent = "타이머가 초기화되었습니다.";
+        alertMessage.textContent = "🔄 타이머가 초기화되었습니다.";
+        isRunning = false;
         isPaused = false;
         toggleButtons(false);
     }
 
-    // 버튼 상태 토글 함수
-    function toggleButtons(isRunning) {
-        startTimerButton.disabled = isRunning;
-        stopTimerButton.disabled = !isRunning;
-        restartTimerButton.disabled = !isPaused;
+    // ✅ 버튼 상태 토글 함수
+    function toggleButtons(running) {
+        startTimerButton.disabled = running;
+        stopTimerButton.disabled = !running;
+        resetTimerButton.disabled = !running;
     }
 
     // 타이머 버튼 이벤트
@@ -560,7 +574,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isPaused = false; // 타이머 실행 상태로 설정
         toggleButtons(true);
     }
-
+    }
     // 타이머 중단 함수
     function stopTimer() {
         clearInterval(timerInterval); // 타이머 중단
