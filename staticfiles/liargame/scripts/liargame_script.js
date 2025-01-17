@@ -214,9 +214,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     
     // 타이머 초기화
-    let timerDuration = 5 * 60; // 5분 (300초)
+    let timerDuration = 3 * 60; // 3분 (180초)
     let timerInterval = null; // 타이머 Interval ID
     let isRunning = false; // 타이머 실행 여부
+    let isPaused = false; // 타이머 일시 정지 여부
+    
 
     // WebSocket 이벤트
     socket.onopen = () => {
@@ -281,11 +283,29 @@ document.addEventListener('DOMContentLoaded', () => {
     // ✅ 타이머 시작 함수
     function startTimer() {
         if (isRunning) return; // 중복 실행 방지
-
+    
+        if (isPaused) {
+            resumeTimer(); // ⏸ 중단된 상태라면 재개
+            return;
+        }
+    
         isRunning = true;
+        isPaused = false; // 새로 시작하므로 초기화
         alertMessage.textContent = "🕹️ 게임 진행 중...";
         timerElement.textContent = formatTime(timerDuration);
+    
+        timerInterval = setInterval(updateTimer, 1000);
+        toggleButtons(true);
+    }
 
+    // ✅ 타이머 재개 함수 (일시 정지된 상태에서 다시 시작)
+    function resumeTimer() {
+        if (isRunning) return; // 이미 실행 중이면 무시
+        if (!isPaused) return; // 일시 정지가 아니라면 무시
+
+        isRunning = true;
+        isPaused = false; // 다시 실행 중이므로 초기화
+        alertMessage.textContent = "🔄 게임이 다시 시작되었습니다!";
         timerInterval = setInterval(updateTimer, 1000);
         toggleButtons(true);
     }
@@ -293,20 +313,22 @@ document.addEventListener('DOMContentLoaded', () => {
     // ✅ 타이머 중단 함수
     function stopTimer() {
         if (!isRunning) return; // 실행 중이 아닐 경우 무시
-
+    
         clearInterval(timerInterval);
         isRunning = false;
-        alertMessage.textContent = "⏸️ 타이머가 중단되었습니다.";
-        toggleButtons(false);
+        isPaused = true; // 중단 상태로 설정
+        alertMessage.textContent = "⏸️ 게임이 일시 정지되었습니다. 다시 시작할 수 있습니다.";
+        toggleButtons(false, true); // '재시작' 버튼 활성화
     }
 
     // ✅ 타이머 초기화 함수 (리셋 후 중단)
     function resetTimer() {
         clearInterval(timerInterval);
-        timerDuration = 5 * 60; // 5분으로 초기화
+        timerDuration = 3 * 60; // 3분으로 초기화
         timerElement.textContent = formatTime(timerDuration);
         alertMessage.textContent = "🔄 타이머가 초기화되었습니다.";
         isRunning = false;
+        isPaused = false; // 완전히 초기화
         toggleButtons(false);
     }
 
@@ -330,10 +352,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // 버튼 상태 토글 함수
-    function toggleButtons(running) {
+    function toggleButtons(running, paused = false) {
         startTimerButton.disabled = running;
         stopTimerButton.disabled = !running;
-        resetTimerButton.disabled = false; // 리셋 버튼은 항상 활성화
+        resetTimerButton.disabled = false; // Reset 버튼은 항상 활성화
+        if (paused) startTimerButton.disabled = false; // 중단 상태에서는 '재시작' 가능
     }
 
     // 타이머 버튼 이벤트
@@ -544,20 +567,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 메시지 변경 함수
     function updateMessage(duration) {
-        if (duration <= 300 && duration > 290) {
-            alertMessage.textContent = "게임이 시작되었습니다. 제시어를 기억해주세요.";
-        } else if (duration <= 290 && duration > 240) {
-            alertMessage.textContent = "플레이어는 한 명씩 제시어를 설명해주세요.";
-        } else if (duration <= 240 && duration > 210) {
-            alertMessage.textContent = "liar를 추리해주세요.";
-        } else if (duration <= 210 && duration > 180) {
-            alertMessage.textContent = "투표하거나 round2로 넘어갑니다.";
-        } else if (duration <= 180 && duration > 120) {
-            alertMessage.textContent = "플레이어는 제시어를 설명해주세요.";
-        } else if (duration <= 120 && duration > 0) {
-            alertMessage.textContent = "liar를 추리하고 투표를 진행해주세요.";
-        } else if (duration <= 0) {
-            alertMessage.textContent = "타이머 종료!";
+        if (duration > 170) {
+            alertMessage.textContent = "🔍 본인의 역할과 제시어를 확인해주세요!";
+        } else if (duration > 200 - (participants.length * 10)) { 
+            alertMessage.textContent = `🎤 ${participants.length - Math.floor((duration - 160) / 10)}번 플레이어는 제시어를 설명해주세요.`;
+        } else if (duration > 80) {
+            alertMessage.textContent = "🕵️‍♂️ Liar를 추리해주세요!";
+        } else if (duration > 10) {
+            alertMessage.textContent = "🗳️ 투표를 진행해주세요!";
+        } else {
+            alertMessage.textContent = "⏳ 시간이 종료되었습니다!";
         }
     }
 
@@ -610,20 +629,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 타이머 초기화 함수
     function resetTimer() {
-        clearInterval(timerInterval); // 기존 타이머 중단
-        timerDuration = 5 * 60; // 초기값 설정
-        timerElement.textContent = formatTime(timerDuration); // 타이머 초기화
-        alertMessage.textContent = "타이머가 초기화 및 재시작되었습니다.";
-        timerInterval = setInterval(updateTimer, 1000); // 새 타이머 시작
-        isRunning = false; // 실행 상태로 변경
-        toggleButtons(true); // 버튼 상태 갱신
+        clearInterval(timerInterval);
+        timerDuration = 180; // 3분으로 초기화
+        timerElement.textContent = formatTime(timerDuration);
+        alertMessage.textContent = "🔄 타이머가 초기화되었습니다.";
+        isRunning = false;
+        isPaused = false;
+        toggleButtons(false);
     }
 
     // 버튼 상태 토글
-    function toggleButtons(isRunning) {
-        startTimerButton.disabled = isRunning;
-        stopTimerButton.disabled = !isRunning;
-        resetTimerButton.disabled = !isRunning; // Reset 버튼 활성화 상태 유지
+    function toggleButtons(running, paused = false) {
+        startTimerButton.disabled = running;
+        stopTimerButton.disabled = !running;
+        resetTimerButton.disabled = false; 
+        if (paused) startTimerButton.disabled = false;
     }
 
     // 버튼 클릭 이벤트
