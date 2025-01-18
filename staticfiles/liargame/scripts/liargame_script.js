@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const topicModal = document.getElementById('topic-modal');
     const closeTopicModalButton = document.getElementById('close-topic-modal'); // 제시어 선택 모달 닫기 버튼
     const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
-    
+    const reviewTopicButton = document.getElementById('review-topic-button'); // "다시보기" 버튼 참조
     // 참가자와 방장 정보 초기화
     const roomOwnerNickname = document.getElementById('room-owner')?.textContent.trim();
     const isHost = nickname === roomOwnerNickname; // 방장 여부 확인
@@ -175,7 +175,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 case 'distribute_topic':  
                     console.log('[DEBUG] Topic distribution received');
-                    handleTopicDistribution(data);  // 제시어 배포 처리
+
+                    // 🔥  Liar 및 제시어 정보 저장
+                    lastLiar = data.liar;
+                    lastSubtopicLiar = data.subtopic_liar;
+                    lastSubtopicOthers = data.subtopic_others;
+
+                    handleTopicDistribution(data); // 기존 기능 실행
                     break;
     
                     
@@ -581,6 +587,34 @@ document.addEventListener('DOMContentLoaded', () => {
             inputContainer.appendChild(textArea);
             participantLogsContainer.appendChild(inputContainer);
         });
+    }
+
+    let lastLiar = null; 
+    let lastSubtopicLiar = null; 
+    let lastSubtopicOthers = null; 
+
+    //모달 다시보기
+    if (reviewTopicButton) {
+        reviewTopicButton.addEventListener('click', () => {
+            if (!lastLiar || !lastSubtopicLiar || !lastSubtopicOthers) {
+                alert('⚠️ 아직 제시어가 배포되지 않았습니다.');
+                return;
+            }
+
+            const isLiar = (nickname === lastLiar);
+            const modalHeader = isLiar ? "당신은 Liar입니다! 🤫" : "당신은 Liar가 아닙니다. 😊";
+            const modalContent = isLiar 
+                ? `🔒 당신의 제시어는 <strong>${lastSubtopicLiar}</strong>입니다.`
+                : `🔑 당신의 제시어는 <strong>${lastSubtopicOthers}</strong>입니다.`;
+
+            // ✅ 모달 내용 업데이트
+            participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
+            participantModal.style.display = 'flex'; // 모달 표시
+
+            console.log(`[DEBUG] 다시보기 버튼 클릭 → 모달 표시됨`);
+        });
+    } else {
+        console.warn("[WARN] review-topic-button 버튼을 찾을 수 없습니다.");
     }
 
 

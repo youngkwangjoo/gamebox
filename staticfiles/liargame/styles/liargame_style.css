@@ -179,6 +179,29 @@ nav ul li a:hover {
     cursor: not-allowed;
 }
 
+/* ✅ "다시보기" 버튼 스타일 */
+#review-topic-button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #28a745; /* 초록색 (다른 기능과 구분) */
+    color: white;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* 버튼 크기를 유지하도록 설정 */
+}
+
+#review-topic-button:hover {
+    background-color: #218838; /* 버튼 호버 효과 */
+}
+
+#review-topic-button:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+
 /* ✅ 반응형 스타일 (작은 화면에서 버튼과 드롭다운 정렬) */
 @media (max-width: 768px) {
     .topic-container {
