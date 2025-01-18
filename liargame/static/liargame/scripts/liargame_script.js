@@ -27,6 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
     const reviewTopicButton = document.getElementById('review-topic-button'); // "다시보기" 버튼 참조
     const leaveRoomButton = document.getElementById('leave-room-button');
+    const gameRoomUrl = document.getElementById('game-room-url')?.textContent.trim(); // 대기실 URL 가져오기
     // 참가자와 방장 정보 초기화
     const roomOwnerNickname = document.getElementById('room-owner')?.textContent.trim();
     const isHost = nickname === roomOwnerNickname; // 방장 여부 확인
@@ -597,12 +598,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
-    if (leaveRoomButton) {
+    if (leaveRoomButton && gameRoomUrl) {
         leaveRoomButton.addEventListener('click', () => {
             if (confirm("⚠️ 정말 방을 나가시겠습니까? 게임이 종료될 수 있습니다.")) {
-                window.location.href = "/game/"; // 대기실 페이지로 이동
+                window.location.href = gameRoomUrl; // 대기실 페이지로 이동
             }
         });
+    } else {
+        console.warn("[WARN] 방나가기 버튼 또는 대기실 URL을 찾을 수 없습니다.");
     }
 
 
