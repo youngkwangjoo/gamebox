@@ -201,6 +201,24 @@ nav ul li a:hover {
     cursor: not-allowed;
 }
 
+/* ✅ 방나가기 버튼 스타일 */
+#leave-room-button {
+    padding: 10px 15px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #dc3545; /* 빨간색 */
+    color: white;
+    transition: background-color 0.3s ease;
+    flex-shrink: 0; /* 버튼 크기 유지 */
+}
+
+#leave-room-button:hover {
+    background-color: #c82333; /* 호버 시 더 어두운 빨간색 */
+}
+
+
 
 /* ✅ 반응형 스타일 (작은 화면에서 버튼과 드롭다운 정렬) */
 @media (max-width: 768px) {

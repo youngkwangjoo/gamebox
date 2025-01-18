@@ -26,6 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const closeTopicModalButton = document.getElementById('close-topic-modal'); // 제시어 선택 모달 닫기 버튼
     const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
     const reviewTopicButton = document.getElementById('review-topic-button'); // "다시보기" 버튼 참조
+    const leaveRoomButton = document.getElementById('leave-room-button');
     // 참가자와 방장 정보 초기화
     const roomOwnerNickname = document.getElementById('room-owner')?.textContent.trim();
     const isHost = nickname === roomOwnerNickname; // 방장 여부 확인
@@ -596,6 +597,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    if (leaveRoomButton) {
+        leaveRoomButton.addEventListener('click', () => {
+            if (confirm("⚠️ 정말 방을 나가시겠습니까? 게임이 종료될 수 있습니다.")) {
+                window.location.href = "/game/"; // 대기실 페이지로 이동
+            }
+        });
+    }
 
 
     // 이벤트 핸들러
