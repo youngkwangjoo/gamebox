@@ -176,11 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 case 'distribute_topic':  
                     console.log('[DEBUG] Topic distribution received');
 
-                    // 🔥  Liar 및 제시어 정보 저장
-                    lastLiar = data.liar;
-                    lastSubtopicLiar = data.subtopic_liar;
-                    lastSubtopicOthers = data.subtopic_others;
-
                     handleTopicDistribution(data); // 기존 기능 실행
                     break;
     
@@ -254,6 +249,10 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('[ERROR] Missing or invalid topic distribution data:', data);
             return;
         }
+    
+        lastLiar = liar;
+        lastSubtopicLiar = subtopic_liar;
+        lastSubtopicOthers = subtopic_others;
     
         const isLiar = (nickname === liar); // 본인이 Liar인지 확인
     
@@ -589,33 +588,14 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    let lastLiar = null; 
-    let lastSubtopicLiar = null; 
-    let lastSubtopicOthers = null; 
-
     //모달 다시보기
     if (reviewTopicButton) {
         reviewTopicButton.addEventListener('click', () => {
-            if (!lastLiar || !lastSubtopicLiar || !lastSubtopicOthers) {
-                alert('⚠️ 아직 제시어가 배포되지 않았습니다.');
-                return;
-            }
-
-            const isLiar = (nickname === lastLiar);
-            const modalHeader = isLiar ? "당신은 Liar입니다! 🤫" : "당신은 Liar가 아닙니다. 😊";
-            const modalContent = isLiar 
-                ? `🔒 당신의 제시어는 <strong>${lastSubtopicLiar}</strong>입니다.`
-                : `🔑 당신의 제시어는 <strong>${lastSubtopicOthers}</strong>입니다.`;
-
-            // ✅ 모달 내용 업데이트
-            participantModalMessage.innerHTML = `<h2>${modalHeader}</h2><p>${modalContent}</p>`;
-            participantModal.style.display = 'flex'; // 모달 표시
-
-            console.log(`[DEBUG] 다시보기 버튼 클릭 → 모달 표시됨`);
+            console.log("[DEBUG] 다시보기 버튼 클릭 → 모달 다시 표시");
+            participantModal.style.display = 'flex'; // 모달을 다시 보여줌
         });
-    } else {
-        console.warn("[WARN] review-topic-button 버튼을 찾을 수 없습니다.");
     }
+    
 
 
     // 이벤트 핸들러
