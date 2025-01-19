@@ -15,6 +15,7 @@ python, django, poetry, websocket, html, javascript, css, dbsqlite3, home NAS
 8. 프론트엔드 코드를 따로 하지않고 장고 템플릿을 활용해 js, css, html을 같이 배포함
 9. nginx 와 colletstatic을 사용한 정적배포
 10. Redis를 활용해서 실시간 게임의 속도 향상을 위해 캐시메모리 위주의 데이터 저장을 활용
+11. docker를 활용하지 않은 직접 배포 방식
 
 # 사이트 주소
 https://schdule.site:1443/liargame/
