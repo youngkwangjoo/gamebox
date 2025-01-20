@@ -341,6 +341,21 @@ document.addEventListener('DOMContentLoaded', () => {
     timerDuration--;
 }
 
+    // 메시지 변경 함수
+    function updateMessage(duration) {
+        if (duration > 170) {
+            alertMessage.textContent = "🔍 본인의 역할과 제시어를 확인해주세요!";
+        } else if (duration > 200 - (participants.length * 10)) { 
+            alertMessage.textContent = `🎤 ${participants.length - Math.floor((duration - 160) / 10)}번 플레이어는 제시어를 설명해주세요.`;
+        } else if (duration > 80) {
+            alertMessage.textContent = "🕵️‍♂️ Liar를 추리해주세요!";
+        } else if (duration > 10) {
+            alertMessage.textContent = "🗳️ 투표를 진행해주세요!";
+        } else {
+            alertMessage.textContent = "⏳ 시간이 종료되었습니다!";
+        }
+    }
+
 
     // 버튼 상태 토글 함수
     function toggleButtons(running, paused = false) {
