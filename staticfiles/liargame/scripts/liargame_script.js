@@ -346,7 +346,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (duration > 170) {
             alertMessage.textContent = "🔍 본인의 역할과 제시어를 확인해주세요!";
         } else if (duration > 160 - (participants.length * 10)) { 
-            alertMessage.textContent = `🎤 ${participants.length - Math.floor((duration - 160) / 10)}번 플레이어는 제시어를 설명해주세요.`;
+            const playerNumber = (participants.length - Math.floor((duration - 160) / 10)) + 1; // 1번부터 시작하도록 변경
+            alertMessage.textContent = `🎤 ${playerNumber}번 플레이어는 제시어를 설명해주세요.`;
         } else if (duration > 80) {
             alertMessage.textContent = "🕵️‍♂️ Liar를 추리해주세요!";
         } else if (duration > 10) {
