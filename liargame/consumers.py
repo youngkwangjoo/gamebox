@@ -61,11 +61,11 @@ class LobbyConsumer(AsyncWebsocketConsumer):
         action = data.get("action")
         nickname = self.scope['user'].nickname  # 사용자 닉네임 가져오기
 
-        print(f"[DEBUG] Received action: {action}, data: {data}")
+        #print(f"[DEBUG] Received action: {action}, data: {data}")
 
         if action == "delete_room":
             room_id = data.get("room_id")
-            print(f"[DEBUG] Delete request for room_id: {room_id}")
+            #print(f"[DEBUG] Delete request for room_id: {room_id}")
             if room_id:
                 Room = apps.get_model('liargame', 'Room')
                 try:
@@ -211,7 +211,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         action = data.get("action")
         nickname = self.scope['user'].nickname
-        print(f"[DEBUG] Received action: {action} from user {nickname} with data: {data}")
+        #print(f"[DEBUG] Received action: {action} from user {nickname} with data: {data}")
 
         if action == "join":
             participants = await self.add_to_room(self.room_id, nickname)
@@ -224,7 +224,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         elif action == "message":
             message = data.get("message", "")
             nickname = self.scope['user'].nickname
-            print(f"[DEBUG] Received message action from {nickname}: {message}")
+            #print(f"[DEBUG] Received message action from {nickname}: {message}")
             
             # WebSocket 그룹에 메시지 브로드캐스트
             await self.channel_layer.group_send(
@@ -235,7 +235,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     "nickname": nickname  # nickname을 사용하여 전송
                 }
             )
-            print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
+            #print(f"[DEBUG] Successfully broadcasted message to group {self.room_group_name}")
 
             
         elif action == "vote":
@@ -244,7 +244,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 if not participant:
                     raise ValueError("Participant is missing in vote action")
 
-                print(f"[DEBUG] Received vote for participant: {participant}")
+                #print(f"[DEBUG] Received vote for participant: {participant}")
 
                 # 투표 수 갱신
                 votes = cache.get(f"room_{self.room_id}_votes", {})
@@ -254,7 +254,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                 votes[participant] = votes.get(participant, 0) + 1
                 cache.set(f"room_{self.room_id}_votes", votes)
 
-                print(f"[DEBUG] Updated votes: {votes}")
+                #print(f"[DEBUG] Updated votes: {votes}")
 
                 # 모든 클라이언트에 투표 수 업데이트 브로드캐스트
                 await self.channel_layer.group_send(
@@ -272,7 +272,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
         elif action == "update_log":
             log_message = data.get("log", "")
             participant = data.get("participant", "")
-            print(f"[DEBUG] Received log update from {participant}: {log_message}")
+            #print(f"[DEBUG] Received log update from {participant}: {log_message}")
 
             # WebSocket 그룹에 참가자 글 업데이트 브로드캐스트
             await self.channel_layer.group_send(
@@ -283,7 +283,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
                     "log": log_message,
                 }
             )
-            print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
+            #print(f"[DEBUG] Successfully broadcasted log update to group {self.room_group_name}")
             
         elif action == "distribute_topic":
             subtopic_liar = data.get("subtopic_liar", "").strip()
@@ -295,7 +295,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
             owner_nickname = await sync_to_async(lambda: room.owner.nickname)()
 
             if owner_nickname != nickname:
-                print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
+                #print(f"[ERROR] {nickname} is not the owner and cannot distribute topics.")
                 await self.send(text_data=json.dumps({
                     "type": "error",
                     "message": "제시어 배포는 방장만 가능합니다."
@@ -313,7 +313,7 @@ class GameRoomConsumer(AsyncWebsocketConsumer):
 
             # 참가자 목록 가져오기 (캐시에서 None이 반환될 경우 빈 리스트로 초기화)
             participants = await sync_to_async(cache.get)(f"room_{self.room_id}_participants") or []
-            print(f"[DEBUG] Participants in room {self.room_id}: {participants}")
+            #print(f"[DEBUG] Participants in room {self.room_id}: {participants}")
 
             if not participants:
                 print("[ERROR] No participants found.")

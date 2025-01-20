@@ -22,8 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const participantModal = document.getElementById('participant-modal');
     const participantModalMessage = document.getElementById('participant-modal-message');
     const distributeButton = document.getElementById('distribute-topic-button');
-    const topicModal = document.getElementById('topic-modal');
-    const closeTopicModalButton = document.getElementById('close-topic-modal'); // 제시어 선택 모달 닫기 버튼
     const closeModalButton = document.getElementById('close-modal-button'); // 닫기 버튼 추가
     const reviewTopicButton = document.getElementById('review-topic-button'); // "다시보기" 버튼 참조
     const leaveRoomButton = document.getElementById('leave-room-button');
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // ✅ 페이지 로드 시 모달 강제 숨김
     if (participantModal) {
         participantModal.style.display = 'none';
-        console.log("🔒 페이지 로드됨 → 모달 숨김: display = 'none'");
     }
 
     // 방장 여부 확인
@@ -83,9 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const subtopicForLiar = data.subtopics[0];
                 const subtopicForOthers = data.subtopics[1];
 
-                console.log(`[DEBUG] 선택된 Liar: ${liar}`);
-                console.log(`[DEBUG] Subtopics - Liar: ${subtopicForLiar}, Others: ${subtopicForOthers}`);
-
                 // ✅ 서버로 제시어 배포 요청 전송
                 socket.send(
                     JSON.stringify({
@@ -106,12 +100,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // ✅ 모달 열기 (여기에 추가!)
                 participantModal.style.display = 'flex';
-                console.log("📢 모달이 표시됨: display = 'flex'");
 
                 alert('✅ 제시어가 성공적으로 배포되었습니다.');
 
             } catch (error) {
-                console.error('❌ 소주제 가져오기 실패:', error);
                 alert("❌ 소주제를 가져오는 데 실패했습니다. 다시 시도해주세요.");
             }
         });
@@ -125,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
         // ✅ ESC 또는 Enter 키로 모달 닫기
         window.addEventListener('keydown', (event) => {
             if ((event.key === 'Escape' || event.key === 'Enter') && participantModal.style.display === 'flex') {
-                console.log(`📢 ${event.key} 키 입력 → 모달 닫기`);
                 participantModal.style.display = 'none';
             }
         });
@@ -134,7 +125,6 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeModalButton) {
         closeModalButton.addEventListener('click', () => {
             participantModal.style.display = 'none';
-            console.log("📢 모달이 닫힘: display = 'none'");
         });
     }
 
@@ -149,7 +139,6 @@ document.addEventListener('DOMContentLoaded', () => {
     socket.onmessage = (event) => {
         try {
             const data = JSON.parse(event.data);
-            console.log('[DEBUG] WebSocket message received:', data);
     
             switch (data.type) {
                 case 'message':
@@ -158,9 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
 
                 case 'participants':
-                    console.log('[DEBUG] Participants data received:', data);
                     participants = Array.isArray(data.participants) ? data.participants : [];
-                    console.log('[DEBUG] Parsed participants:', participants);
                     renderParticipants(participants, participantLogs, votes);
                     break;
                     
@@ -176,7 +163,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     break;
 
                 case 'distribute_topic':  
-                    console.log('[DEBUG] Topic distribution received');
 
                     handleTopicDistribution(data); // 기존 기능 실행
                     break;
@@ -184,8 +170,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     
                 case 'send_subtopic':  // 🔥 이 메시지를 받으면 모달을 띄우는 코드
                     const { subtopic, is_liar } = data;
-                    
-                    console.log(`[DEBUG] 받은 제시어: ${subtopic}, Liar 여부: ${is_liar}`);
     
                     const modalHeader = is_liar ? "당신은 Liar입니다! 🤫" : "당신은 Liar가 아닙니다. 😊";
                     const modalContent = subtopic 
@@ -197,7 +181,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     // ✅ 모달을 띄우기 전에 제시어가 있는지 확인
                     if (subtopic) {
                         participantModal.style.display = 'flex';
-                        console.log("📢 WebSocket 메시지 수신 → 모달 표시됨: display = 'flex'");
                     } else {
                         console.warn("⚠️ 제시어가 없으므로 모달을 띄우지 않음.");
                     }
@@ -210,7 +193,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         const modalContent2 = `제시어는 <strong>${subtopic2}</strong>입니다.`;
                         participantModalMessage.innerHTML = `<h2>${modalHeader2}</h2><p>${modalContent2}</p>`;
                         participantModal.style.display = 'flex';
-                        console.log('[DEBUG] Modal displayed'); 
                     }
                     break;
                     
@@ -237,9 +219,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // WebSocket 이벤트
     socket.onopen = () => {
-        console.log('[DEBUG] WebSocket 연결 성공');
         if (nickname) {
-            console.log(`[DEBUG] 사용자 참가: ${nickname}`);
             socket.send(JSON.stringify({ action: 'join', nickname }));
         }
     };
@@ -252,13 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     
-        lastLiar = liar;
-        lastSubtopicLiar = subtopic_liar;
-        lastSubtopicOthers = subtopic_others;
-    
         const isLiar = (nickname === liar); // 본인이 Liar인지 확인
-    
-        console.log(`[DEBUG] Liar: ${liar}, Subtopic for Liar: ${subtopic_liar}, Subtopic for Others: ${subtopic_others}`);
     
         const modalHeader = isLiar ? "당신은 Liar입니다!" : "당신은 Liar가 아닙니다.";
         const modalContent = isLiar 
@@ -270,8 +244,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 모달 열기
         participantModal.style.display = 'flex'; // 모달 표시
-    
-        console.log(`[DEBUG] Role: ${isLiar ? "Liar" : "Participant"}, Subtopic: ${isLiar ? subtopic_liar : subtopic_others}`);
     }
     
     // ✅ 중복 제거된 모달 닫기 함수
@@ -388,7 +360,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function sendMessage() {
         const message = messageInput.value.trim();
-        console.log(`[DEBUG] 메시지 입력 값: "${message}"`); // 디버깅 추가
         if (message) {
             socket.send(JSON.stringify({
                 action: 'message',
@@ -404,7 +375,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 채팅 로그에 메시지 추가
     function addMessageToLog(sender, message, isSelf = false) {
-        console.log(`[DEBUG] addMessageToLog called. Sender: ${sender}, Message: ${message}`);  // 디버깅 추가
         
         const messageContainer = document.createElement('div');
         messageContainer.classList.add('message-container', isSelf ? 'self' : 'other');
@@ -437,7 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     socket.onclose = (event) => {
-        console.log('[DEBUG] WebSocket 연결 종료:', event);
     };
 
     socket.onerror = (error) => {
@@ -480,7 +449,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 voteButton.textContent = '투표';
                 voteButton.addEventListener('click', () => {
                     if (!hasVoted) {
-                        console.log('[DEBUG] Sending vote for participant:', participant);
                         socket.send(JSON.stringify({
                             action: 'vote',
                             participant: participant
@@ -532,7 +500,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
 
     function resetVotes() {
-        console.log('[DEBUG] Resetting all votes...');
     
         if (!participants || participants.length === 0) {
             console.warn("[WARN] 참가자가 없습니다. 투표 초기화가 불가능합니다.");
@@ -593,7 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
     //모달 다시보기
     if (reviewTopicButton) {
         reviewTopicButton.addEventListener('click', () => {
-            console.log("[DEBUG] 다시보기 버튼 클릭 → 모달 다시 표시");
             participantModal.style.display = 'flex'; // 모달을 다시 보여줌
         });
     }
@@ -618,117 +584,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 시간을 포맷팅하는 함수
-    function formatTime(seconds) {
-        const minutes = Math.floor(seconds / 60);
-        const secs = seconds % 60;
-        return `${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-    }
-
-    // 메시지 변경 함수
-    function updateMessage(duration) {
-        if (duration > 170) {
-            alertMessage.textContent = "🔍 본인의 역할과 제시어를 확인해주세요!";
-        } else if (duration > 200 - (participants.length * 10)) { 
-            alertMessage.textContent = `🎤 ${participants.length - Math.floor((duration - 160) / 10)}번 플레이어는 제시어를 설명해주세요.`;
-        } else if (duration > 80) {
-            alertMessage.textContent = "🕵️‍♂️ Liar를 추리해주세요!";
-        } else if (duration > 10) {
-            alertMessage.textContent = "🗳️ 투표를 진행해주세요!";
-        } else {
-            alertMessage.textContent = "⏳ 시간이 종료되었습니다!";
-        }
-    }
-
-
-    // 타이머 업데이트 함수
-    function updateTimer() {
-        if (timerDuration <= 0) {
-            clearInterval(timerInterval);
-            alertMessage.textContent = "타이머 종료!"; // 종료 메시지
-            timerElement.textContent = "00:00"; // 타이머 표시 초기화
-            return;
-        }
-
-        // 메시지 업데이트
-        updateMessage(timerDuration);
-
-        timerElement.textContent = formatTime(timerDuration);
-        timerDuration--;
-    }
-
-    // ✅ 타이머 시작 함수
-    function startTimer() {
-        if (isRunning) return; // 중복 실행 방지
-
-        isRunning = true;
-        alertMessage.textContent = "🕹️ 게임 진행 중...";
-        timerElement.textContent = formatTime(timerDuration);
-
-        timerInterval = setInterval(updateTimer, 1000);
-        toggleButtons(true);
-    }
-
-    // 타이머 중단 함수
-    function stopTimer() {
-        clearInterval(timerInterval); // 타이머 중단
-        isRunning = false; // 중단 상태로 설정
-        alertMessage.textContent = "타이머가 중단되었습니다.";
-        toggleButtons(false);
-    }
-
-    // 타이머 재시작 함수
-    function restartTimer() {
-        if (isPaused) {
-            timerInterval = setInterval(updateTimer, 1000); // 중단된 타이머 재개
-            alertMessage.textContent = "타이머가 재시작되었습니다.";
-            isRunning = false; // 실행 상태로 설정
-            toggleButtons(true);
-        }
-    }
-
-    // 타이머 초기화 함수
-    function resetTimer() {
-        clearInterval(timerInterval);
-        timerDuration = 180; // 3분으로 초기화
-        timerElement.textContent = formatTime(timerDuration);
-        alertMessage.textContent = "🔄 타이머가 초기화되었습니다.";
-        isRunning = false;
-        isPaused = false;
-        toggleButtons(false);
-    }
-
-    // 버튼 상태 토글
-    function toggleButtons(running, paused = false) {
-        startTimerButton.disabled = running;
-        stopTimerButton.disabled = !running;
-        resetTimerButton.disabled = false; 
-        if (paused) startTimerButton.disabled = false;
-    }
-
-    // 버튼 클릭 이벤트
-    startTimerButton.addEventListener('click', startTimer);
-    stopTimerButton.addEventListener('click', stopTimer);
-    resetTimerButton.addEventListener('click', resetTimer);
-
-    // 초기 버튼 상태 설정
-    toggleButtons(false);
-
     // 버튼 클릭 이벤트로 타이머 시작
     startTimerButton.addEventListener('click', () => {
-        timerDuration = 5 * 60; // 타이머를 초기화 (5분)
+        timerDuration = 3 * 60; // 타이머를 초기화 
         startTimer(); // 타이머 시작
     });
 
     // Topic 목록 가져오기
     async function loadTopics() {
-        console.log('Loading topics...'); // 함수 호출 확인
     
         try {
             const response = await fetch('/liargame/topics');
             const topics = await response.json();
-    
-            console.log('Topics loaded:', topics); // API로 반환된 데이터 확인
     
             // select 요소 초기화 (중복 방지)
             topicSelect.innerHTML = '';
@@ -740,7 +607,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 topicSelect.appendChild(option);
             });
     
-            console.log('Topics added to select:', topicSelect.innerHTML); // 추가된 옵션 확인
         } catch (error) {
             console.error('Failed to load topics:', error);
         }
