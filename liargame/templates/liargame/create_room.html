@@ -157,13 +157,10 @@
                 if (data.success) {
                     alert("방이 생성되었습니다: " + roomName + " (게임 타입: " + gameType + ")");
                     
-                    if (gameType === "just_chat") {
-                        window.location.href = "/just_chat/room/" + data.room_id + "/";  // Just Chat으로 이동 (수정됨)
-                    } else {
-                        window.location.href = "/liargame/game/" + data.room_id + "/";  // 기존 게임 이동
-                    }
+                    // 🔥 서버에서 받은 redirect_url로 이동
+                    window.location.href = data.redirect_url;
                 } else {
-                    alert("방 생성에 실패했습니다. 다시 시도해주세요.");
+                    alert(data.message || "방 생성에 실패했습니다. 다시 시도해주세요.");
                 }
             })
             .catch(error => {

@@ -82,6 +82,7 @@ def game(request):
 def create_room(request):
     if request.method == 'POST':
         user = request.user  # 현재 로그인된 사용자
+        game_type = request.POST.get('game_type')
 
         # 이미 소유한 방이 있는지 확인
         existing_room = Room.objects.filter(owner=user).first()
@@ -101,14 +102,20 @@ def create_room(request):
         )
         room.players.add(user)  # 방에 방장 추가
 
+        # 🔥 Just Chat이면 just_chat/room/room_id/ 로 이동
+        if game_type == "just_chat":
+            return JsonResponse({
+                'success': True,
+                'redirect_url': f"/just_chat/room/{room.room_number}/"
+            })
+
+        # 🔥 Liar Game 또는 다른 게임이면 liargame/game/room_id/ 로 이동
         return JsonResponse({
             'success': True,
-            'room_id': room.room_number,
-            'room_name': room_name,
-            'game_type': game_type,
+            'redirect_url': f"/liargame/game/{room.room_number}/"
         })
-    
-    # GET 요청 처리: 방 생성 페이지 렌더링
+
+    # GET 요청: 페이지 렌더링
     return render(request, 'liargame/create_room.html')
 
 
