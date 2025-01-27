@@ -3,12 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Just Chat</title>
-    <link rel="stylesheet" href="{% static 'just_chat/styles.css' %}">
+    <title>Just Chat - 실시간 채팅</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'liargame/styles/just_chat.css' %}">
 </head>
 <body>
-    <h2>Just Chat</h2>
-    <div class="chat-container">
+    <h2>Just Chat - 방 {{ room.room_number }}</h2>
+
+    <div class="chat-container" id="chat-container" 
+         data-room-id="{{ room.room_number }}" 
+         data-nickname="{{ request.user.nickname }}">
         <div class="chat-box" id="chat-log"></div>
         <div class="chat-input">
             <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
@@ -16,6 +20,7 @@
         </div>
     </div>
 
-    <script src="{% static 'just_chat/just_chat.js' %}"></script>
+    <!-- ✅ Just Chat 스크립트 파일 -->
+    <script src="{% static 'liargame/scripts/just_chat.js' %}"></script>
 </body>
 </html>

@@ -76,47 +76,46 @@ def game(request):
         'all_users': all_users,
     })
 
-
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from .models import Room
 
 @login_required
 def create_room(request):
+    """
+    다양한 게임 방을 생성하는 함수
+    """
     if request.method == 'POST':
-        user = request.user  # 현재 로그인된 사용자
+        user = request.user
         game_type = request.POST.get('game_type')
 
-        # 이미 소유한 방이 있는지 확인
-        existing_room = Room.objects.filter(owner=user).first()
-        if existing_room:
+        valid_games = {
+            "liargame": "/liargame/game/",
+            "just_chat": "/liargame/just_chat/room/",
+            "stockgame": "/liargame/stockgame/room/"
+        }
+
+        if game_type not in valid_games:
             return JsonResponse({
                 'success': False,
-                'message': f'이미 소유한 방이 있습니다: {existing_room.game_type} (ID: {existing_room.room_number})'
-            })
+                'message': "올바른 게임 타입을 선택하세요."
+            }, status=400)
 
-        # 새로운 방 생성
         room_name = request.POST.get('room_name', f'{user.nickname}의 방')
-        game_type = request.POST.get('game_type', '기본 게임')
+        room = Room.objects.create(owner=user, game_type=game_type)
+        room.players.add(user)
 
-        room = Room.objects.create(
-            owner=user,
-            game_type=game_type,
-        )
-        room.players.add(user)  # 방에 방장 추가
-
-        # 🔥 Just Chat이면 just_chat/room/room_id/ 로 이동
-        if game_type == "just_chat":
-            return JsonResponse({
-                'success': True,
-                'redirect_url': f"/just_chat/room/{room.room_number}/"
-            })
-
-        # 🔥 Liar Game 또는 다른 게임이면 liargame/game/room_id/ 로 이동
         return JsonResponse({
             'success': True,
-            'redirect_url': f"/liargame/game/{room.room_number}/"
+            'room_id': room.room_number,
+            'room_name': room_name,
+            'game_type': game_type,
+            'redirect_url': valid_games[game_type] + str(room.room_number) + "/"
         })
 
-    # GET 요청: 페이지 렌더링
     return render(request, 'liargame/create_room.html')
+
 
 
 @login_required

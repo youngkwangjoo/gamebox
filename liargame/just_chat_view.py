@@ -1,45 +1,22 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from .models import Room  # ✅ Room 모델 가져오기
 
 @login_required
 def just_chat(request):
     """
-    Just Chat 페이지를 렌더링하는 Django View.
-    로그인한 사용자만 접근할 수 있도록 @login_required 적용.
+    Just Chat 로비 페이지 (전체 Just Chat 방 목록을 표시)
     """
-    return render(request, 'just_chat/just_chat.html')
+    rooms = Room.objects.filter(game_type="just_chat")  # 🔥 Just Chat 방만 가져오기
+    return render(request, 'just_chat/just_chat_lobby.html', {'rooms': rooms})
 
 @login_required
-def get_chat_history(request):
+def just_chat_room(request, room_id):
     """
-    채팅 내역을 불러오는 API View.
+    Just Chat 개별 방 페이지 렌더링
     """
-    chat_history = request.session.get('chat_history', [])
-    return JsonResponse({'chat_history': chat_history})
+    room = get_object_or_404(Room, room_number=room_id)
 
-@login_required
-def save_chat_message(request):
-    """
-    채팅 메시지를 세션에 저장하는 API View.
-    """
-    if request.method == 'POST':
-        message = request.POST.get('message')
-        nickname = request.user.nickname if request.user.is_authenticated else "익명"
-
-        if message:
-            chat_history = request.session.get('chat_history', [])
-            chat_history.append({'nickname': nickname, 'message': message})
-            request.session['chat_history'] = chat_history
-
-            return JsonResponse({'success': True, 'nickname': nickname, 'message': message})
-
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-def clear_chat_history(request):
-    """
-    채팅 내역을 초기화하는 API View.
-    """
-    request.session['chat_history'] = []
-    return JsonResponse({'success': True, 'message': '채팅 기록이 초기화되었습니다.'})
+    return render(request, 'liargame/just_chat.html', {
+        'room': room
+    })

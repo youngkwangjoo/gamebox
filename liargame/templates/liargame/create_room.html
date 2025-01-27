@@ -155,9 +155,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert("방이 생성되었습니다: " + roomName + " (게임 타입: " + gameType + ")");
-                    
-                    // 🔥 서버에서 받은 redirect_url로 이동
+                    alert(`방이 생성되었습니다: ${roomName} (게임 타입: ${gameType})`);
                     window.location.href = data.redirect_url;
                 } else {
                     alert(data.message || "방 생성에 실패했습니다. 다시 시도해주세요.");
@@ -167,6 +165,8 @@
                 alert("에러 발생: " + error);
             });
         });
+
+
     </script>
 </body>
 </html>
