@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from .views import get_topics
 from .views import get_random_subtopics
+from .just_chat_view import just_chat, get_chat_history, save_chat_message, clear_chat_history
 
 urlpatterns = [
     path('', views.home, name='home'),  # 게임 선택 페이지
@@ -19,5 +20,10 @@ urlpatterns = [
     path('topics/', get_topics, name='get_topics'),    
     path('random-subtopics/', get_random_subtopics, name='get_random_subtopics'),    
     path('debug/', views.debug_host),    
+    # just_chat
+    path('just_chat/', just_chat, name='just_chat'),
+    path('just_chat/history/', get_chat_history, name='get_chat_history'),
+    path('just_chat/save/', save_chat_message, name='save_chat_message'),
+    path('just_chat/clear/', clear_chat_history, name='clear_chat_history'),
 ]
     

@@ -102,20 +102,6 @@
             font-size: 1rem;
         }
 
-        /* 방 삭제 버튼 스타일 */
-        #delete-room {
-            margin-top: 20px;
-            background-color: #f44336;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-        }
-
-        #delete-room:hover {
-            background-color: #d32f2f;
-        }
     </style>
 </head>
 <body>
@@ -139,12 +125,12 @@
                 <select id="game-selection" name="game_type">
                     <option value="Liargame">Liargame</option>
                     <option value="stock game">stock game</option>
+                    <option value="just_chat">just_chat</option>
 
                 </select>
             </div>
 
             <button type="submit">방 생성</button>
-            <button type="button" id="delete-room">방 삭제</button> <!-- 삭제 버튼 추가 -->
         </form>
     </div>
 
@@ -169,9 +155,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // 서버에서 받은 room_id로 방 상세 페이지로 이동
                     alert("방이 생성되었습니다: " + roomName + " (게임 타입: " + gameType + ")");
-                    window.location.href = "/liargame/game/" + data.room_id + "/";  // 방 상세 페이지로 리다이렉트
+                    
+                    if (gameType === "just_chat") {
+                        window.location.href = "/just_chat/room/" + data.room_id + "/";  // Just Chat으로 이동 (수정됨)
+                    } else {
+                        window.location.href = "/liargame/game/" + data.room_id + "/";  // 기존 게임 이동
+                    }
                 } else {
                     alert("방 생성에 실패했습니다. 다시 시도해주세요.");
                 }
@@ -179,32 +169,6 @@
             .catch(error => {
                 alert("에러 발생: " + error);
             });
-        });
-
-        // 방 삭제 처리
-        document.getElementById("delete-room").addEventListener("click", function() {
-            const roomId = '방_ID_여기_입력'; // 실제 방 ID로 대체해야 합니다.
-
-            if (confirm('정말 이 방을 삭제하시겠습니까?')) {
-                fetch(`/delete_room/${roomId}/`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert('방이 삭제되었습니다.');
-                        window.location.href = "{% url 'game' %}";
-                    } else {
-                        alert(data.message || '방 삭제에 실패했습니다.');
-                    }
-                })
-                .catch(error => {
-                    alert('에러 발생: ' + error);
-                });
-            }
         });
     </script>
 </body>
