@@ -88,30 +88,42 @@ def create_room(request):
     """
     if request.method == 'POST':
         user = request.user
-        game_type = request.POST.get('game_type')
+        game_type = request.POST.get('game_type', '').lower()  # 🔥 game_type을 소문자로 변환
 
+        # ✅ 게임별 URL 매핑
         valid_games = {
             "liargame": "/liargame/game/",
             "just_chat": "/liargame/just_chat/room/",
             "stockgame": "/liargame/stockgame/room/"
         }
 
+        # ✅ 올바른 게임 타입인지 확인
         if game_type not in valid_games:
             return JsonResponse({
                 'success': False,
                 'message': "올바른 게임 타입을 선택하세요."
             }, status=400)
 
+        # ✅ 사용자가 이미 같은 게임의 방을 소유하고 있는지 확인
+        existing_room = Room.objects.filter(owner=user, game_type=game_type).first()
+        if existing_room:
+            return JsonResponse({
+                'success': False,
+                'message': f'이미 {game_type} 방을 소유하고 있습니다: (ID: {existing_room.room_number})'
+            }, status=400)
+
+        # ✅ 새로운 방 생성
         room_name = request.POST.get('room_name', f'{user.nickname}의 방')
         room = Room.objects.create(owner=user, game_type=game_type)
-        room.players.add(user)
+        room.players.add(user)  # 방장 추가
 
+        # ✅ 방 URL 반환
         return JsonResponse({
             'success': True,
             'room_id': room.room_number,
             'room_name': room_name,
             'game_type': game_type,
-            'redirect_url': valid_games[game_type] + str(room.room_number) + "/"
+            'redirect_url': f"{valid_games[game_type]}{room.room_number}/"  # 🔥 URL 조합 개선
         })
 
     return render(request, 'liargame/create_room.html')
