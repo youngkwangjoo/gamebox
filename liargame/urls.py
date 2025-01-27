@@ -1,26 +1,25 @@
 from django.urls import path
 from . import views
-from .views import get_topics
-from .views import get_random_subtopics
-from .just_chat_view import just_chat_room
+from .just_chat_view import just_chat_room  # Just Chat 뷰 추가
+#from .stockgame_view import stockgame_room  # Stock Game 뷰 추가 (추후 추가)
 
 urlpatterns = [
-    path('', views.home, name='home'),  # 게임 선택 페이지
-    path('signin/', views.signin, name='signin'),  # 닉네임 입력 페이지
-    path('signup/', views.signup, name='signup'),  # 회원가입 페이지
-    path('logout/', views.logout_view, name='logout'),    
-    path('game/', views.game, name='game'),  # 방 목록 페이지
-    path('game/create/', views.create_room, name='create_room'),  # 방 생성 페이지
-    path('game/<int:room_id>/', views.room_detail, name='room_detail'),  # 방 상세 페이지
-    path('enter_room/<int:room_id>/', views.enter_room, name='enter_room'),
-    path('delete_room/<str:room_id>/', views.delete_room, name='delete_room'),
-    path('create/', views.create_room, name='create_room'),  # 방 생성
-    path('<int:room_id>/', views.room_detail, name='room_detail'),  # 방 상세보기
-    path('game/<int:room_id>/', views.game_room, name='game_room'),    
-    path('topics/', get_topics, name='get_topics'),    
-    path('random-subtopics/', get_random_subtopics, name='get_random_subtopics'),    
-    path('debug/', views.debug_host),    
-    # ✅ Just Chat 관련 URL 추가
+    # 🔥 공통 페이지
+    path('', views.home, name='home'),  
+    path('signin/', views.signin, name='signin'),  
+    path('signup/', views.signup, name='signup'),  
+    path('logout/', views.logout_view, name='logout'),  
+    path('game/', views.game, name='game'),  
+
+    # 🔥 Liar Game 관련 URL
+    path('game/create/', views.create_room, name='create_room'),  
+    path('liargame/<int:room_id>/', views.room_detail, name='room_detail'),
+    path('topics/', views.get_topics, name='get_topics'),    
+    path('random-subtopics/', views.get_random_subtopics, name='get_random_subtopics'),    
+
+    # 🔥 Just Chat 관련 URL
     path('just_chat/room/<int:room_id>/', just_chat_room, name='just_chat_room'),
+
+    # 🔥 Stock Game 관련 URL (추후 추가)
+    #path('stockgame/room/<int:room_id>/', stockgame_room, name='stockgame_room'),
 ]
-    

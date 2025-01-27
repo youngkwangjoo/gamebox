@@ -92,11 +92,10 @@ def create_room(request):
 
         # ✅ 게임별 URL 매핑
         valid_games = {
-            "liargame": "/liargame/game/",
+            "liargame": "/liargame/liargame/",  # ✅ 변경된 Liar Game URL
             "just_chat": "/liargame/just_chat/room/",
             "stockgame": "/liargame/stockgame/room/"
         }
-
         # ✅ 올바른 게임 타입인지 확인
         if game_type not in valid_games:
             return JsonResponse({
