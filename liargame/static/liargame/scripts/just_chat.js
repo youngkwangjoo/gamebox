@@ -1,52 +1,40 @@
 document.addEventListener("DOMContentLoaded", function () {
-    // ✅ HTML에서 data 속성을 이용하여 roomId와 nickname 가져오기
-    const chatContainer = document.getElementById("chat-container");
-    const roomId = chatContainer.dataset.roomId;
-    const nickname = chatContainer.dataset.nickname;
-
-    // ✅ WebSocket 프로토콜을 동적으로 설정 (ws:// 또는 wss://)
-    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-    const socket = new WebSocket(`${wsProtocol}${window.location.host}/ws/just_chat/${roomId}/`);
-
-    // ✅ DOM 요소 참조
     const chatLog = document.getElementById("chat-log");
     const messageInput = document.getElementById("chat-message-input");
     const sendButton = document.getElementById("chat-message-submit");
-    const participantsContainer = document.getElementById("participants-container"); // 참가자 목록 표시 영역
 
-    // ✅ WebSocket 연결이 성공하면 참가 요청 전송
-    socket.onopen = function () {
-        socket.send(JSON.stringify({
-            action: "join",
-            nickname: nickname
-        }));
-    };
+    const participantsContainer = document.getElementById("participants-container");
+    const participantLogsContainer = document.getElementById("participant-logs-container");
 
-    // ✅ WebSocket 메시지 수신 이벤트
+    const roomId = document.getElementById("chat-container").dataset.roomId;
+    const nickname = document.getElementById("chat-container").dataset.nickname;
+
+    const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
+    const socket = new WebSocket(`${wsProtocol}${window.location.host}/ws/just_chat/${roomId}/`);
+
     socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
+        try {
+            const data = JSON.parse(event.data);
+            console.log("📩 메시지 수신:", data);
 
-        if (data.type === "message") {
-            appendMessage(data.nickname, data.message);
-        } else if (data.type === "participants") {
-            updateParticipantsList(data.participants);
+            switch (data.type) {
+                case "message":
+                    addMessageToLog(data.nickname, data.message, data.nickname === nickname);
+                    break;
+                case "participants":
+                    renderParticipants(data.participants);
+                    break;
+                case "log_update":
+                    renderParticipantLogs(data.participant, data.log);
+                    break;
+                default:
+                    console.warn("⚠️ 알 수 없는 메시지 유형:", data);
+            }
+        } catch (error) {
+            console.error("❌ WebSocket 메시지 처리 중 오류 발생:", error);
         }
     };
 
-    // ✅ 메시지 전송 이벤트 (버튼 클릭)
-    sendButton.addEventListener("click", function () {
-        sendMessage();
-    });
-
-    // ✅ 메시지 전송 이벤트 (Enter 키)
-    messageInput.addEventListener("keypress", function (event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            sendMessage();
-        }
-    });
-
-    // ✅ 메시지 전송 함수
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
@@ -55,42 +43,56 @@ document.addEventListener("DOMContentLoaded", function () {
                 nickname: nickname,
                 message: message
             }));
-            messageInput.value = ""; // 입력 필드 초기화
+            messageInput.value = "";
         }
     }
 
-    // ✅ 채팅 메시지를 UI에 추가하는 함수
-    function appendMessage(sender, message) {
+    function addMessageToLog(sender, message, isSelf = false) {
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("message-container", isSelf ? "self" : "other");
+
+        if (!isSelf) {
+            const nameElement = document.createElement("div");
+            nameElement.classList.add("sender-name");
+            nameElement.textContent = sender;
+            messageContainer.appendChild(nameElement);
+        }
+
         const messageElement = document.createElement("div");
-        messageElement.classList.add("message-container", sender === nickname ? "self" : "other");
+        messageElement.classList.add("message");
+        messageElement.textContent = message;
 
-        // 보낸 사람 닉네임 (상대방 메시지인 경우에만 표시)
-        if (sender !== nickname) {
-            const senderName = document.createElement("div");
-            senderName.classList.add("sender-name");
-            senderName.textContent = sender;
-            messageElement.appendChild(senderName);
-        }
-
-        // 메시지 내용
-        const messageContent = document.createElement("div");
-        messageContent.classList.add("message");
-        messageContent.textContent = message;
-        messageElement.appendChild(messageContent);
-
-        chatLog.appendChild(messageElement);
-        chatLog.scrollTop = chatLog.scrollHeight; // 최신 메시지로 자동 스크롤
+        messageContainer.appendChild(messageElement);
+        chatLog.appendChild(messageContainer);
+        chatLog.scrollTop = chatLog.scrollHeight;
     }
 
-    // ✅ 참가자 목록을 업데이트하는 함수
-    function updateParticipantsList(participants) {
+    function renderParticipants(participants) {
         participantsContainer.innerHTML = ""; // 기존 목록 초기화
-
         participants.forEach(participant => {
             const participantElement = document.createElement("div");
-            participantElement.classList.add("participant-item");
+            participantElement.className = "participant-item";
             participantElement.textContent = participant;
             participantsContainer.appendChild(participantElement);
         });
     }
+
+    function renderParticipantLogs(participant, logMessage) {
+        const logElement = document.createElement("div");
+        logElement.className = "log-item";
+        logElement.textContent = `${participant}: ${logMessage}`;
+        participantLogsContainer.appendChild(logElement);
+    }
+
+    sendButton.addEventListener("click", sendMessage);
+    messageInput.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            sendMessage();
+        }
+    });
+
+    socket.onerror = function (error) {
+        console.error("❌ WebSocket 오류:", error);
+    };
 });

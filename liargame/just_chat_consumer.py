@@ -2,7 +2,6 @@ import json
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.cache import cache
 from asgiref.sync import sync_to_async
-from .models import Room
 
 class JustChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -11,11 +10,11 @@ class JustChatConsumer(AsyncWebsocketConsumer):
         self.nickname = self.scope['user'].nickname
         self.room_group_name = f"just_chat_{self.room_id}"
 
-        # ✅ WebSocket 그룹 추가 (해당 방의 모든 클라이언트가 같은 그룹을 공유)
+        # ✅ WebSocket 그룹 추가
         await self.channel_layer.group_add(self.room_group_name, self.channel_name)
         await self.accept()
 
-        # ✅ 참가자 추가 (캐시를 이용한 저장)
+        # ✅ 참가자 추가 및 참가자 목록 전송
         participants = await self.add_participant()
         await self.broadcast_participants(participants)
 
@@ -23,7 +22,7 @@ class JustChatConsumer(AsyncWebsocketConsumer):
         """ 웹소켓 연결 해제 """
         await self.channel_layer.group_discard(self.room_group_name, self.channel_name)
 
-        # ✅ 참가자 제거 후 목록 업데이트
+        # ✅ 참가자 제거 후 참가자 목록 업데이트
         participants = await self.remove_participant()
         await self.broadcast_participants(participants)
 
@@ -42,17 +41,34 @@ class JustChatConsumer(AsyncWebsocketConsumer):
                     "message": message
                 }
             )
-        elif action == "join":
-            participants = await self.add_participant()
-            await self.broadcast_participants(participants)
 
+        elif action == "update_log":
+            log_message = data.get("log", "")
+            participant = data.get("participant", "")
+
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    "type": "log_update",
+                    "participant": participant,
+                    "log": log_message,
+                }
+            )
 
     async def chat_message(self, event):
-        """ 클라이언트에게 메시지 전달 """
+        """ 채팅 메시지 클라이언트에 전달 """
         await self.send(text_data=json.dumps({
             "type": "message",
             "nickname": event["nickname"],
             "message": event["message"]
+        }))
+
+    async def log_update(self, event):
+        """ 참가자의 로그 업데이트 """
+        await self.send(text_data=json.dumps({
+            "type": "log_update",
+            "participant": event["participant"],
+            "log": event["log"],
         }))
 
     async def broadcast_participants(self, participants):
