@@ -12,7 +12,7 @@ urlpatterns = [
     path('game/', views.game, name='game'),  
 
     # 🔥 Liar Game 관련 URL
-    path('game/create/', views.create_room, name='create_room'),  
+    path('create/', views.create_room, name='create_room'),  
     path('liargame/<int:room_id>/', views.room_detail, name='room_detail'),
     path('topics/', views.get_topics, name='get_topics'),    
     path('random-subtopics/', views.get_random_subtopics, name='get_random_subtopics'),    
