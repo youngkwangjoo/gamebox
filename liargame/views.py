@@ -3,13 +3,15 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, JsonResponse
 from .models import Topic, SubTopic
 from django.shortcuts import render, redirect 
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from .forms import SignUpForm
 from django.contrib.auth.decorators import login_required
 from .models import Room, CustomUser
 from django.apps import apps
 from django.http import JsonResponse
+from django.contrib import messages
+from .forms import CustomPasswordChangeForm
 
 
 def home(request):
@@ -241,3 +243,19 @@ def get_random_subtopics(request):
 
 def debug_host(request):
     return JsonResponse({'HTTP_HOST': request.META.get('HTTP_HOST')})
+
+@login_required
+def change_password(request):
+    if request.method == "POST":
+        form = CustomPasswordChangeForm(user=request.user, data=request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # 비밀번호 변경 후 세션 유지
+            messages.success(request, "비밀번호가 성공적으로 변경되었습니다!")
+            return redirect("lobby")  # 비밀번호 변경 후 로비로 이동
+        else:
+            messages.error(request, "비밀번호 변경에 실패했습니다. 입력한 정보를 확인해주세요.")
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+
+    return render(request, "liargame/change_password.html", {"form": form})

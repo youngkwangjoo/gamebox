@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .just_chat_view import just_chat_room  # Just Chat 뷰 추가
+from .views import change_password
 #from .stockgame_view import stockgame_room  # Stock Game 뷰 추가 (추후 추가)
 
 urlpatterns = [
@@ -10,7 +11,7 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),  
     path('logout/', views.logout_view, name='logout'),  
     path('game/', views.game, name='game'),  
-
+    path("change_password/", change_password, name="change_password"), 
     # 🔥 Liar Game 관련 URL
     path('create/', views.create_room, name='create_room'),  
     path('liargame/<int:room_id>/', views.room_detail, name='room_detail'),

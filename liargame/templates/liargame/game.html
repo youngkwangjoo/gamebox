@@ -196,6 +196,21 @@
             background-color: #d11a1c;
         }
 
+        .password-change-button {
+            display: inline-block;
+            padding: 8px 12px;
+            margin-top: 10px;
+            background-color: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+
+        .password-change-button:hover {
+            background-color: #0056b3;
+        }
+
+
 
     </style>
 </head>
@@ -221,9 +236,11 @@
         <div class="left-panel">
             <div class="nickname">
                 <div class="profile-circle">👤</div>
-                <div class="nickname-text">{{ username }}</div>
+                <div class="nickname-text">{{ user.nickname }}</div>
             </div>
             <div class="all-users">
+                <a href="{% url 'change_password' %}" class="password-change-button">🔑 비밀번호 변경</a>
+            </div>
                 <h3>접속중인 사람</h3>
                 <ul id="participants-list"></ul>
             </div>
