@@ -89,6 +89,7 @@
         .nickname-text {
             font-size: 1.2rem;
             font-weight: bold;
+            margin-right:20px
         }
 
         .all-users {
@@ -198,16 +199,16 @@
 
         .password-change-button {
             display: inline-block;
-            padding: 8px 12px;
+            padding: 8px 10px;
             margin-top: 10px;
-            background-color: #007bff;
+            background-color: #a8b1bb;
             color: white;
             text-decoration: none;
             border-radius: 5px;
         }
 
         .password-change-button:hover {
-            background-color: #0056b3;
+            background-color: #8c96a0;
         }
 
 
@@ -237,10 +238,9 @@
             <div class="nickname">
                 <div class="profile-circle">👤</div>
                 <div class="nickname-text">{{ user.nickname }}</div>
+                <a href="{% url 'change_password' %}" class="password-change-button">비밀번호 변경</a>
             </div>
             <div class="all-users">
-                <a href="{% url 'change_password' %}" class="password-change-button">🔑 비밀번호 변경</a>
-            </div>
                 <h3>접속중인 사람</h3>
                 <ul id="participants-list"></ul>
             </div>
