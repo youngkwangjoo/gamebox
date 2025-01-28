@@ -1,4 +1,6 @@
 document.addEventListener("DOMContentLoaded", function () {
+    console.log("🚀 [DEBUG] just_chat.js 로드 완료");
+
     const chatLog = document.getElementById("chat-log");
     const messageInput = document.getElementById("chat-message-input");
     const sendButton = document.getElementById("chat-message-submit");
@@ -6,48 +8,76 @@ document.addEventListener("DOMContentLoaded", function () {
     const participantsContainer = document.getElementById("participants-container");
     const participantLogsContainer = document.getElementById("participant-logs-container");
 
-    const roomId = document.getElementById("chat-container").dataset.roomId;
-    const nickname = document.getElementById("chat-container").dataset.nickname;
+    const chatContainer = document.getElementById("chat-container");
+    const roomId = chatContainer.dataset.roomId;
+    const nickname = chatContainer.dataset.nickname;
+
+    console.log(`📌 [DEBUG] 현재 방 ID: ${roomId}`);
+    console.log(`📌 [DEBUG] 사용자 닉네임: ${nickname}`);
 
     const wsProtocol = window.location.protocol === "https:" ? "wss://" : "ws://";
-    const socket = new WebSocket(`${wsProtocol}${window.location.host}/ws/just_chat/${roomId}/`);
+    const socketUrl = `${wsProtocol}${window.location.host}/ws/just_chat/${roomId}/`;
+    const socket = new WebSocket(socketUrl);
+
+    console.log(`🔌 [DEBUG] WebSocket 연결 시도: ${socketUrl}`);
+
+    socket.onopen = function () {
+        console.log("✅ [DEBUG] WebSocket 연결 성공!");
+    };
 
     socket.onmessage = function (event) {
         try {
             const data = JSON.parse(event.data);
-            console.log("📩 메시지 수신:", data);
+            console.log("📩 [DEBUG] 메시지 수신:", data);
 
             switch (data.type) {
                 case "message":
+                    console.log(`💬 [DEBUG] [${data.nickname}] ${data.message}`);
                     addMessageToLog(data.nickname, data.message, data.nickname === nickname);
                     break;
                 case "participants":
+                    console.log("👥 [DEBUG] 참가자 목록 수신:", data.participants);
                     renderParticipants(data.participants);
                     break;
                 case "log_update":
+                    console.log("📝 [DEBUG] 참가자 로그 업데이트:", data.participant, data.log);
                     renderParticipantLogs(data.participant, data.log);
                     break;
                 default:
-                    console.warn("⚠️ 알 수 없는 메시지 유형:", data);
+                    console.warn("⚠️ [WARN] 알 수 없는 메시지 유형:", data);
             }
         } catch (error) {
-            console.error("❌ WebSocket 메시지 처리 중 오류 발생:", error);
+            console.error("❌ [ERROR] WebSocket 메시지 처리 중 오류 발생:", event.data, error);
         }
+    };
+
+    socket.onerror = function (error) {
+        console.error("❌ [ERROR] WebSocket 오류 발생:", error);
+    };
+
+    socket.onclose = function (event) {
+        console.warn(`🔌 [WARN] WebSocket 연결 종료 (코드: ${event.code}, 이유: ${event.reason})`);
     };
 
     function sendMessage() {
         const message = messageInput.value.trim();
         if (message) {
-            socket.send(JSON.stringify({
+            const messageData = {
                 action: "message",
                 nickname: nickname,
                 message: message
-            }));
+            };
+
+            console.log("📤 [DEBUG] 메시지 전송:", messageData);
+            socket.send(JSON.stringify(messageData));
+
             messageInput.value = "";
         }
     }
 
     function addMessageToLog(sender, message, isSelf = false) {
+        console.log(`💬 [DEBUG] 채팅 추가 - [${sender}]: ${message}`);
+
         const messageContainer = document.createElement("div");
         messageContainer.classList.add("message-container", isSelf ? "self" : "other");
 
@@ -68,7 +98,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderParticipants(participants) {
-        participantsContainer.innerHTML = ""; // 기존 목록 초기화
+        console.log("👥 [DEBUG] 참가자 목록 렌더링:", participants);
+
+        participantsContainer.innerHTML = "";
         participants.forEach(participant => {
             const participantElement = document.createElement("div");
             participantElement.className = "participant-item";
@@ -78,6 +110,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderParticipantLogs(participant, logMessage) {
+        console.log(`📝 [DEBUG] 참가자 로그 업데이트: ${participant} - ${logMessage}`);
+
         const logElement = document.createElement("div");
         logElement.className = "log-item";
         logElement.textContent = `${participant}: ${logMessage}`;
@@ -92,7 +126,5 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    socket.onerror = function (error) {
-        console.error("❌ WebSocket 오류:", error);
-    };
+    console.log("✅ [DEBUG] just_chat.js 실행 완료");
 });
