@@ -5,14 +5,12 @@ from .models import Topic, SubTopic
 from django.shortcuts import render, redirect 
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
-from .forms import SignUpForm
+from .forms import SignUpForm, CustomPasswordChangeForm
 from django.contrib.auth.decorators import login_required
 from .models import Room, CustomUser
 from django.apps import apps
 from django.http import JsonResponse
 from django.contrib import messages
-from .forms import CustomPasswordChangeForm
-
 
 def home(request):
     # 홈 페이지

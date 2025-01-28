@@ -20,16 +20,16 @@ class SignUpForm(UserCreationForm):
             raise forms.ValidationError("이미 존재하는 아이디입니다. 다른 아이디를 사용해주세요.")
         return username
     
-    class CustomPasswordChangeForm(PasswordChangeForm):
-        old_password = forms.CharField(
-            label="현재 비밀번호",
-            widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "현재 비밀번호 입력"}),
-        )
-        new_password1 = forms.CharField(
-            label="새 비밀번호",
-            widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "새 비밀번호 입력"}),
-        )
-        new_password2 = forms.CharField(
-            label="새 비밀번호 확인",
-            widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "새 비밀번호 확인"}),
-        )
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(
+        label="현재 비밀번호",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "현재 비밀번호 입력"}),
+    )
+    new_password1 = forms.CharField(
+        label="새 비밀번호",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "새 비밀번호 입력"}),
+    )
+    new_password2 = forms.CharField(
+        label="새 비밀번호 확인",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "새 비밀번호 확인"}),
+    )
