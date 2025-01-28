@@ -239,15 +239,19 @@
             <div class="room-list">
                 {% if rooms %}
                     {% for room in rooms %}
-                        <div class="room" data-room-id="{{ room.room_number }}">
+                        <div class="room" data-room-id="{{ room.room_number }}" data-game-type="{{ room.game_type }}">
                             <!-- 방 정보 및 삭제 버튼 -->
                             <div class="room-left">
-                                <a href="{% url 'room_detail' room_id=room.room_number %}" class="room-link">
+                                {% if room.game_type == "just_chat" %}
+                                    <a href="/liargame/just_chat/room/{{ room.room_number }}/" class="room-link">
+                                {% else %}
+                                    <a href="/liargame/room/{{ room.room_number }}/" class="room-link">
+                                {% endif %}
                                     <strong>{{ room.owner.nickname }}의 방</strong> 
                                     <span>"{{ room.game_type }}"</span>
                                 </a>
                             </div>
-                            
+            
                             <div class="room-right">
                                 <div class="room-players">
                                     ({{ room.players.count }} player{{ room.players.count|pluralize }})
@@ -308,8 +312,10 @@
                 console.error('WebSocket 오류:', error);
             };
 
-            // 방 목록에 방 추가 함수
+            // 방 목록에 방 추가하는 함수 (동적으로 추가)
             function addRoomToList(roomId, owner, gameType, playerCount) {
+                console.log(`[DEBUG] 새로운 방 추가: ID=${roomId}, Type=${gameType}`);
+
                 // "아직 개설된 방이 없습니다." 문구 제거
                 const noRoomsMessage = document.querySelector('.room-list p');
                 if (noRoomsMessage) {
@@ -321,12 +327,21 @@
                     return; // 중복 방이 추가되지 않도록 방지
                 }
 
+                // 게임 유형에 따른 URL 설정
+                let roomUrl;
+                if (gameType === "just_chat") {
+                    roomUrl = `/liargame/just_chat/room/${roomId}/`;
+                } else {
+                    roomUrl = `/liargame/room/${roomId}/`;
+                }
+
                 const roomElement = document.createElement('div');
                 roomElement.className = 'room';
                 roomElement.dataset.roomId = roomId;
+                roomElement.dataset.gameType = gameType;
                 roomElement.innerHTML = `
                     <div class="room-left">
-                        <a href="/room/${roomId}" class="room-link">
+                        <a href="${roomUrl}" class="room-link">
                             <strong>${owner}의 방</strong>
                             <span>"${gameType}"</span>
                         </a>
