@@ -71,6 +71,8 @@ nav ul li a:hover {
 /* ✅ 받은 메시지 (다른 사용자) */
 .message-container.other {
     justify-content: flex-start;
+    flex-direction: column; /* 아이디 -> 메시지 순서 */
+    align-items: flex-start; /* 왼쪽 정렬 */
 }
 
 /* ✅ 메시지 공통 스타일 */
@@ -97,11 +99,12 @@ nav ul li a:hover {
     border-bottom-left-radius: 0;
 }
 
-/* ✅ 발신자 이름 (상대방만 표시) */
-.sender-name {
-    font-size: 0.9rem;
-    color: #666;
-    margin-bottom: 2px;
+/* ✅ 발신자 이름 (상대방만 표시, 위에 위치) */
+.message-container.other .sender-name {
+    font-size: 0.85rem;
+    color: #444;
+    margin-bottom: 3px;
+    font-weight: bold;
 }
 
 /* ✅ 채팅 입력 컨테이너 */

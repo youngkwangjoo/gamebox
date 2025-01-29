@@ -8,6 +8,13 @@
     <link rel="stylesheet" href="{% static 'liargame/styles/just_chat.css' %}">
 </head>
 <body>
+    <nav>
+        <ul>
+            <li><a href="{% url 'signin' %}">로그인</a></li>
+            <li><a href="{% url 'game' %}">대기실</a></li>
+            <li><a href="{% url 'create_room' %}" id="create-room-link">방 만들기</a></li>
+        </ul>
+    </nav>
     <h2>Just Chat - 방 {{ room.room_number }}</h2>
 
     <div class="chat-container" id="chat-container" 
