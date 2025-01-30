@@ -61,6 +61,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://59.5.15.183',       # 포트 없는 경우도 추가
     'http://www.schdule.site', 
     'https://green.schdule.site', 
+    'https://green.schdule.site:1443', 
 ]
 
 
