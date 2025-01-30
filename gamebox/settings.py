@@ -7,7 +7,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-key-for-local-development'
 
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'schdule.site', 'www.schdule.site']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'schdule.site', 'www.schdule.site', 'green.schdule.site:1443']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
