@@ -25,7 +25,7 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'insecure-key-for-local-development'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'schdule.site', 'www.schdule.site']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '59.5.15.183', 'schdule.site', 'www.schdule.site', 'green.schdule.site']
 #ALLOWED_HOSTS = ['*']
 
 
@@ -60,6 +60,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://59.5.15.183:1180',  # 포트 포함
     'http://59.5.15.183',       # 포트 없는 경우도 추가
     'http://www.schdule.site', 
+    'https://green.schdule.site', 
 ]
 
 
