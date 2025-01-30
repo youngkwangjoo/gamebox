@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="{% static 'liargame/styles/just_chat.css' %}">
 </head>
 <body>
+    <!-- ✅ 네비게이션 바 (고정됨) -->
     <nav>
         <ul>
             <li><a href="{% url 'signin' %}">로그인</a></li>
@@ -16,16 +17,22 @@
         </ul>
     </nav>
 
-    <div class="chat-container" id="chat-container" 
-         data-room-id="{{ room.room_number }}" 
-         data-nickname="{{ request.user.nickname }}">
-        <div class="chat-box" id="chat-log"></div>
-        <div class="chat-input">
-            <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
-            <button id="chat-message-submit">전송</button>
-        </div>
+    <!-- ✅ 네비게이션 아래에서 시작하는 전체 컨테이너 -->
+    <div class="chat-wrapper">
+        <!-- 참가자 목록 (왼쪽) -->
         <div class="participants-container" id="participants-container">
-            <!-- 참가자 목록이 여기에 동적으로 추가됨 -->
+            참가자
+        </div>
+
+        <!-- 채팅방 (오른쪽) -->
+        <div class="chat-container" id="chat-container" 
+             data-room-id="{{ room.room_number }}" 
+             data-nickname="{{ request.user.nickname }}">
+            <div class="chat-box" id="chat-log"></div>
+            <div class="chat-input">
+                <input type="text" id="chat-message-input" placeholder="메시지를 입력하세요...">
+                <button id="chat-message-submit">전송</button>
+            </div>
         </div>
     </div>
 

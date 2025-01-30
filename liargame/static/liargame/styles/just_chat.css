@@ -1,15 +1,15 @@
 /* nav bar css */
 nav {
-    background-color: #333; /* 네비게이션 배경색 */
-    color: white; /* 글자 색상 */
-    padding: 10px 20px; /* 내부 여백 */
-    position: fixed; /* 고정 위치 */
-    top: 0; /* 화면 상단 */
-    left: 0; /* 왼쪽 고정 */
-    right: 0; /* 오른쪽 고정 */
-    z-index: 1000; /* 가장 위에 배치 */
-    width: 100%; /* 전체 너비 */
-    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2); /* 그림자 추가 */
+    background-color: #333;
+    color: white;
+    padding: 15px 20px;
+    position: fixed; /* 화면에 고정 */
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000; /* 다른 요소 위에 배치 */
+    width: 100%;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 nav ul {
@@ -51,7 +51,7 @@ nav ul li a:hover {
 /* ✅ 채팅 로그 (메시지 목록) */
 .chat-box {
     flex-grow: 1;
-    height: calc(100vh - 150px); /* 전체 화면 높이에서 nav와 입력창을 제외한 값 */
+    height: 100%;
     overflow-y: auto;
     padding: 15px;
     background: #f9f9f9;
@@ -59,6 +59,7 @@ nav ul li a:hover {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    margin-top: 15px; 
 }
 
 /* ✅ 모바일 반응형 (화면이 작을 때 더 잘 맞도록 조정) */
@@ -176,31 +177,36 @@ nav ul li a:hover {
 /* ✅ 채팅 전체 레이아웃 (채팅과 참가자 목록을 가로로 정렬) */
 .chat-wrapper {
     display: flex;
-    justify-content: center;
+    justify-content: space-between; /* 참가자 목록 왼쪽, 채팅창 오른쪽 */
     align-items: flex-start;
-    width: 90%;
-    max-width: 900px;
-    margin: 20px auto;
-    gap: 20px; /* 채팅과 참가자 목록 사이 간격 */
+    width: 100%;
+    max-width: 1200px;
+    height: calc(100vh - 70px); /* ✅ 네비게이션 높이 제외 */
+    margin: 70px auto 0; /* ✅ 네비게이션 바 아래에서 시작 */
+    padding: 20px;
+    gap: 20px;
+    position: relative; /* ✅ 요소들이 자연스럽게 배치되도록 설정 */
 }
 
-/* ✅ 참가자 목록 컨테이너 (왼쪽 정렬) */
+/* ✅ 참가자 목록 컨테이너 (왼쪽 배치) */
 .participants-container {
-    width: 25%; /* 전체 너비의 25% 차지 */
-    max-width: 250px; /* 최대 너비 제한 */
+    width: 20%; /* 전체 너비의 20% 차지 */
+    max-width: 250px;
+    height: 100%; /* ✅ 네비게이션 아래에서 전체 높이 사용 */
     background: #ffffff;
     border: 2px solid #ddd;
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     overflow-y: auto;
-    max-height: 400px;
+    position: relative; /* ✅ z-index 영향을 안 받도록 설정 */
 }
 
-/* ✅ 채팅 컨테이너 (오른쪽 정렬) */
+/* ✅ 채팅 컨테이너 (오른쪽 배치) */
 .chat-container {
-    flex-grow: 1; /* 남은 공간을 차지 */
-    max-width: 600px;
+    flex-grow: 1; /* 남은 공간을 모두 차지 */
+    max-width: 800px;
+    height: 100%;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -234,16 +240,18 @@ nav ul li a:hover {
     color: #444;
 }
 
-/* ✅ 반응형 스타일 (화면이 작을 경우 세로 정렬) */
-@media screen and (max-width: 768px) {
+/* ✅ 반응형 스타일 (모바일 환경에서는 세로 정렬) */
+@media screen and (max-width: 1024px) {
     .chat-wrapper {
         flex-direction: column;
         align-items: center;
+        height: auto;
     }
 
     .participants-container {
         width: 90%;
         max-width: none;
+        height: auto;
         margin-bottom: 15px;
     }
 
