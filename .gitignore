@@ -1,0 +1,5 @@
+# .gitignore 수정
+__pycache__/
+*.pyc
+
+.env
