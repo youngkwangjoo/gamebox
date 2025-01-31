@@ -34,12 +34,13 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa -p 22 gamebox@172.30.1.37 <<EOF
           cd gamebox_dev/
-          git pull origin dev  # ✅ dev 브랜치 Pull로 수정
+          git fetch origin dev
+          git reset --hard origin/dev  # ✅ 최신 상태로 강제 동기화
           poetry install
-          poetry run python manage.py migrate  # ✅ DB 마이그레이션 실행
-          sudo systemctl restart gamebox_dev  # ✅ 개발 서버 재시작
+          poetry run python manage.py migrate
+          sudo systemctl restart gamebox_dev  # ✅ 비밀번호 없이 실행 가능하도록 설정
         EOF
-
+        
   # 2️⃣ Dev → Main PR 자동 생성
   create-pr:
     needs: deploy-dev  # ✅ 개발 서버 배포가 끝난 후 실행
