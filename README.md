@@ -2,6 +2,7 @@
 여러가지 작은 게임을 웹페이지에서 즐길 수 있는 프로젝트
 
 version 1.0 완성 2025.01.18
+서버 분리 2025.01.31
 
 # stack
 python, django, poetry, websocket, html, javascript, css, dbsqlite3, home NAS
