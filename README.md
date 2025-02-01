@@ -7,16 +7,16 @@ version 1.0 완성 2025.01.18
 python, django, poetry, websocket, html, javascript, css, dbsqlite3, home NAS
 
 특징 
-1. WEBSOCKET을 활용한 실시간 채팅
-2. Broad casting을 이용해 로비에 실시간 참여자 목록 제공
-3. Websocker과 Broad casting을 활용해 liargame 제시어 배포 및 참가자 설명을 모든 참가자에게 보여줌
-4. 간단한 Session 로그인 기능과 csrf토큰을 활용
-5. 방장의 개념을 적용해 방 생성 시 제시어 배포 역할, 방 삭제 역할 추가
-8. 프론트엔드 코드를 따로 하지않고 장고 템플릿을 활용해 js, css, html을 같이 배포함
-9. nginx 와 colletstatic을 사용한 정적배포
-10. Redis를 활용해서 실시간 게임의 속도 향상을 위해 캐시메모리 위주의 데이터 저장을 활용
-11. docker를 활용하지 않은 직접 배포 방식
-12. 무중단 배포를 위한 배포서버, 개발서버 분리 방식을 채택, 서버 pc가 꺼지지않는한 99.9% 가동
+1. WebSocket을 활용한 실시간 채팅 기능 구현
+2. BroadCasting을 이용해 lobby와 각 game room에 실시간 참여자 목록 제공
+3. WebSocket과 BroadCasting을 활용하여 Liar Game 제시어 배포 및 참가자 설명 실시간 공유
+4. 간단한 Session 기반 로그인 기능과 CSRF 토큰을 활용한 보안 강화
+5. 방장 권한 개념 도입: 방 생성 시 제시어 배포 및 방 삭제 기능 부여
+6. 별도의 프론트엔드 없이 Django 템플릿으로 JS, CSS, HTML 통합 배포
+7. Nginx와 collectstatic을 활용한 정적 파일 배포 최적화
+8. Redis를 활용한 캐시 기반 데이터 저장으로 실시간 게임 성능 향상
+9. Docker 미사용: 직접 배포 방식으로 서버 관리
+10. 무중단 배포를 위한 배포 서버와 개발 서버 분리로 99.9% 가동률 유지 (서버 PC가 꺼지지 않는 한)
 
 
 # 사이트 주소
